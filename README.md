@@ -1,1 +1,1 @@
-# FPSMultiplay_DiplomnaRabota
+# MultiplayerFPS_DiplomnaRabota

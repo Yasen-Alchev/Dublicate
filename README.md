@@ -1,5 +1,15 @@
-<<<<<<< HEAD
-# MultiplayerFPS_DiplomnaRabota
-=======
-# FPSMultiplay_DiplomnaRabota
->>>>>>> 15bfef3 (Initial commit)
+1. Тема: Multiplayer игра на Unreal Engine
+2. Изисквания:
+  •	Механика за тичане
+  •	Менюта и интерфейси за потребителите в играта:
+      -	Главно меню
+      -	Меню в играта
+      -	Меню за купуване на оръжия
+      -	Интерфейс, указващ край на играта
+  •	Multiplayer разработка на играта:
+      -	Свързване на играчите чрез Direct IP
+      -	Запазване на информация за играчите
+  •	Три режима на игра:
+      -	Capture the Flag
+      -	Deathmatch
+      -	Conquest

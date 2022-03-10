@@ -7,6 +7,8 @@
 #include "GameFramework/Character.h"
 #include "MultiplayerFPSCharacter.generated.h"
 
+class UMultiplayerFPSHealthSystem;
+
 UCLASS(config = Game)
 class AMultiplayerFPSCharacter : public ACharacter
 {
@@ -24,6 +26,9 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
+
+	UPROPERTY(EditAnywhere)
+	UMultiplayerFPSHealthSystem* HealthSystem;
 
 protected:
 
@@ -80,7 +85,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	/** Returns CameraBoom subobject **/
-	FORCEINLINE virtual  class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE virtual class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE virtual class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 

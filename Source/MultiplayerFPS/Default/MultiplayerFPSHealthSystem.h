@@ -2,10 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "TimerManager.h"
-
 #include "MultiplayerFPSHealthSystem.generated.h"
-
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MULTIPLAYERFPS_API UMultiplayerFPSHealthSystem : public UActorComponent

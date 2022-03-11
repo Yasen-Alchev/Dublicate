@@ -10,7 +10,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
-
+#include "MultiplayerFPSHealthSystem.h"
 
 AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 {
@@ -38,6 +38,11 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
+	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
+	FirstPersonCameraComponent->bUsePawnControlRotation = true;
+
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
@@ -45,6 +50,8 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	bIsSprinting = false;
 	bDead = false;
 	Team = TEAM_NONE;
+
+	HealthSystem = CreateDefaultSubobject<UMultiplayerFPSHealthSystem>(TEXT("HealthSystem"));
 }
 
 void AMultiplayerFPSCharacter::BeginPlay()
@@ -243,3 +250,22 @@ void AMultiplayerFPSCharacter::InitTeam()
 	}
 }
 
+void AMultiplayerFPSCharacter::SetFOV(float FOV)
+{
+	FirstPersonCameraComponent->SetFieldOfView(FOV);
+}
+
+void AMultiplayerFPSCharacter::SetIsReloading(bool bIsPlayerReloading)
+{
+	this->bIsReloading = bIsPlayerReloading;
+	if (this->bIsReloading)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Started Reloading!"));
+		this->CanFireFirearmArray[this->WeaponInHand] = bIsPlayerReloading;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Firearm Reloaded!"));
+		this->CanFireFirearmArray[this->WeaponInHand] = bIsPlayerReloading;
+	}
+}

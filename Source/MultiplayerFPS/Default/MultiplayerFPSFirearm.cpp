@@ -51,6 +51,8 @@ void AMultiplayerFPSFirearm::Tick(float DeltaTime)
 
 void AMultiplayerFPSFirearm::StartFiring()
 {
+	this->bIsFiring = true;
+
 
 }
 
@@ -106,7 +108,33 @@ void AMultiplayerFPSFirearm::SwitchFireMode()
 
 void AMultiplayerFPSFirearm::Reload()
 {
+	if (GetWorldTimerManager().IsTimerActive(BurstFiringIntervalTimer))
+	{
+		return;
+	}
 
+	this->StopFiring();
+
+	AActor* PlayerActor = GetOwner();
+	if (!IsValid(PlayerActor))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Reload !IsValid(PlayerActor)"));
+		return;
+	}
+
+	AMultiplayerFPSCharacter* MultiplayerFPSPlayer = Cast<AMultiplayerFPSCharacter>(PlayerActor);
+	if (!IsValid(MultiplayerFPSPlayer))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Reload !IsValid(MultiplayerFPSPlayer)"));
+		return;
+	}
+
+	FTimerDelegate AllowFiringDelegate;
+	AllowFiringDelegate.BindUFunction(MultiplayerFPSPlayer, "SetIsReloading");
+
+	GetWorldTimerManager().SetTimer(this->AllowFiringTimer, AllowFiringDelegate, this->ReloadTime, false);
+
+	this->CurrentMagazineCapacity = this->MaxMagazineCapacity;
 }
 
 void AMultiplayerFPSFirearm::Zoom()
@@ -126,6 +154,8 @@ void AMultiplayerFPSFirearm::Zoom()
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Zoom !IsValid(MultiplayerFPSPlayer)"));
 		return;
 	}
+
+	MultiplayerFPSPlayer->SetFOV(this->ZoomFOV);
 }
 
 void AMultiplayerFPSFirearm::ZoomOut()
@@ -145,4 +175,6 @@ void AMultiplayerFPSFirearm::ZoomOut()
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::ZoomOut !IsValid(MultiplayerFPSPlayer)"));
 		return;
 	}
+
+	MultiplayerFPSPlayer->SetFOV(90.0f);
 }

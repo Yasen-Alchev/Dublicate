@@ -48,6 +48,11 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 
+	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
+	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
+	FirstPersonCameraComponent->bUsePawnControlRotation = true;
+
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
@@ -271,4 +276,24 @@ void AMultiplayerFPSCharacter::InitTeam()
 	}
 
 	UE_LOG(LogTemp, Error, TEXT("Player Name: %s"), *PlayerName);
+}
+
+void AMultiplayerFPSCharacter::SetFOV(float FOV)
+{
+	FirstPersonCameraComponent->SetFieldOfView(FOV);
+}
+
+void AMultiplayerFPSCharacter::SetIsReloading()
+{
+	this->bIsReloading = !this->bIsReloading;
+	if (this->bIsReloading)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Started Reloading!"));
+		this->CanFireFirearmArray[this->WeaponInHand] = false;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Firearm Reloaded!"));
+		this->CanFireFirearmArray[this->WeaponInHand] = true;
+	}
 }

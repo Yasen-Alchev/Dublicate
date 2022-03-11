@@ -30,7 +30,16 @@ public:
 	UPROPERTY(EditAnywhere)
 	UMultiplayerFPSHealthSystem* HealthSystem;
 
+	UPROPERTY()
+	bool bIsReloading;
+
+	UPROPERTY()
+	bool bIsZoomedIn;
+
 protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+		UCameraComponent* FirstPersonCameraComponent;
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -109,5 +118,11 @@ public:
 
 	UPROPERTY(Replicated)
 		FString PlayerName;
+
+	UFUNCTION()
+		void SetFOV(float FOV);
+
+	UFUNCTION()
+		void SetIsReloading();
 };
 

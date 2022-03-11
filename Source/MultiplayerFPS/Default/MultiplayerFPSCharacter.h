@@ -107,10 +107,10 @@ public:
 	UPROPERTY()
 	FString PlayerName;
 
-	UFUNCTION()
+	UFUNCTION(Server, Reliable)
 	virtual void StartFiring();
 
-	UFUNCTION()
+	UFUNCTION(Server, Reliable)
 	virtual void StopFiring();
 
 	UFUNCTION()

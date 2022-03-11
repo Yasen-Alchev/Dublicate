@@ -132,6 +132,12 @@ public:
 	void SetFOV(float FOV);
 
 	UFUNCTION()
+	void HideFPMeshes();
+
+	UFUNCTION()
+	void ShowFPMeshes();
+
+	UFUNCTION()
 	void SetIsReloading();
 };
 

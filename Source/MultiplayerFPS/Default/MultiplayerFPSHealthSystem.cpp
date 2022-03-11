@@ -1,4 +1,6 @@
 #include "MultiplayerFPSHealthSystem.h"
+#include "../Default/MultiplayerFPSCharacter.h"
+#include "../Default/MultiplayerFPSPlayerController.h"
 #include "GameFramework/Actor.h"
 
 UMultiplayerFPSHealthSystem::UMultiplayerFPSHealthSystem()
@@ -90,7 +92,7 @@ void UMultiplayerFPSHealthSystem::StartShieldRecharge()
 	AActor* OwnerActor = GetOwner();
 	if (!IsValid(OwnerActor))
 	{
-		UE_LOG(LogTemp, Error, TEXT("UHealthSystem::UMultiplayerFPSHealthSystem !IsValid(OwnerActor)"));
+		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::StartShieldRecharge !IsValid(OwnerActor)"));
 		return;
 	}
 
@@ -107,7 +109,7 @@ void UMultiplayerFPSHealthSystem::RechargeShield()
 	AActor* OwnerActor = GetOwner();
 	if (!IsValid(OwnerActor))
 	{
-		UE_LOG(LogTemp, Error, TEXT("UHealthSystem::UMultiplayerFPSHealthSystem !IsValid(OwnerActor)"));
+		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::StartShieldRecharge !IsValid(OwnerActor)"));
 		return;
 	}
 
@@ -149,5 +151,28 @@ void UMultiplayerFPSHealthSystem::Heal(float Value)
 
 void UMultiplayerFPSHealthSystem::Death()
 {
+	AActor* OwnerActor = GetOwner();
+	if (!IsValid(OwnerActor))
+	{
+		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::Death !IsValid(OwnerActor)"));
+		return;
+	}
 
+	AMultiplayerFPSCharacter* MultiplayerFPSPlayer = Cast<AMultiplayerFPSCharacter>(OwnerActor);
+	if (!IsValid(MultiplayerFPSPlayer))
+	{
+		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::Death !IsValid(MultiplayerFPSPlayer)"));
+		return;
+	}
+
+	MultiplayerFPSPlayer->Destroy(true);
+
+	AMultiplayerFPSPlayerController* MultiplayerFPSPlayerController = Cast<AMultiplayerFPSPlayerController>(MultiplayerFPSPlayer->GetController());
+	if (!IsValid(MultiplayerFPSPlayerController))
+	{
+		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::Death !IsValid(MultiplayerFPSPlayerController)"));
+		return;
+	}
+
+	MultiplayerFPSPlayerController->UnPossess();
 }

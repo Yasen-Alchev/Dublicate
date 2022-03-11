@@ -4,7 +4,6 @@
 #include "Components/ActorComponent.h"
 #include "MultiplayerFPSHealthSystem.generated.h"
 
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MULTIPLAYERFPS_API UMultiplayerFPSHealthSystem : public UActorComponent
 {

@@ -28,6 +28,9 @@ public:
 	class UMultiplayerFPSHealthSystem* HealthSystem;
 
 	UPROPERTY()
+	TArray<class AMultiplayerFPSFirearm*> FirearmArray;
+
+	UPROPERTY()
 	TArray<bool> CanFireFirearmArray;
 
 	UPROPERTY()
@@ -49,6 +52,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+
+	UPROPERTY(EditAnywhere)
+		TArray<TSubclassOf<class AMultiplayerFPSFirearm>> FirearmClassArray;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 

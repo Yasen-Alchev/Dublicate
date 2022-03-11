@@ -191,7 +191,7 @@ void ADM_InGameHUD::ResetObjectiveStats()
 	}
 }
 
-void ADM_InGameHUD::SetOptionsMenuVisibility(bool Visibility)
+void ADM_InGameHUD::SetOptionMenuVisibility(bool Visibility)
 {
 	if (IsValid(InGameMenuWidget))
 	{
@@ -210,22 +210,44 @@ void ADM_InGameHUD::SetOptionsMenuVisibility(bool Visibility)
 	}
 }
 
-void ADM_InGameHUD::ToggleStatsVisibility()
+void ADM_InGameHUD::ToggleLeaderBoardVisibility()
 {
 	if (IsValid(LeaderBoardWidget))
 	{
-		if(LeaderBoardWidget->IsVisible())
+		if (LeaderBoardWidget->IsVisible())
 		{
-			LeaderBoardWidget->SetVisibility(ESlateVisibility::Hidden);
+			LeaderBoardWidget->RemoveFromParent();
 		}
 		else
 		{
-			LeaderBoardWidget->SetVisibility(ESlateVisibility::Visible);
+			UpdateLeaderBoardStats();
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ADM_InGameHUD::ToggleStatsVisibility() -> LeaderBoardWidget is not Valid!!!"));
+		UE_LOG(LogTemp, Error, TEXT("ADM_InGameHUD::ToggleLeaderBoardVisibility() -> LeaderBoardWidget is not Valid!!!"));
+	}
+}
+
+void ADM_InGameHUD::UpdateLeaderBoardStats()
+{
+	if (IsValid(LeaderBoardWidget))
+	{
+		LeaderBoardWidget->SetVisibility(ESlateVisibility::Hidden);
+		LeaderBoardWidget->RemoveFromParent();
+		LeaderBoardWidget = CreateWidget<UDM_LeaderBoardWidget>(GetWorld(), LeaderBoardWidgetClass);
+		if (IsValid(LeaderBoardWidget))
+		{
+			LeaderBoardWidget->AddToViewport();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("ADM_InGameHUD::UpdateLeaderBoardStats() -> LeaderBoardWidget is not Valid!!!"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ADM_InGameHUD::UpdateLeaderBoardStats() -> LeaderBoardWidget is not Valid!!!"));
 	}
 }
 

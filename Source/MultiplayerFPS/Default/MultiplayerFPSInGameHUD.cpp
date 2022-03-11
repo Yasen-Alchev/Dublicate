@@ -198,6 +198,7 @@ void AMultiplayerFPSInGameHUD::SetOptionMenuVisibility(bool Visibility)
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::SetOptionsMenuVisibility(bool Visibility) -> InGameMenuWidget is not Valid !!!"));
 	}
 }
+
 void AMultiplayerFPSInGameHUD::ToggleLeaderBoardVisibility()
 {
 	if (IsValid(LeaderBoardWidget))

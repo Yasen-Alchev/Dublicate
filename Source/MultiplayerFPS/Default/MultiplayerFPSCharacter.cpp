@@ -88,6 +88,7 @@ void AMultiplayerFPSCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	
 	check(PlayerInputComponent);
+
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
@@ -105,6 +106,15 @@ void AMultiplayerFPSCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAxis("TurnRate", this, &AMultiplayerFPSCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AMultiplayerFPSCharacter::LookUpAtRate);
+
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMultiplayerFPSCharacter::StartFiring);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AMultiplayerFPSCharacter::StopFiring);
+	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &AMultiplayerFPSCharacter::SwitchWeapon);
+	PlayerInputComponent->BindAction("SwitchFireMode", IE_Pressed, this, &AMultiplayerFPSCharacter::SwitchFireMode);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMultiplayerFPSCharacter::Reload);
+	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &AMultiplayerFPSCharacter::Zoom);
+	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &AMultiplayerFPSCharacter::ZoomOut);
+
 }
 
 void AMultiplayerFPSCharacter::TurnAtRate(float Rate)
@@ -248,6 +258,76 @@ void AMultiplayerFPSCharacter::InitTeam()
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSCharacter::InitTeam(AActor * Player)->PlayerController is not Valid !!!"), *PlayerName);
 	}
+}
+
+void AMultiplayerFPSCharacter::StartFiring()
+{
+	if (this->CanFireFirearmArray[this->WeaponInHand])
+	{
+		//this->FirearmArray[(this->WeaponInHand)]->StartFiring();
+	}
+}
+
+void AMultiplayerFPSCharacter::StopFiring()
+{
+	//this->FirearmArray[(this->WeaponInHand - 1)]->StopFiring();
+}
+
+void AMultiplayerFPSCharacter::SwitchWeapon()
+{
+	//if (this->WeaponInHand == 1)
+	//{
+	//	this->WeaponInHand = 2;
+
+	//	FirearmArray[0]->GetGunMesh()->AttachToComponent(FPMMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
+	//	FirearmArray[1]->GetGunMesh()->AttachToComponent(FPMMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	//}
+	//else
+	//{
+	//	this->WeaponInHand = 1;
+
+	//	FirearmArray[0]->GetGunMesh()->AttachToComponent(FPMMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	//	FirearmArray[1]->GetGunMesh()->AttachToComponent(FPMMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
+	//}
+}
+
+void AMultiplayerFPSCharacter::SwitchFireMode()
+{
+	//if (!this->bIsReloading)
+	//{
+	//	this->FirearmArray[(this->WeaponInHand - 1)]->SwitchFireMode();
+	//}
+}
+
+void AMultiplayerFPSCharacter::Reload()
+{
+	//if (!bIsReloading && FirearmArray[this->WeaponInHand - 1]->ShouldReloadFirearm())
+	//{
+	//	this->FirearmArray[(this->WeaponInHand - 1)]->Reload();
+	//	if (bIsZoomedIn)
+	//	{
+	//		UE_LOG(LogTemp, Warning, TEXT("Reloading -> Zoomed Out!"))
+	//			AFPSPlayerCharacter::ZoomOut();
+	//	}
+	//}
+}
+
+void AMultiplayerFPSCharacter::Zoom()
+{
+	//if (this->CanFireFirearmArray[this->WeaponInHand - 1])
+	//{
+	//	this->bIsZoomedIn = true;
+	//	this->FirearmArray[(this->WeaponInHand - 1)]->Zoom();
+	//}
+}
+
+void AMultiplayerFPSCharacter::ZoomOut()
+{
+	//if (this->bIsZoomedIn)
+	//{
+	//	this->FirearmArray[(this->WeaponInHand - 1)]->ZoomOut();
+	//	this->bIsZoomedIn = false;
+	//}
 }
 
 void AMultiplayerFPSCharacter::SetFOV(float FOV)

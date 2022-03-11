@@ -255,17 +255,17 @@ void AMultiplayerFPSCharacter::SetFOV(float FOV)
 	FirstPersonCameraComponent->SetFieldOfView(FOV);
 }
 
-void AMultiplayerFPSCharacter::SetIsReloading()
+void AMultiplayerFPSCharacter::SetIsReloading(bool bIsPlayerReloading)
 {
-	this->bIsReloading = !this->bIsReloading;
+	this->bIsReloading = bIsPlayerReloading;
 	if (this->bIsReloading)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Started Reloading!"));
-		this->CanFireFirearmArray[this->WeaponInHand] = false;
+		this->CanFireFirearmArray[this->WeaponInHand] = bIsPlayerReloading;
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Firearm Reloaded!"));
-		this->CanFireFirearmArray[this->WeaponInHand] = true;
+		this->CanFireFirearmArray[this->WeaponInHand] = bIsPlayerReloading;
 	}
 }

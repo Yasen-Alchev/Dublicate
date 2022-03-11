@@ -5,8 +5,6 @@
 #include "GameFramework/Character.h"
 #include "MultiplayerFPSCharacter.generated.h"
 
-class UMultiplayerFPSHealthSystem;
-
 UCLASS(config = Game)
 class AMultiplayerFPSCharacter : public ACharacter
 {
@@ -17,6 +15,9 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
+	class USkeletalMeshComponent* FirstPersonMesh;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
 
@@ -24,7 +25,7 @@ public:
 	float BaseLookUpRate;
 
 	UPROPERTY(EditAnywhere)
-	UMultiplayerFPSHealthSystem* HealthSystem;
+	class UMultiplayerFPSHealthSystem* HealthSystem;
 
 	UPROPERTY()
 	TArray<bool> CanFireFirearmArray;
@@ -41,13 +42,13 @@ public:
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-		class UCameraComponent* FirstPersonCameraComponent;
+	class UCameraComponent* FirstPersonCameraComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class USpringArmComponent* CameraBoom;
+	class USpringArmComponent* CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class UCameraComponent* FollowCamera;
+	class UCameraComponent* FollowCamera;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -60,19 +61,19 @@ protected:
 	virtual void LookUpAtRate(float Rate);
 
 	UFUNCTION(BlueprintCallable)
-		virtual void SprintStart();
+	virtual void SprintStart();
 
 	UFUNCTION(BlueprintCallable)
-		virtual void SprintStop();
+	virtual void SprintStop();
 
 	UPROPERTY(Replicated)
-		bool bIsSprinting;
+	bool bIsSprinting;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
-		bool bDead;
+	bool bDead;
 
 	UPROPERTY()
-		bool bIsInOptionsMenu;
+	bool bIsInOptionsMenu;
 
 public:
 
@@ -80,34 +81,36 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	FORCEINLINE virtual  class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	FORCEINLINE virtual class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	UCameraComponent* GetFirstPersonCameraComponent()
+	{
+		return FirstPersonCameraComponent;
+	}
 
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
-		TEnumAsByte<ETeams> Team;
+	TEnumAsByte<ETeams> Team;
 
 	UFUNCTION()
-		virtual void SetOptionsMenuVisibility(bool Visibility);
+	virtual void SetOptionsMenuVisibility(bool Visibility);
 
 	UFUNCTION()
-		virtual void ToggleLeaderBoardVisibility();
+	virtual void ToggleLeaderBoardVisibility();
 
 	UFUNCTION()
-		virtual TEnumAsByte<ETeams> getTeam() { return Team; }
+	virtual TEnumAsByte<ETeams> getTeam() { return Team; }
 
 	UFUNCTION()
-		virtual void ToggleOptionsMenu();
+	virtual void ToggleOptionsMenu();
 
 	UFUNCTION()
-		virtual void InitTeam();
+	virtual void InitTeam();
 
 	UPROPERTY()
-		FString PlayerName;
+	FString PlayerName;
 
 	UFUNCTION()
-		void SetFOV(float FOV);
+	void SetFOV(float FOV);
 
 	UFUNCTION()
-		void SetIsReloading();
+	void SetIsReloading(bool bIsPlayerReloading);
 };
 

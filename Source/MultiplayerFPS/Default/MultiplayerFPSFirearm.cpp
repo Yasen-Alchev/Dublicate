@@ -4,6 +4,8 @@
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "../Default/MultiplayerFPSCharacter.h"
+#include "../Default/MultiplayerFPSTeamBasedCharacter.h"
+#include "../Default/MultiplayerFPSPlayerController.h"
 
 AMultiplayerFPSFirearm::AMultiplayerFPSFirearm()
 {
@@ -53,17 +55,210 @@ void AMultiplayerFPSFirearm::StartFiring()
 {
 	this->bIsFiring = true;
 
+	int32 CurrentFireModeIndex = FireModesArray.Find(CurrentFireMode);
+	if (CurrentFireModeIndex == INDEX_NONE)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::StartFiring CurrentFireModeIndex == INDEX_NONE"));
+		return;
+	}
 
+	if (CurrentFireMode == EFireMode::Auto)
+	{
+		if (GetWorldTimerManager().IsTimerActive(this->HeldFiringIntervalTimer))
+		{
+			GetWorldTimerManager().ClearTimer(this->HeldFiringIntervalTimer);
+			GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
+				this->Fire();
+				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+		}
+		else
+		{
+			GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
+				this->Fire();
+				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+		}
+	}
+	else if (CurrentFireMode == EFireMode::Burst)
+	{
+		if (this->bIsHeldArray[CurrentFireModeIndex])
+		{
+			if (GetWorldTimerManager().IsTimerActive(this->HeldFiringIntervalTimer))
+			{
+				GetWorldTimerManager().ClearTimer(this->HeldFiringIntervalTimer);
+				GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
+					this->BurstFire();
+					}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+			}
+			else
+			{
+				GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
+					this->BurstFire();
+					}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+			}
+		}
+		else
+		{
+			this->BurstFire();
+		}
+	}
+	else if (CurrentFireMode == EFireMode::Semi)
+	{
+		if (this->bIsHeldArray[CurrentFireModeIndex])
+		{
+			if (GetWorldTimerManager().IsTimerActive(this->HeldFiringIntervalTimer))
+			{
+				GetWorldTimerManager().ClearTimer(this->HeldFiringIntervalTimer);
+				GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
+					this->Fire();
+					}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+			}
+			else
+			{
+				GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
+					this->Fire();
+					}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+			}
+		}
+		else
+		{
+			this->Fire();
+		}
+	}
 }
 
 void AMultiplayerFPSFirearm::BurstFire()
 {
-
+	if (GetWorldTimerManager().IsTimerActive(this->BurstFiringIntervalTimer))
+	{
+		return;
+	}
+	else
+	{
+		GetWorldTimerManager().SetTimer(this->BurstFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
+			this->Fire();
+			}), this->BurstFiringInterval, true, 0.0f);
+	}
 }
 
 void AMultiplayerFPSFirearm::Fire()
 {
+	AActor* PlayerActor = GetOwner();
+	if (!IsValid(PlayerActor))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(PlayerActor)"));
+		return;
+	}
 
+	AMultiplayerFPSCharacter* MultiplayerFPSPlayer = Cast<AMultiplayerFPSCharacter>(PlayerActor);
+	if (!IsValid(MultiplayerFPSPlayer))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(MultiplayerFPSPlayer)"));
+		return;
+	}
+
+	
+	if (!IsValid(this->FireAnimation))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(this->FireAnimation)"));	
+		return;
+	}
+
+	UAnimInstance* AnimInstance = MultiplayerFPSPlayer->FirstPersonMesh->GetAnimInstance();
+	if (!IsValid(AnimInstance))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(AnimInstance)"));
+		return;
+	}
+
+	AnimInstance->Montage_Play(FireAnimation, 1.f);
+
+	FVector StartLocation = MultiplayerFPSPlayer->GetFirstPersonCameraComponent()->GetComponentLocation();
+
+	FRotator EndRotation = MultiplayerFPSPlayer->GetFirstPersonCameraComponent()->GetComponentRotation();
+	FVector EndLocation = StartLocation + (EndRotation.Vector() * 20000.0f);
+
+	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Bullet Trace")), true, this);
+	TraceParams.AddIgnoredActor(this);
+
+	FHitResult HitResult(ForceInit);
+
+	UWorld* World = GetWorld();
+	if (!IsValid(World))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(World)"));
+		return;
+	}
+
+	bool bHitResult = World->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Visibility, TraceParams, FCollisionResponseParams::DefaultResponseParam);
+	if (this->bShowDebugTrace)
+	{
+		DrawDebugLine(World, StartLocation, EndLocation, FColor::Red, false, 20.0f, ECC_WorldStatic, 0.35f);
+	}
+
+	if (CurrentFireMode == EFireMode::Burst)
+	{
+		this->BurstsFired++;
+
+		if (this->BurstsFired == this->BurstCount)
+		{
+			GetWorldTimerManager().ClearTimer(this->BurstFiringIntervalTimer);
+			this->BurstsFired = 0;
+		}
+	}
+
+	if (!bHitResult)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Not A Blocking Hit!"));
+		return;
+	}
+	else
+	{
+		AActor* HitActor = HitResult.GetActor();
+		if (!IsValid(HitActor))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitActor)"));
+			return;
+		}
+
+		AMultiplayerFPSTeamBasedCharacter* HitTeamBasedPlayer = Cast<AMultiplayerFPSTeamBasedCharacter>(HitActor);
+		if (!IsValid(HitTeamBasedPlayer))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitTeamBasedPlayer)"));
+			return;
+		}
+
+		AMultiplayerFPSTeamBasedCharacter* MultiplayerFPSTeamBasedPlayer = Cast<AMultiplayerFPSTeamBasedCharacter>(PlayerActor);
+		if (!IsValid(MultiplayerFPSTeamBasedPlayer))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(MultiplayerFPSTeamBasedPlayer)"));
+			return;
+		}
+
+		if (MultiplayerFPSTeamBasedPlayer->Team != HitTeamBasedPlayer->Team)
+		{
+			FDamageEvent DamageEvent;
+
+			AMultiplayerFPSPlayerController* MultiplayerFPSPlayerController = Cast<AMultiplayerFPSPlayerController>(MultiplayerFPSTeamBasedPlayer->GetController());
+
+			HitTeamBasedPlayer->TakeDamage(this->Damage, DamageEvent, MultiplayerFPSPlayerController, MultiplayerFPSTeamBasedPlayer);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Hit Team Player"));
+			return;
+		}
+	}
+
+	this->CurrentMagazineCapacity = FMath::Clamp(this->CurrentMagazineCapacity - 1, 0, this->MaxMagazineCapacity);
+
+	UE_LOG(LogTemp, Warning, TEXT("Current Magazine Capacity: %d"), this->CurrentMagazineCapacity);
+
+	if (this->CurrentMagazineCapacity == 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Insufficient Ammo!"));
+		GetWorldTimerManager().ClearTimer(this->BurstFiringIntervalTimer);
+		return;
+	}
 }
 
 void AMultiplayerFPSFirearm::StopFiring()
@@ -129,12 +324,12 @@ void AMultiplayerFPSFirearm::Reload()
 		return;
 	}
 
-	FTimerDelegate AllowFiringDelegate;
-	AllowFiringDelegate.BindUFunction(MultiplayerFPSPlayer, "SetIsReloading");
+	MultiplayerFPSPlayer->SetIsReloading(true);
 
-	GetWorldTimerManager().SetTimer(this->AllowFiringTimer, AllowFiringDelegate, this->ReloadTime, false);
-
-	this->CurrentMagazineCapacity = this->MaxMagazineCapacity;
+	GetWorldTimerManager().SetTimer(this->AllowFiringTimer, FTimerDelegate::CreateLambda([&] {
+		MultiplayerFPSPlayer->SetIsReloading(false);
+		this->CurrentMagazineCapacity = this->MaxMagazineCapacity; 
+		}), this->ReloadTime, false);
 }
 
 void AMultiplayerFPSFirearm::Zoom()

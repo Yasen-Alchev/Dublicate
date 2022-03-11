@@ -188,8 +188,8 @@ void AMultiplayerFPSFirearm::Fire_Implementation()
 	FRotator EndRotation = MultiplayerFPSPlayer->GetFirstPersonCameraComponent()->GetComponentRotation();
 	FVector EndLocation = StartLocation + (EndRotation.Vector() * 20000.0f);
 
-	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Bullet Trace")), true, this);
-	TraceParams.AddIgnoredActor(this);
+	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Bullet Trace")), true, MultiplayerFPSPlayer);
+	TraceParams.AddIgnoredActor(MultiplayerFPSPlayer);
 
 	FHitResult HitResult(ForceInit);
 
@@ -200,7 +200,7 @@ void AMultiplayerFPSFirearm::Fire_Implementation()
 		return;
 	}
 
-	bool bHitResult = World->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Visibility, TraceParams, FCollisionResponseParams::DefaultResponseParam);
+	bool bHitResult = World->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Pawn, TraceParams, FCollisionResponseParams::DefaultResponseParam);
 	if (this->bShowDebugTrace)
 	{
 		DrawDebugLine(World, StartLocation, EndLocation, FColor::Red,	 false, 20.0f, ECC_WorldStatic, 0.35f);
@@ -223,9 +223,7 @@ void AMultiplayerFPSFirearm::Fire_Implementation()
 		return;
 	}
 
-	UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire HitResult.GetActor()->GetName() = %s"), *HitResult.GetActor()->GetName());
-	
-	if (!IsValid(HitResult.GetActor()))
+	if (IsValid(HitResult.GetActor()))
 	{
 		AActor* HitActor = HitResult.GetActor();
 		if (!IsValid(HitActor))
@@ -233,25 +231,21 @@ void AMultiplayerFPSFirearm::Fire_Implementation()
 			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitActor)"));
 		}
 
-		AMultiplayerFPSTeamBasedCharacter* HitTeamBasedPlayer = Cast<AMultiplayerFPSTeamBasedCharacter>(HitActor);
-		if (!IsValid(HitTeamBasedPlayer))
+		AMultiplayerFPSCharacter* HitPlayer = Cast<AMultiplayerFPSCharacter>(HitActor);
+		if (!IsValid(HitPlayer))
 		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitTeamBasedPlayer)"));
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitPlayer)"));
 		}
 
-		AMultiplayerFPSTeamBasedCharacter* MultiplayerFPSTeamBasedPlayer = Cast<AMultiplayerFPSTeamBasedCharacter>(PlayerActor);
-		if (!IsValid(MultiplayerFPSTeamBasedPlayer))
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(MultiplayerFPSTeamBasedPlayer)"));
-		}
-
-		if (MultiplayerFPSTeamBasedPlayer->Team != HitTeamBasedPlayer->Team)
+		if (IsValid(HitPlayer))
 		{
 			FDamageEvent DamageEvent;
 
-			AMultiplayerFPSPlayerController* MultiplayerFPSPlayerController = Cast<AMultiplayerFPSPlayerController>(MultiplayerFPSTeamBasedPlayer->GetController());
+			AMultiplayerFPSPlayerController* MultiplayerFPSPlayerController = Cast<AMultiplayerFPSPlayerController>(MultiplayerFPSPlayer->GetController());
 
-			HitTeamBasedPlayer->TakeDamage(this->Damage, DamageEvent, MultiplayerFPSPlayerController, MultiplayerFPSTeamBasedPlayer);
+			UE_LOG(LogTemp, Warning, TEXT("Enemy Hit"));
+
+			HitPlayer->TakeDamage(this->Damage, DamageEvent, MultiplayerFPSPlayerController, MultiplayerFPSPlayer);
 		}
 		else
 		{
@@ -366,6 +360,8 @@ void AMultiplayerFPSFirearm::Zoom()
 		return;
 	}
 
+	MultiplayerFPSPlayer->HideFPMeshes();
+
 	MultiplayerFPSPlayer->SetFOV(this->ZoomFOV);
 }
 
@@ -386,6 +382,8 @@ void AMultiplayerFPSFirearm::ZoomOut()
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::ZoomOut !IsValid(MultiplayerFPSPlayer)"));
 		return;
 	}
+
+	MultiplayerFPSPlayer->ShowFPMeshes();
 
 	MultiplayerFPSPlayer->SetFOV(90.0f);
 }

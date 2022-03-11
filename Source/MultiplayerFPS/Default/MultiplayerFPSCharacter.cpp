@@ -17,11 +17,8 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 {
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-	BaseTurnRate = 45.f;
-	BaseLookUpRate = 45.f;
-
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -29,6 +26,8 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
+
+	GetMesh()->SetOwnerNoSee(true);
 
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
@@ -143,9 +142,7 @@ void AMultiplayerFPSCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMultiplayerFPSCharacter::MoveRight);
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("TurnRate", this, &AMultiplayerFPSCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &AMultiplayerFPSCharacter::LookUpAtRate);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMultiplayerFPSCharacter::StartFiring);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AMultiplayerFPSCharacter::StopFiring);
@@ -372,6 +369,24 @@ void AMultiplayerFPSCharacter::ZoomOut()
 void AMultiplayerFPSCharacter::SetFOV(float FOV)
 {
 	FirstPersonCameraComponent->SetFieldOfView(FOV);
+}
+
+void AMultiplayerFPSCharacter::HideFPMeshes()
+{
+	this->FirstPersonMesh->SetVisibility(false, false);
+	for (int32 i = 0; i < this->FirearmArray.Num(); ++i)
+	{
+		this->FirearmArray[i]->GunMesh->SetVisibility(false, false);
+	}
+}
+
+void AMultiplayerFPSCharacter::ShowFPMeshes()
+{
+	this->FirstPersonMesh->SetVisibility(true, false);
+	for (int32 i = 0; i < this->FirearmArray.Num(); ++i)
+	{
+		this->FirearmArray[i]->GunMesh->SetVisibility(true, false);
+	}
 }
 
 void AMultiplayerFPSCharacter::SetIsReloading()

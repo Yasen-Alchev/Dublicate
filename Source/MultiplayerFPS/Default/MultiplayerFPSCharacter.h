@@ -108,6 +108,27 @@ public:
 	FString PlayerName;
 
 	UFUNCTION()
+	virtual void StartFiring();
+
+	UFUNCTION()
+	virtual void StopFiring();
+
+	UFUNCTION()
+	virtual void SwitchWeapon();
+
+	UFUNCTION()
+	virtual void SwitchFireMode();
+
+	UFUNCTION()
+		virtual void Reload();
+
+	UFUNCTION()
+		virtual void Zoom();
+
+	UFUNCTION()
+		virtual void ZoomOut();
+
+	UFUNCTION()
 	void SetFOV(float FOV);
 
 	UFUNCTION()

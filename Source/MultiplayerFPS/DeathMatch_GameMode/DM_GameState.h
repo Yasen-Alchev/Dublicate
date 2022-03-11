@@ -15,6 +15,12 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MaxFlagsToCapture", meta = (ClampMin = "1", UIMin = "1", UIMax = "10"))
+		int MaxFlagsToCapture;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Respawn", meta = (ClampMin = "0", ClampMax = "30"))
+		int PlayerRespawnTime;
+
 	UFUNCTION()
 		void UpdateLeaders();
 
@@ -26,6 +32,15 @@ public:
 
 	UFUNCTION()
 		void GameEnded();
+
+	UFUNCTION()
+		virtual void RespawnPlayers(bool instant = false);
+
+	UFUNCTION()
+		virtual void KillPlayers();
+
+	UFUNCTION()
+		virtual void DisablePlayersControls(bool bDisable);
 
 private:
 	UPROPERTY()

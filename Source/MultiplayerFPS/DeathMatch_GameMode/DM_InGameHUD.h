@@ -38,10 +38,13 @@ public:
 		void ResetObjectiveStats();
 
 	UFUNCTION()
-		void SetOptionsMenuVisibility(bool Visibility);
+		void SetOptionMenuVisibility(bool Visibility);
 
 	UFUNCTION()
-		void ToggleStatsVisibility();
+		void ToggleLeaderBoardVisibility();
+
+	UFUNCTION()
+		virtual void UpdateLeaderBoardStats();
 
 	UFUNCTION()
 		void GameEnded(const FString& WinnerName);

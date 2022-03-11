@@ -2,9 +2,15 @@
 
 #include "DM_PlayerController.h"
 #include "DM_PlayerState.h"
+#include "MultiplayerFPS/Default/MultiplayerFPSGameState.h"
 
 ADM_GameState::ADM_GameState()
 {
+	bReplicates = true;
+	PrimaryActorTick.bCanEverTick = true;
+
+	MaxFlagsToCapture = 2;
+	PlayerRespawnTime = 5;
 }
 
 void ADM_GameState::BeginPlay()
@@ -138,3 +144,86 @@ void ADM_GameState::GameEnded()
 		UE_LOG(LogTemp, Error, TEXT("ADM_GameState::GameEnded() -> WinnerController is not Valid !!!"));
 	}
 }
+
+void ADM_GameState::RespawnPlayers(bool instant)
+{
+	for (APlayerState* CurrentPlayerState : PlayerArray)
+	{
+		ADM_PlayerState* PlayerState = Cast<ADM_PlayerState>(CurrentPlayerState);
+		if (IsValid(PlayerState))
+		{
+			ADM_PlayerController* PlayerController = Cast<ADM_PlayerController>(PlayerState->GetOwner());
+			if (IsValid(PlayerController))
+			{
+				PlayerController->RespawnPlayer(instant);;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("ADM_GameState::RespawnPlayers() -> PlayerController is not Valid !!!"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("ADM_GameState::RespawnPlayers() -> PlayerState is not Valid !!!"));
+		}
+	}
+}
+
+void ADM_GameState::KillPlayers()
+{
+	for (APlayerState* CurrentPlayerState : PlayerArray)
+	{
+		ADM_PlayerState* PlayerState = Cast<ADM_PlayerState>(CurrentPlayerState);
+		if (IsValid(PlayerState))
+		{
+			ADM_PlayerController* PlayerController = Cast<ADM_PlayerController>(PlayerState->GetOwner());
+			if (IsValid(PlayerController))
+			{
+				PlayerController->KillPlayer();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("ADM_GameState::KillPlayers() -> PlayerController is not Valid !!!"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("ADM_GameState::KillPlayers() -> PlayerState is not Valid !!!"));
+		}
+	}
+}
+
+void ADM_GameState::DisablePlayersControls(bool bDisable)
+{
+	for (APlayerState* CurrentPlayerState : PlayerArray)
+	{
+		ADM_PlayerState* PlayerState = Cast<ADM_PlayerState>(CurrentPlayerState);
+		if (IsValid(PlayerState))
+		{
+			ADM_PlayerController* PlayerController = Cast<ADM_PlayerController>(PlayerState->GetOwner());
+			if (IsValid(PlayerController))
+			{
+				PlayerController->DisableControls(bDisable);
+				if (bDisable)
+				{
+					PlayerController->SetInputMode(FInputModeUIOnly());
+				}
+				else
+				{
+					PlayerController->SetInputMode(FInputModeGameOnly());
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("ADM_GameState::DisablePlayersControls(bool bDisable) -> PlayerController is not Valid !!!"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("ADM_GameState::DisablePlayersControls(bool bDisable) -> PlayerState is not Valid !!!"));
+		}
+	}
+}
+
+
+

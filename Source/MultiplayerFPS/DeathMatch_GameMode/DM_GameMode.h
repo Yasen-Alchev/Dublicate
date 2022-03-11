@@ -16,6 +16,9 @@ public:
         void ChangeMenuWidget(TSubclassOf<UUserWidget> NewWidgetClass);
 
 protected:
+
+    virtual void Tick(float DeltaSeconds) override;
+
     virtual void BeginPlay() override;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UMG Game")
@@ -24,17 +27,29 @@ protected:
     UPROPERTY()
         UUserWidget* CurrentWidget;
 
-private:
+
+    UFUNCTION()
+        virtual void StartingGame();
 
     virtual void PostLogin(APlayerController* NewPlayer) override;
 
     virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 
 public:
+    UPROPERTY()
+        bool bStarted;
 
-    FTimerHandle GameTimer;
+    UPROPERTY()
+        int redPlayers;
 
-    void UpdateGlobalGameTimer();
+    UPROPERTY()
+        int bluePlayers;
+
+    UPROPERTY()
+        FTimerHandle GameTimer;
+
+    UPROPERTY()
+        FTimerHandle StartingTimer;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameTimer", meta = (ClampMin = "0", ClampMax = "59", UIMin = "0", UIMax = "59"))
         int minutes;
@@ -42,7 +57,16 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameTimer", meta = (ClampMin = "0", ClampMax = "59", UIMin = "0", UIMax = "59"))
         int seconds;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Players")
+        int minPlayersToStart;
+
     UFUNCTION()
-        void UpdateObjectiveStats();
+        virtual void UpdateGlobalGameTimer(int& min, int& sec);
+
+    UFUNCTION()
+        virtual void UpdateObjectiveStats();
+
+    UFUNCTION()
+        virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 
 };

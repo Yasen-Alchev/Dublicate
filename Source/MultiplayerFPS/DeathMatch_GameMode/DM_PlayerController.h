@@ -26,6 +26,26 @@ public:
 	UFUNCTION(Client, Reliable)
 		void ClientRPCUpdateGameTime(int minutes, int seconds);
 
-private:
-	FTimerHandle AntiBlurHandle;
+	UFUNCTION(Server, Reliable)
+		virtual void ServerSpawnPlayer();
+
+	UFUNCTION(Server, Reliable)
+		virtual void ServerRespawnPlayer();
+
+	UFUNCTION()
+		virtual void RespawnPlayer(bool instant = false);
+
+	UFUNCTION(Client, Reliable)
+		virtual void DisableControls(bool disable);
+
+	UFUNCTION()
+		virtual void KillPlayer();
+
+protected:
+
+	UPROPERTY()
+		FTimerHandle AntiBlurHandle;
+
+	UPROPERTY()
+		FTimerHandle RespawnHandle;
 };

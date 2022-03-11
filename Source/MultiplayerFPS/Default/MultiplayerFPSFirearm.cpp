@@ -211,27 +211,24 @@ void AMultiplayerFPSFirearm::Fire()
 		UE_LOG(LogTemp, Error, TEXT("Not A Blocking Hit!"));
 		return;
 	}
-	else
+	if (!IsValid(HitResult.GetActor()))
 	{
 		AActor* HitActor = HitResult.GetActor();
 		if (!IsValid(HitActor))
 		{
 			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitActor)"));
-			return;
 		}
 
 		AMultiplayerFPSTeamBasedCharacter* HitTeamBasedPlayer = Cast<AMultiplayerFPSTeamBasedCharacter>(HitActor);
 		if (!IsValid(HitTeamBasedPlayer))
 		{
 			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitTeamBasedPlayer)"));
-			return;
 		}
 
 		AMultiplayerFPSTeamBasedCharacter* MultiplayerFPSTeamBasedPlayer = Cast<AMultiplayerFPSTeamBasedCharacter>(PlayerActor);
 		if (!IsValid(MultiplayerFPSTeamBasedPlayer))
 		{
 			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(MultiplayerFPSTeamBasedPlayer)"));
-			return;
 		}
 
 		if (MultiplayerFPSTeamBasedPlayer->Team != HitTeamBasedPlayer->Team)
@@ -245,7 +242,6 @@ void AMultiplayerFPSFirearm::Fire()
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Hit Team Player"));
-			return;
 		}
 	}
 
@@ -324,12 +320,14 @@ void AMultiplayerFPSFirearm::Reload()
 		return;
 	}
 
-	MultiplayerFPSPlayer->SetIsReloading(true);
+	FTimerDelegate AllowFiringDelegate;
+	AllowFiringDelegate.BindUFunction(MultiplayerFPSPlayer, "SetIsReloading");
 
-	GetWorldTimerManager().SetTimer(this->AllowFiringTimer, FTimerDelegate::CreateLambda([&] {
-		MultiplayerFPSPlayer->SetIsReloading(false);
-		this->CurrentMagazineCapacity = this->MaxMagazineCapacity; 
-		}), this->ReloadTime, false);
+	MultiplayerFPSPlayer->SetIsReloading();
+
+	GetWorldTimerManager().SetTimer(this->AllowFiringTimer, AllowFiringDelegate, this->ReloadTime, false);
+
+	this->CurrentMagazineCapacity = this->MaxMagazineCapacity;
 }
 
 void AMultiplayerFPSFirearm::Zoom()

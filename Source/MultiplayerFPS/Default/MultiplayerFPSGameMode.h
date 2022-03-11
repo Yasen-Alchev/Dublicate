@@ -73,8 +73,5 @@ public:
 
     UFUNCTION()
         virtual TEnumAsByte<ETeams> assignTeam();
-
 };
-
-
 

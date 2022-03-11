@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MultiplayerFPSPlayerState.h"
 
 #include "MultiplayerFPSInGameHUD.h"
@@ -24,10 +21,10 @@ void AMultiplayerFPSPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProp
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AMultiplayerFPSPlayerState, team); 
-	DOREPLIFETIME(AMultiplayerFPSPlayerState, Kills); 
-	DOREPLIFETIME(AMultiplayerFPSPlayerState, Deaths); 
-	DOREPLIFETIME(AMultiplayerFPSPlayerState, PlayerScore); 
+	DOREPLIFETIME(AMultiplayerFPSPlayerState, team);
+	DOREPLIFETIME(AMultiplayerFPSPlayerState, Kills);
+	DOREPLIFETIME(AMultiplayerFPSPlayerState, Deaths);
+	DOREPLIFETIME(AMultiplayerFPSPlayerState, PlayerScore);
 	DOREPLIFETIME(AMultiplayerFPSPlayerState, FlagsCaptured);
 }
 
@@ -36,12 +33,15 @@ void AMultiplayerFPSPlayerState::FlagWasCaptured()
 	++FlagsCaptured;
 	PlayerScore += 10;
 	AMultiplayerFPSPlayerController* Controller = Cast<AMultiplayerFPSPlayerController>(GetPawn()->GetController());
-	if(IsValid(Controller))
+	if (IsValid(Controller))
 	{
-		AMultiplayerFPSInGameHUD* PlayerHud =  Cast<AMultiplayerFPSInGameHUD>(Controller->GetHUD());
+		AMultiplayerFPSInGameHUD* PlayerHud = Cast<AMultiplayerFPSInGameHUD>(Controller->GetHUD());
 		if (IsValid(PlayerHud))
 		{
 			PlayerHud->UpdateLeaderBoardStats();
+
+			// TODO: REM
+			PlayerHud->ToggleLeaderBoardVisibility();
 		}
 		else
 		{

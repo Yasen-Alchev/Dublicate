@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,9 +5,6 @@
 #include "Blueprint/UserWidget.h"
 #include "DM_EndGameScreenWidget.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class MULTIPLAYERFPS_API UDM_EndGameScreenWidget : public UUserWidget
 {

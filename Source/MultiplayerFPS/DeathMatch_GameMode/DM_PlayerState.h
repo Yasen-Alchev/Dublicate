@@ -1,14 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
 #include "DM_PlayerState.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class MULTIPLAYERFPS_API ADM_PlayerState : public APlayerState
 {

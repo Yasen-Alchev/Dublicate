@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Flag.h"
 
 #include "Kismet/GameplayStatics.h"
@@ -9,10 +6,8 @@
 #include "MultiplayerFPS/CTF_GameMode/CTF_GameMode.h"
 #include "MultiplayerFPS/CTF_GameMode/CTF_GameState.h"
 
-// Sets default values
 AFlag::AFlag()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
@@ -23,7 +18,6 @@ AFlag::AFlag()
 	RespawnTime = 3;
 }
 
-// Called when the game starts or when spawned
 void AFlag::BeginPlay()
 {
 	Super::BeginPlay();
@@ -48,7 +42,6 @@ void AFlag::BeginPlay()
 	}
 }
 
-// Called every frame
 void AFlag::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -66,12 +59,6 @@ void AFlag::OnBeginOverlap(class UPrimitiveComponent* HitComp,
 	ACTF_Character* Player = Cast<ACTF_Character>(OtherActor);
 	if (IsValid(Player))
 	{
-
-		// TODO: The function is called 2 times when it need 1 when overlapping!!! //
-//static int a = 0;
-//GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green, FString::Printf(TEXT("Flag hitted! %d"), ++a ));
-//GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green, FString::Printf(TEXT("Actor: %s"), *Player->GetName()));
-
 		TEnumAsByte<ETeams> PlayerTeam = Player->Team;
 		if (PlayerTeam != TEAM_NONE)
 		{
@@ -161,7 +148,6 @@ void AFlag::ServerRPCFlagOverlappedLogic_Implementation(AActor* OtherActor)
 									if (FlagTeam == TEAM_RED) GameMode->setRedFlagTransform(FlagTransform);
 									if (FlagTeam == TEAM_BLUE) GameMode->setBlueFlagTransform(FlagTransform);
 								}
-								GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green, FString::Printf(TEXT("Player: %s has gotten the flag!"), *Player->GetName()));
 								Player->bHasFlag = true;
 								Destroy(true);
 							}

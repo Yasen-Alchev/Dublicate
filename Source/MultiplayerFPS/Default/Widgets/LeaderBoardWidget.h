@@ -5,19 +5,19 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/VerticalBox.h"
-#include "MultiplayerFPSLeaderBoardWidget.generated.h"
+#include "LeaderBoardWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MULTIPLAYERFPS_API UMultiplayerFPSLeaderBoardWidget : public UUserWidget
+class MULTIPLAYERFPS_API ULeaderBoardWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
 
-	UMultiplayerFPSLeaderBoardWidget(const FObjectInitializer& ObjectInitializer);
+	ULeaderBoardWidget(const FObjectInitializer& ObjectInitializer);
 
 	virtual void NativeConstruct() override;
 
@@ -28,7 +28,7 @@ public:
 		class UVerticalBox* VerticalBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TSubclassOf<class UMultiplayerFPSLeaderBoardUnitWidget> LeaderBoardUnitRef;
+		TSubclassOf<class ULeaderBoardUnitWidget> LeaderBoardUnitRef;
 
 private:
 	void InitLeaderBoardColumns();

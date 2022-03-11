@@ -5,19 +5,19 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Runtime/UMG/Public/UMG.h"
-#include "MultiplayerFPSLeaderBoardUnitWidget.generated.h"
+#include "LeaderBoardUnitWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MULTIPLAYERFPS_API UMultiplayerFPSLeaderBoardUnitWidget : public UUserWidget
+class MULTIPLAYERFPS_API ULeaderBoardUnitWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
 
-	UMultiplayerFPSLeaderBoardUnitWidget(const FObjectInitializer& ObjectInitializer);
+	ULeaderBoardUnitWidget(const FObjectInitializer& ObjectInitializer);
 
 	virtual void NativeConstruct() override;
 

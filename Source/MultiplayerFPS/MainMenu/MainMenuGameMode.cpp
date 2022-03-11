@@ -1,14 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MainMenuGameMode.h"
 #include "MainMenuHUD.h"
 #include "MainMenuPlayerController.h"
+#include "MultiplayerFPS/Default/MultiplayerFPSGameInstance.h"
 
 
 AMainMenuGameMode::AMainMenuGameMode()
 {
-    // set default pawn class to our Blueprinted character
     static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPersonCPP/Blueprints/ThirdPersonCharacter"));
     if (PlayerPawnBPClass.Class != NULL)
     {

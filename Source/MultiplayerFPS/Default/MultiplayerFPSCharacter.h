@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -17,44 +15,28 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
 
-	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
 protected:
 
-	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class USpringArmComponent* CameraBoom;
 
-	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UCameraComponent* FollowCamera;
 
-	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	// End of APawn interface
 
-	/** Called for forwards/backward input */
 	virtual void MoveForward(float Value);
 
-	/** Called for side to side input */
 	virtual void MoveRight(float Value);
 
-	/** 
-	 * Called via input to turn at a given rate. 
-	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
-	 */
 	virtual void TurnAtRate(float Rate);
 
-	/**
-	 * Called via input to turn look up/down at a given rate. 
-	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
-	 */
 	virtual void LookUpAtRate(float Rate);
 
 	UFUNCTION(BlueprintCallable)
@@ -76,12 +58,9 @@ public:
 
 	virtual void BeginPlay() override;
 
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	/** Returns CameraBoom subobject **/
 	FORCEINLINE virtual  class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	/** Returns FollowCamera subobject **/
 	FORCEINLINE virtual class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
@@ -97,12 +76,12 @@ public:
 		virtual TEnumAsByte<ETeams> getTeam() { return Team; }
 
 	UFUNCTION()
-		virtual void ToggleOptionMenu();
+		virtual void ToggleOptionsMenu();
 
 	UFUNCTION()
 		virtual void InitTeam();
 
-	UPROPERTY(Replicated)
+	UPROPERTY()
 		FString PlayerName;
 };
 

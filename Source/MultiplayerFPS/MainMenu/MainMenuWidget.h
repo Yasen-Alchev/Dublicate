@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -8,9 +6,6 @@
 #include "Runtime/UMG/Public/UMG.h"
 #include "MainMenuWidget.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class MULTIPLAYERFPS_API UMainMenuWidget : public UUserWidget
 {

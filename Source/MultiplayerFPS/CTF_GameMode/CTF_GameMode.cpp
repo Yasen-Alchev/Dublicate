@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "CTF_GameMode.h"
 
 ACTF_GameMode::ACTF_GameMode() {}

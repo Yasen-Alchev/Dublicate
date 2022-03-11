@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,15 +5,14 @@
 #include "GameFramework/PlayerController.h"
 #include "MultiplayerFPSPlayerController.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class MULTIPLAYERFPS_API AMultiplayerFPSPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
 public:
+
+	AMultiplayerFPSPlayerController();
 
 	virtual void BeginPlay() override;
 
@@ -47,7 +44,7 @@ public:
 		virtual void KillPlayer();
 
 	UPROPERTY()
-		TEnumAsByte<ETeams> Team;
+	TEnumAsByte<ETeams> Team;
 
 protected:
 

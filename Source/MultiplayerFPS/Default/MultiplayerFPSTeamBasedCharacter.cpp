@@ -1,19 +1,13 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "MultiplayerFPSTeamBasedCharacter.h"
 
+#include "MultiplayerFPSGameInstance.h"
 #include "MultiplayerFPSPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Net/UnrealNetwork.h"
 
-
-//////////////////////////////////////////////////////////////////////////
-// AMultiplayerFPSTeamBasedCharacter
 
 AMultiplayerFPSTeamBasedCharacter::AMultiplayerFPSTeamBasedCharacter()
 {
 	myMaterial = nullptr;
-	objectiveScore = 0;
 }
 
 void AMultiplayerFPSTeamBasedCharacter::BeginPlay()
@@ -28,12 +22,6 @@ void AMultiplayerFPSTeamBasedCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AMultiplayerFPSTeamBasedCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(AMultiplayerFPSTeamBasedCharacter, objectiveScore);
-}
 
 void AMultiplayerFPSTeamBasedCharacter::InitTeam()
 {
@@ -65,7 +53,7 @@ void AMultiplayerFPSTeamBasedCharacter::MaterialChange()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSTeamBasedCharacter::MaterialChange() -> Team is not Valid!!!"), *PlayerName);
+		UE_LOG(LogTemp, Warning, TEXT("%s AMultiplayerFPSTeamBasedCharacter::MaterialChange() -> Team is TEAM_NONE"), *PlayerName);
 	}
 }
 

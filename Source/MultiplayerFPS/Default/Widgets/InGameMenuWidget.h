@@ -5,19 +5,19 @@
 #include "CoreMinimal.h"
 #include "Components/Button.h"
 #include "Blueprint/UserWidget.h"
-#include "MultiplayerFPSInGameMenuWidget.generated.h"
+#include "InGameMenuWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MULTIPLAYERFPS_API UMultiplayerFPSInGameMenuWidget : public UUserWidget
+class MULTIPLAYERFPS_API UInGameMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
 
-	UMultiplayerFPSInGameMenuWidget(const FObjectInitializer& ObjectInitializer);
+	UInGameMenuWidget(const FObjectInitializer& ObjectInitializer);
 
 	virtual void NativeConstruct() override;
 

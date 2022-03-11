@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "DM_EndGameScreenWidget.h"
 #include "Runtime/UMG/Public/UMG.h"
 #include "Math/Color.h"
@@ -61,10 +58,7 @@ void UDM_EndGameScreenWidget::SetWinner(const FString& WinnerName)
 
 FReply UDM_EndGameScreenWidget::NativeOnKeyDown(const FGeometry& MovieSceneBlends, const FKeyEvent& InKeyEvent)
 {
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FString::Printf(TEXT("CALLLED YAYA")));
 	return Super::NativeOnKeyDown(MovieSceneBlends, InKeyEvent);
-
 }
 
 

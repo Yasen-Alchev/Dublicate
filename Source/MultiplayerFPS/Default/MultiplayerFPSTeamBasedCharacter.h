@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -17,10 +15,7 @@ public:
 
 	virtual void BeginPlay() override;
 
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skins")
 		UMaterialInterface* TeamRedSkin;
@@ -32,9 +27,6 @@ public:
 		UMaterialInterface* myMaterial;
 
 	virtual void InitTeam() override;
-
-	UPROPERTY(Replicated)
-		int objectiveScore;
 
 protected:
 

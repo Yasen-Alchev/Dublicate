@@ -4,19 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "MultiplayerFPSGameTimeWidget.generated.h"
+#include "GameTimeWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MULTIPLAYERFPS_API UMultiplayerFPSGameTimeWidget : public UUserWidget
+class MULTIPLAYERFPS_API UGameTimeWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
 
-	UMultiplayerFPSGameTimeWidget(const FObjectInitializer& ObjectInitializer);
+	UGameTimeWidget(const FObjectInitializer& ObjectInitializer);
 
 	virtual void NativeConstruct() override;
 

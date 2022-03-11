@@ -30,19 +30,18 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	GetCharacterMovement()->AirControl = 0.2f;
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.0f;
-	CameraBoom->bUsePawnControlRotation = true;
-
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	FollowCamera->bUsePawnControlRotation = false;
-
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
+
+	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh"));
+	FirstPersonMesh->SetOnlyOwnerSee(true);
+	FirstPersonMesh->SetupAttachment(FirstPersonCameraComponent);
+	FirstPersonMesh->bCastDynamicShadow = false;
+	FirstPersonMesh->CastShadow = false;
+	FirstPersonMesh->SetRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
+	FirstPersonMesh->SetRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
 
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
@@ -53,7 +52,6 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	Team = TEAM_NONE;
 
 	HealthSystem = CreateDefaultSubobject<UMultiplayerFPSHealthSystem>(TEXT("HealthSystem"));
-
 
 	this->WeaponInHand = 0;
 
@@ -141,7 +139,6 @@ void AMultiplayerFPSCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("ShowStats", IE_Released, this, &AMultiplayerFPSCharacter::ToggleLeaderBoardVisibility);
 	PlayerInputComponent->BindAction("ShowOptions", IE_Pressed, this, &AMultiplayerFPSCharacter::ToggleOptionsMenu);
 
-
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMultiplayerFPSCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMultiplayerFPSCharacter::MoveRight);
 
@@ -152,12 +149,11 @@ void AMultiplayerFPSCharacter::SetupPlayerInputComponent(class UInputComponent* 
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMultiplayerFPSCharacter::StartFiring);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AMultiplayerFPSCharacter::StopFiring);
-	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &AMultiplayerFPSCharacter::SwitchWeapon);
+	PlayerInputComponent->BindAction("SwitchFirearm", IE_Pressed, this, &AMultiplayerFPSCharacter::SwitchWeapon);
 	PlayerInputComponent->BindAction("SwitchFireMode", IE_Pressed, this, &AMultiplayerFPSCharacter::SwitchFireMode);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMultiplayerFPSCharacter::Reload);
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &AMultiplayerFPSCharacter::Zoom);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &AMultiplayerFPSCharacter::ZoomOut);
-
 }
 
 void AMultiplayerFPSCharacter::TurnAtRate(float Rate)
@@ -378,17 +374,17 @@ void AMultiplayerFPSCharacter::SetFOV(float FOV)
 	FirstPersonCameraComponent->SetFieldOfView(FOV);
 }
 
-void AMultiplayerFPSCharacter::SetIsReloading(bool bIsPlayerReloading)
+void AMultiplayerFPSCharacter::SetIsReloading()
 {
-	this->bIsReloading = bIsPlayerReloading;
+	this->bIsReloading = !this->bIsReloading;
 	if (this->bIsReloading)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Started Reloading!"));
-		this->CanFireFirearmArray[this->WeaponInHand] = bIsPlayerReloading;
+		this->CanFireFirearmArray[this->WeaponInHand] = false;
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Firearm Reloaded!"));
-		this->CanFireFirearmArray[this->WeaponInHand] = bIsPlayerReloading;
+		this->CanFireFirearmArray[this->WeaponInHand] = true;
 	}
 }

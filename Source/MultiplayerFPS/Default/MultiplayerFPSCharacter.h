@@ -47,15 +47,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FirstPersonCameraComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* FollowCamera;
-
-
 	UPROPERTY(EditAnywhere)
-		TArray<TSubclassOf<class AMultiplayerFPSFirearm>> FirearmClassArray;
+	TArray<TSubclassOf<class AMultiplayerFPSFirearm>> FirearmClassArray;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -127,18 +120,18 @@ public:
 	virtual void SwitchFireMode();
 
 	UFUNCTION()
-		virtual void Reload();
+	virtual void Reload();
 
 	UFUNCTION()
-		virtual void Zoom();
+	virtual void Zoom();
 
 	UFUNCTION()
-		virtual void ZoomOut();
+	virtual void ZoomOut();
 
 	UFUNCTION()
 	void SetFOV(float FOV);
 
 	UFUNCTION()
-	void SetIsReloading(bool bIsPlayerReloading);
+	void SetIsReloading();
 };
 

@@ -2,6 +2,7 @@
 #include "MultiplayerFPSGameInstance.h"
 #include "MultiplayerFPSPlayerController.h"
 #include "MultiplayerFPSInGameHUD.h"
+#include "MultiplayerFPSFirearm.h"
 #include "MultiplayerFPSPlayerState.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -52,6 +53,13 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	Team = TEAM_NONE;
 
 	HealthSystem = CreateDefaultSubobject<UMultiplayerFPSHealthSystem>(TEXT("HealthSystem"));
+
+
+	this->WeaponInHand = 0;
+
+	this->bIsReloading = false;
+
+	this->bIsZoomedIn = false;
 }
 
 void AMultiplayerFPSCharacter::BeginPlay()
@@ -67,6 +75,41 @@ void AMultiplayerFPSCharacter::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay() -> GameInstanceVar is not Valid !!!"));
 	}
+
+	FActorSpawnParameters ActorSpawnParameters;
+	ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	ActorSpawnParameters.Owner = this;
+	const FVector WeaponLocationVector = FVector(0.0f, 0.0f, 0.0f);
+	const FRotator WeaponRotationRotator = FRotator(0.0f, 0.0f, 0.0f);
+
+	for (int32 i = 0; i < FirearmClassArray.Num(); ++i)
+	{
+		AActor* FirearmActor = GetWorld()->SpawnActor(FirearmClassArray[i], &WeaponLocationVector, &WeaponRotationRotator, ActorSpawnParameters);
+		if (!IsValid(FirearmActor))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AFPSPlayerCharacter::BeginPlay !IsValid(FirearmActor)"));
+			return;
+		}
+
+		AMultiplayerFPSFirearm* Firearm = Cast<AMultiplayerFPSFirearm>(FirearmActor);
+		if (!IsValid(Firearm))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AFPSPlayerCharacter::BeginPlay !IsValid(Firearm)"));
+			return;
+		}
+
+		FirearmArray.Add(Firearm);
+		if (!IsValid(FirearmArray[i]))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AFPSPlayerCharacter::BeginPlay !IsValid(FirearmArray[i])"));
+			return;
+		}
+	}
+
+	FirearmArray[0]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	FirearmArray[1]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
+
+	CanFireFirearmArray.Init(true, FirearmArray.Num());
 }
 
 void AMultiplayerFPSCharacter::Tick(float DeltaTime)
@@ -264,70 +307,70 @@ void AMultiplayerFPSCharacter::StartFiring()
 {
 	if (this->CanFireFirearmArray[this->WeaponInHand])
 	{
-		//this->FirearmArray[(this->WeaponInHand)]->StartFiring();
+		this->FirearmArray[(this->WeaponInHand)]->StartFiring();
 	}
 }
 
 void AMultiplayerFPSCharacter::StopFiring()
 {
-	//this->FirearmArray[(this->WeaponInHand - 1)]->StopFiring();
+	this->FirearmArray[(this->WeaponInHand)]->StopFiring();
 }
 
 void AMultiplayerFPSCharacter::SwitchWeapon()
 {
-	//if (this->WeaponInHand == 1)
-	//{
-	//	this->WeaponInHand = 2;
+	if (this->WeaponInHand == 0)
+	{
+	this->WeaponInHand = 1;
 
-	//	FirearmArray[0]->GetGunMesh()->AttachToComponent(FPMMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
-	//	FirearmArray[1]->GetGunMesh()->AttachToComponent(FPMMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
-	//}
-	//else
-	//{
-	//	this->WeaponInHand = 1;
+		FirearmArray[0]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
+		FirearmArray[1]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	}
+	else
+	{
+		this->WeaponInHand = 0;
 
-	//	FirearmArray[0]->GetGunMesh()->AttachToComponent(FPMMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
-	//	FirearmArray[1]->GetGunMesh()->AttachToComponent(FPMMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
-	//}
+		FirearmArray[0]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+		FirearmArray[1]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
+	}
 }
 
 void AMultiplayerFPSCharacter::SwitchFireMode()
 {
-	//if (!this->bIsReloading)
-	//{
-	//	this->FirearmArray[(this->WeaponInHand - 1)]->SwitchFireMode();
-	//}
+	if (!this->bIsReloading)
+	{
+		this->FirearmArray[(this->WeaponInHand)]->SwitchFireMode();
+	}
 }
 
 void AMultiplayerFPSCharacter::Reload()
 {
-	//if (!bIsReloading && FirearmArray[this->WeaponInHand - 1]->ShouldReloadFirearm())
-	//{
-	//	this->FirearmArray[(this->WeaponInHand - 1)]->Reload();
-	//	if (bIsZoomedIn)
-	//	{
-	//		UE_LOG(LogTemp, Warning, TEXT("Reloading -> Zoomed Out!"))
-	//			AFPSPlayerCharacter::ZoomOut();
-	//	}
-	//}
+	if (!bIsReloading && FirearmArray[this->WeaponInHand]->ShouldReloadFirearm())
+	{
+		this->FirearmArray[(this->WeaponInHand)]->Reload();
+		if (bIsZoomedIn)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Reloading -> Zoomed Out!"))
+			AMultiplayerFPSCharacter::ZoomOut();
+		}
+	}
 }
 
 void AMultiplayerFPSCharacter::Zoom()
 {
-	//if (this->CanFireFirearmArray[this->WeaponInHand - 1])
-	//{
-	//	this->bIsZoomedIn = true;
-	//	this->FirearmArray[(this->WeaponInHand - 1)]->Zoom();
-	//}
+	if (this->CanFireFirearmArray[this->WeaponInHand])
+	{
+		this->bIsZoomedIn = true;
+		this->FirearmArray[(this->WeaponInHand)]->Zoom();
+	}
 }
 
 void AMultiplayerFPSCharacter::ZoomOut()
 {
-	//if (this->bIsZoomedIn)
-	//{
-	//	this->FirearmArray[(this->WeaponInHand - 1)]->ZoomOut();
-	//	this->bIsZoomedIn = false;
-	//}
+	if (this->bIsZoomedIn)
+	{
+		this->FirearmArray[(this->WeaponInHand)]->ZoomOut();
+		this->bIsZoomedIn = false;
+	}
 }
 
 void AMultiplayerFPSCharacter::SetFOV(float FOV)

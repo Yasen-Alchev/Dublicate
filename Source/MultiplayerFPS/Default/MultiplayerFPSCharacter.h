@@ -27,17 +27,22 @@ public:
 	UMultiplayerFPSHealthSystem* HealthSystem;
 
 	UPROPERTY()
+	TArray<bool> CanFireFirearmArray;
+
+	UPROPERTY()
 	bool bIsReloading;
 
 	UPROPERTY()
 	bool bIsZoomedIn;
 
+	UPROPERTY()
+	int32 WeaponInHand;
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-		UCameraComponent* FirstPersonCameraComponent;
+		class UCameraComponent* FirstPersonCameraComponent;
 
-	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class USpringArmComponent* CameraBoom;
 

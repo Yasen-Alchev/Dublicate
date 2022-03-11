@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MainMenuWidget.h"
 
 #include "MultiplayerFPS/Default/MultiplayerFPSGameInstance.h"
@@ -451,12 +448,9 @@ void UMainMenuWidget::SwitchGameModeLeft()
 	{
 		if(--gameModePos < 0)
 		{
-			gameModePos = 0;
+			gameModePos = numberOfGameModes;
 		}
-		else
-		{
-			TXTBlock_GameModeText->SetText(GetGameModePosText(gameModePos));
-		}
+		TXTBlock_GameModeText->SetText(GetGameModePosText(gameModePos));
 	}
 	else
 	{
@@ -470,12 +464,9 @@ void UMainMenuWidget::SwitchGameModeRight()
 	{
 		if (++gameModePos > (numberOfGameModes-1))
 		{
-			gameModePos = numberOfGameModes-1;
+			gameModePos = 0;
 		}
-		else
-		{
-			TXTBlock_GameModeText->SetText(GetGameModePosText(gameModePos));
-		}
+		TXTBlock_GameModeText->SetText(GetGameModePosText(gameModePos));
 	}
 	else
 	{

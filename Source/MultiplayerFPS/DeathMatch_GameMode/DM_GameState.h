@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,9 +5,6 @@
 #include "GameFramework/GameState.h"
 #include "DM_GameState.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class MULTIPLAYERFPS_API ADM_GameState : public AGameState
 {
@@ -33,7 +28,12 @@ public:
 		void GameEnded();
 
 private:
+	UPROPERTY()
 	ADM_PlayerState* Player1;
+
+	UPROPERTY()
 	ADM_PlayerState* Player2;
+
+	UPROPERTY()
 	ADM_PlayerState* Player3;
 };

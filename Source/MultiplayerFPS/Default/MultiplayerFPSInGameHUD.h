@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,9 +5,6 @@
 #include "GameFramework/HUD.h"
 #include "MultiplayerFPSInGameHUD.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class MULTIPLAYERFPS_API AMultiplayerFPSInGameHUD : public AHUD
 {
@@ -67,20 +62,20 @@ protected:
 
 
 	UPROPERTY()
-		class UMultiplayerFPSLeaderBoardWidget* LeaderBoardWidget;
+		class ULeaderBoardWidget* LeaderBoardWidget;
 
 	UPROPERTY()
-		class UMultiplayerFPSBuyMenuWidget* BuyMenuWidget;
+		class UBuyMenuWidget* BuyMenuWidget;
 
 	UPROPERTY()
-		class UMultiplayerFPSGameTimeWidget* GameTimeWidget;
+		class UGameTimeWidget* GameTimeWidget;
 
 	UPROPERTY()
-		class UMultiplayerFPSInGameMenuWidget* InGameMenuWidget;
+		class UInGameMenuWidget* InGameMenuWidget;
 
 	UPROPERTY()
-		class UMultiplayerFPSObjectiveStatsWidget* ObjectiveStatsWidget;
+		class UObjectiveStatsWidget* ObjectiveStatsWidget;
 
 	UPROPERTY()
-		class UMultiplayerFPSEndGameScreenWidget* EndGameScreenWidget;
+		class UEndGameScreenWidget* EndGameScreenWidget;
 };

@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MultiplayerFPSPlayerController.h"
 
 #include "MultiplayerFPSTeamBasedCharacter.h"
@@ -8,12 +5,11 @@
 #include "MultiplayerFPSGameState.h"
 #include "MultiplayerFPSInGameHUD.h"
 
+AMultiplayerFPSPlayerController::AMultiplayerFPSPlayerController(){}
 
 void AMultiplayerFPSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-
-	UE_LOG(LogTemp, Error, TEXT("%s BeginPlay Controller"), *this->GetName());
 
 	SetInputMode(FInputModeGameOnly());
 	ServerSpawnPlayer();
@@ -22,8 +18,6 @@ void AMultiplayerFPSPlayerController::BeginPlay()
 void AMultiplayerFPSPlayerController::OnPossess(APawn* MovieSceneBlends)
 {
 	Super::OnPossess(MovieSceneBlends);
-
-	UE_LOG(LogTemp, Warning, TEXT("%s OnPossess Controller Called"), *this->GetName());
 
 	AMultiplayerFPSTeamBasedCharacter* MyPawn = Cast<AMultiplayerFPSTeamBasedCharacter>(MovieSceneBlends);
 	if (IsValid(MyPawn))
@@ -94,7 +88,6 @@ void AMultiplayerFPSPlayerController::ClientUpdateObjectiveStats_Implementation(
 
 void AMultiplayerFPSPlayerController::ServerSpawnPlayer_Implementation()
 {
-	UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerController::ServerSpawnPlayer_Implementation() -> Called !!!"));
 	if (HasAuthority())
 	{
 		UWorld* World = GetWorld();

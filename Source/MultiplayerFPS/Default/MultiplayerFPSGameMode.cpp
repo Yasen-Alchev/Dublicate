@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "MultiplayerFPSGameMode.h"
 
 #include "EngineUtils.h"
@@ -14,7 +12,6 @@
 
 AMultiplayerFPSGameMode::AMultiplayerFPSGameMode()
 {
-    // set default pawn class to our Blueprinted character
     static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPersonCPP/Blueprints/ThirdPersonCharacter"));
     if (PlayerPawnBPClass.Class != NULL)
     {
@@ -66,7 +63,6 @@ void AMultiplayerFPSGameMode::Tick(float DeltaSeconds)
                     {
                         GameStateVar->DisablePlayersControls(true);
                         StartingGame();
-                        UE_LOG(LogTemp, Error, TEXT("Disabling !!!"));
                     }, 1, false);
             }
             else
@@ -104,9 +100,6 @@ void AMultiplayerFPSGameMode::UpdateGlobalGameTimer(int& min, int& sec)
             sec = 59;
             if (--min == -1)
             {
-                if (GEngine)
-                    GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, FString::Printf(TEXT("GAME ENDED !!!")));
-
                 min = 0;
                 sec = 0;
                 GetWorldTimerManager().ClearTimer(GameTimer);
@@ -137,27 +130,21 @@ void AMultiplayerFPSGameMode::UpdateObjectiveStats()
 void AMultiplayerFPSGameMode::HandleStartingNewPlayer_Implementation(APlayerController* MovieSceneBlends)
 {
     Super::HandleStartingNewPlayer_Implementation(MovieSceneBlends);
-    UE_LOG(LogTemp, Warning, TEXT("%s HandleStartingNewPlayer -> Called !!!"), *MovieSceneBlends->GetName());
 
     AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(MovieSceneBlends);
     if (IsValid(PlayerController))
     {
         PlayerController->Team = assignTeam();
-        FString PCTeam = PlayerController->Team == TEAM_BLUE ? "BLUE" : PlayerController->Team == TEAM_RED ? "RED" : "NONE";
-        UE_LOG(LogTemp, Error, TEXT("%s PlayerController->Team = %s !!!"), *MovieSceneBlends->GetName(), *PCTeam);
 
         AMultiplayerFPSPlayerState* PlayerStateVar = MovieSceneBlends->GetPlayerState<AMultiplayerFPSPlayerState>();
         if (IsValid(PlayerStateVar))
         {
             PlayerStateVar->team = PlayerController->Team;
-            FString PSVTeam = PlayerStateVar->team == TEAM_BLUE ? "BLUE" : PlayerStateVar->team == TEAM_RED ? "RED" : "NONE";
-            UE_LOG(LogTemp, Error, TEXT("%s PlayerStateVar->Team = %s !!!"), *MovieSceneBlends->GetName(), *PSVTeam);
         }
         else
         {
             UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSGameMode::HandleStartingNewPlayer_Implementation(APlayerController* MovieSceneBlends) -> PlayerStateVar is not Valid !!!"), *MovieSceneBlends->GetName());
         }
-        //SpawnDefaultPawnAtTransform(MovieSceneBlends, ChoosePlayerStart(PlayerController)->GetTransform());
     }
     else
     {
@@ -193,28 +180,18 @@ void AMultiplayerFPSGameMode::StartingGame()
     }
 }
 
-// PreLogin -> ChoosePlayerStart -> Login -> PostLogin ???
-// BeginPlay -> PostLogin
-
 AActor* AMultiplayerFPSGameMode::ChoosePlayerStart_Implementation(AController* MovieSceneBlends)
 {
     Super::ChoosePlayerStart_Implementation(MovieSceneBlends);
-    UE_LOG(LogTemp, Warning, TEXT("%s ChoosePlayerStart -> Called !"), *MovieSceneBlends->GetName());
 
     if (IsValid(MovieSceneBlends))
     {
         AMultiplayerFPSPlayerState* PlayerStateVariable = MovieSceneBlends->GetPlayerState<AMultiplayerFPSPlayerState>();
         if (IsValid(PlayerStateVariable))
         {
-            FString ThePlayerStateTeamName = PlayerStateVariable->team == TEAM_BLUE ? "BLUE" : PlayerStateVariable->team == TEAM_RED ? "RED" : "NONE";
-            UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSGameMode::ChoosePlayerStart_Implementation(AController* MovieSceneBlends) -> PlayerStateVariable->Team = %s !"), *MovieSceneBlends->GetName(), *ThePlayerStateTeamName);
-
             TArray<APlayerStartPoint*> Starts;
             for (TActorIterator<APlayerStartPoint> StartItr(GetWorld()); StartItr; ++StartItr)
             {
-                FString ThePlayerStartTeamName = StartItr->Team == TEAM_BLUE ? "BLUE" : StartItr->Team == TEAM_RED ? "RED" : "NONE";
-
-                UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSGameMode::ChoosePlayerStart_Implementation(AController* MovieSceneBlends) -> Spawn->Team = %s !"), *MovieSceneBlends->GetName(), *ThePlayerStartTeamName);
                 if (StartItr->Team == PlayerStateVariable->team)
                 {
                     Starts.Add(*StartItr);
@@ -223,8 +200,6 @@ AActor* AMultiplayerFPSGameMode::ChoosePlayerStart_Implementation(AController* M
             if (Starts.Num() > 0)
             {
                 APlayerStartPoint* TheStart = Starts[FMath::RandRange(0, Starts.Num() - 1)];
-                FString StartTeamName = TheStart->Team == TEAM_BLUE ? "BLUE" : TheStart->Team == TEAM_RED ? "RED" : "NONE";
-                UE_LOG(LogTemp, Warning, TEXT("Start Found = %s    %s!"), *TheStart->GetName(), *StartTeamName);
                 return TheStart;
             }
             else
@@ -241,8 +216,6 @@ AActor* AMultiplayerFPSGameMode::ChoosePlayerStart_Implementation(AController* M
     {
         UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSGameMode::ChoosePlayerStart_Implementation(AController* MovieSceneBlends) -> MovieSceneBlends is not Valid !!!"), *MovieSceneBlends->GetName());
     }
-    UE_LOG(LogTemp, Warning, TEXT("No START"));
-
     return nullptr;
 }
 

@@ -3,20 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MultiplayerFPSLeaderBoardUnitWidget.h"
-#include "MultiplayerFPSObjectiveLeaderBoardUnitWidget.generated.h"
+#include "LeaderBoardUnitWidget.h"
+#include "ObjectiveLeaderBoardUnitWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MULTIPLAYERFPS_API UMultiplayerFPSObjectiveLeaderBoardUnitWidget : public UMultiplayerFPSLeaderBoardUnitWidget
+class MULTIPLAYERFPS_API UObjectiveLeaderBoardUnitWidget : public ULeaderBoardUnitWidget
 {
 	GENERATED_BODY()
 
 public:
 
-	UMultiplayerFPSObjectiveLeaderBoardUnitWidget(const FObjectInitializer& ObjectInitializer);
+	UObjectiveLeaderBoardUnitWidget(const FObjectInitializer& ObjectInitializer);
 
 	virtual void NativeConstruct() override;
 

@@ -6,19 +6,19 @@
 #include "Components/Button.h"
 #include "Blueprint/UserWidget.h"
 #include "MultiplayerFPS/CommonClasses/Teams.h"
-#include "MultiplayerFPSEndGameScreenWidget.generated.h"
+#include "EndGameScreenWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MULTIPLAYERFPS_API UMultiplayerFPSEndGameScreenWidget : public UUserWidget
+class MULTIPLAYERFPS_API UEndGameScreenWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
 
-	UMultiplayerFPSEndGameScreenWidget(const FObjectInitializer& ObjectInitializer);
+	UEndGameScreenWidget(const FObjectInitializer& ObjectInitializer);
 
 	virtual void NativeConstruct() override;
 

@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "MultiplayerFPSObjectiveStatsWidget.generated.h"
+#include "ObjectiveStatsWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MULTIPLAYERFPS_API UMultiplayerFPSObjectiveStatsWidget : public UUserWidget
+class MULTIPLAYERFPS_API UObjectiveStatsWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
-	UMultiplayerFPSObjectiveStatsWidget(const FObjectInitializer& ObjectInitializer);
+	UObjectiveStatsWidget(const FObjectInitializer& ObjectInitializer);
 
 	UFUNCTION()
 		virtual void NativeConstruct() override;

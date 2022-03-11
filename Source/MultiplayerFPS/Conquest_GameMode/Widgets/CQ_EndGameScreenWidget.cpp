@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "CQ_EndGameScreenWidget.h"
 #include "Runtime/UMG/Public/UMG.h"
 

@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "MultiplayerFPSBuyMenuWidget.generated.h"
+#include "BuyMenuWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MULTIPLAYERFPS_API UMultiplayerFPSBuyMenuWidget : public UUserWidget
+class MULTIPLAYERFPS_API UBuyMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	

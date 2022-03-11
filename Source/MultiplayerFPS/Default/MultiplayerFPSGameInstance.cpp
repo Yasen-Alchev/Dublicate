@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MultiplayerFPSGameInstance.h"
 #include "Core/PlayFabClientAPI.h"
 #include "MoviePlayer.h"
@@ -10,9 +7,6 @@ UMultiplayerFPSGameInstance::UMultiplayerFPSGameInstance(const FObjectInitialize
 void UMultiplayerFPSGameInstance::Init()
 {
 	Super::Init();
-
-	//FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &UMultiplayerFPSGameInstance::BeginLoadingScreen);
-	//FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UMultiplayerFPSGameInstance::EndLoadingScreen);
 
 	clientAPI = IPlayFabModuleInterface::Get().GetClientAPI();
 }
@@ -44,18 +38,6 @@ void UMultiplayerFPSGameInstance::EndLoadingScreen(UWorld* InLoadedWorld) {}
 
 void UMultiplayerFPSGameInstance::Host(const FString& LevelName)
 {
-	/*
-	APlayerController* PlayerController = GetFirstLocalPlayerController();
-	if (IsValid(PlayerController))
-	{
-		PlayerController->ClientTravel(LevelName + "?listen -game -port=7778", TRAVEL_Absolute);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSGameInstance::Join(const FString& Address) -> PlayerController is not Valid !!!"));
-	}
-	*/
-
 	UWorld* World = GetWorld();
 	if(IsValid(World))
 	{
@@ -126,8 +108,6 @@ void UMultiplayerFPSGameInstance::RecoverPassword(const FString& Email, UMainMen
 
 void UMultiplayerFPSGameInstance::RegisterOnSuccess(const PlayFab::ClientModels::FRegisterPlayFabUserResult& Result)
 {
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Green, FString::Printf(TEXT("Registration: Successful !")));
 	if (MainMenu != nullptr)
 	{
 		MainMenu->GoToMainMenu();
@@ -136,8 +116,6 @@ void UMultiplayerFPSGameInstance::RegisterOnSuccess(const PlayFab::ClientModels:
 
 void UMultiplayerFPSGameInstance::LoginOnSuccess(const PlayFab::ClientModels::FLoginResult& Result)
 {
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Green, FString::Printf(TEXT("Login: Successful !")));
 	if(MainMenu != nullptr)
 	{
 		MainMenu->GoToMainMenu();
@@ -146,8 +124,6 @@ void UMultiplayerFPSGameInstance::LoginOnSuccess(const PlayFab::ClientModels::FL
 
 void UMultiplayerFPSGameInstance::OnPasswordRecoverySuccess(const PlayFab::ClientModels::FSendAccountRecoveryEmailResult& Result)
 {
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Green, FString::Printf(TEXT("Password Recovery: successfully sent a recovery email !")));
 	if (MainMenu != nullptr)
 	{
 		MainMenu->GoToLoginMenu();

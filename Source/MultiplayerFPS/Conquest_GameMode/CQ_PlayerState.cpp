@@ -1,10 +1,5 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "CQ_PlayerState.h"
 
-#include "CQ_Character.h"
-#include "CQ_GameState.h"
 #include "MultiplayerFPS/CTF_GameMode/CTF_PlayerState.h"
 #include "Net/UnrealNetwork.h"
 

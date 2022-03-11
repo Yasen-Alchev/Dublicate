@@ -1,11 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MultiplayerFPSGameState.h"
 
 #include "MultiplayerFPSTeamBasedCharacter.h"
 #include "MultiplayerFPSPlayerController.h"
 #include "MultiplayerFPSPlayerState.h"
+#include "MultiplayerFPS/CTF_GameMode/CTF_GameState.h"
 #include "MultiplayerFPS/CommonClasses/Teams.h"
 #include "Net/UnrealNetwork.h"
 
@@ -34,7 +32,6 @@ void AMultiplayerFPSGameState::ResetStats()
 
 void AMultiplayerFPSGameState::RedFlagCaptured()
 {
-	UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSGameState::BlueFlagCaptured() -> Red TeamCapturedFlags++  !!!"));
 	++RedTeamCapturedFlags;
 	UpdateObjectiveStats();
 	if (RedTeamCapturedFlags == MaxFlagsToCapture)
@@ -45,7 +42,6 @@ void AMultiplayerFPSGameState::RedFlagCaptured()
 
 void AMultiplayerFPSGameState::BlueFlagCaptured()
 {
-	UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSGameState::BlueFlagCaptured() -> Blue TeamCapturedFlags++  !!!"));
 	++BlueTeamCapturedFlags;
 	UpdateObjectiveStats();
 	if (BlueTeamCapturedFlags == MaxFlagsToCapture)
@@ -139,32 +135,6 @@ void AMultiplayerFPSGameState::UpdateObjectiveStats()
 		}
 	}
 }
-
-//void AMultiplayerFPSGameState::OnRep_UpdateObjectiveStats()
-//{
-//	UE_LOG(LogTemp, Error, TEXT("OnRepNotify Called!"));
-//	GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Red, FString::Printf(TEXT("OnRepNotify Called!")));
-//	for (APlayerState* CurrentPlayerState : PlayerArray)
-//	{
-//		AMultiplayerFPSPlayerState* PlayerState = Cast<AMultiplayerFPSPlayerState>(CurrentPlayerState);
-//		if (IsValid(PlayerState))
-//		{
-//			AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(PlayerState->GetOwner());
-//			if (IsValid(PlayerController))
-//			{
-//				PlayerController->ClientRPCUpdateObjectiveStats(RedTeamCapturedFlags, BlueTeamCapturedFlags);
-//			}
-//			else
-//			{
-//				UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSGameState::UpdateObjectiveStats() -> PlayerController is not Valid !!!"), *PlayerState->GetName());
-//			}
-//		}
-//		else
-//		{
-//			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSGameState::UpdateObjectiveStats() -> PlayerState is not Valid !!!"));
-//		}
-//	}
-//}
 
 void AMultiplayerFPSGameState::RespawnPlayers(bool instant)
 {

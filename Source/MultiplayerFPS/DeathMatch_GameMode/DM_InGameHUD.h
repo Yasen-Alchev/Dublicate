@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -25,7 +23,7 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	UFUNCTION()
-		void UpdateLeaderBoard(int Kills, int Deaths);
+		void UpdateStats(int Kills, int Deaths);
 
 	UFUNCTION()
 		void UpdateObjectiveStats(ADM_PlayerState* Player1, ADM_PlayerState* Player2, ADM_PlayerState* Player3);
@@ -34,16 +32,16 @@ public:
 		void UpdateGameTime(int minutes, int seconds);
 
 	UFUNCTION()
-		void ResetLeaderBoard();
+		void ResetStats();
 
 	UFUNCTION()
 		void ResetObjectiveStats();
 
 	UFUNCTION()
-		void SetOptionMenuVisibility(bool Visibility);
+		void SetOptionsMenuVisibility(bool Visibility);
 
 	UFUNCTION()
-		void ToggleLeaderBoardVisibility();
+		void ToggleStatsVisibility();
 
 	UFUNCTION()
 		void GameEnded(const FString& WinnerName);
@@ -72,9 +70,9 @@ private:
 	UPROPERTY()
 	class UDM_BuyMenuWidget* BuyMenuWidget;
 	UPROPERTY()
-	class UMultiplayerFPSGameTimeWidget* GameTimeWidget;
+	class UGameTimeWidget* GameTimeWidget;
 	UPROPERTY()
-	class UMultiplayerFPSInGameMenuWidget* InGameMenuWidget;
+	class UInGameMenuWidget* InGameMenuWidget;
 	UPROPERTY()
 	class UDM_ObjectiveStatsWidget* ObjectiveStatsWidget;
 	UPROPERTY()

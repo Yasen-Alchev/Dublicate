@@ -1,8 +1,7 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "CTF_Character.h"
 #include "CTF_PlayerController.h"
 #include "CTF_GameMode.h"
+#include "MultiplayerFPS/Default/MultiplayerFPSGameInstance.h"
 #include "Net/UnrealNetwork.h"
 
 ACTF_Character::ACTF_Character()

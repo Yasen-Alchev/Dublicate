@@ -1,15 +1,13 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MultiplayerFPSInGameHUD.h"
 
 #include "Blueprint/UserWidget.h"
-#include "Widgets/MultiplayerFPSBuyMenuWidget.h"
-#include "Widgets/MultiplayerFPSEndGameScreenWidget.h"
-#include "Widgets/MultiplayerFPSGameTimeWidget.h"
-#include "Widgets/MultiplayerFPSInGameMenuWidget.h"
-#include "Widgets/MultiplayerFPSObjectiveStatsWidget.h"
-#include "Widgets/MultiplayerFPSLeaderBoardWidget.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Widgets/BuyMenuWidget.h"
+#include "Widgets/EndGameScreenWidget.h"
+#include "Widgets/GameTimeWidget.h"
+#include "Widgets/InGameMenuWidget.h"
+#include "Widgets/LeaderBoardWidget.h"
+#include "Widgets/ObjectiveStatsWidget.h"
 
 
 AMultiplayerFPSInGameHUD::AMultiplayerFPSInGameHUD() {}
@@ -18,9 +16,11 @@ void AMultiplayerFPSInGameHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
+	UWidgetLayoutLibrary::RemoveAllWidgets(this);
+
 	if (IsValid(LeaderBoardWidgetClass))
 	{
-		LeaderBoardWidget = CreateWidget<UMultiplayerFPSLeaderBoardWidget>(GetWorld(), LeaderBoardWidgetClass);
+		LeaderBoardWidget = CreateWidget<ULeaderBoardWidget>(GetWorld(), LeaderBoardWidgetClass);
 		if (IsValid(LeaderBoardWidget))
 		{
 			LeaderBoardWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -38,7 +38,7 @@ void AMultiplayerFPSInGameHUD::BeginPlay()
 
 	if (IsValid(ObjectiveStatsWidgetClass))
 	{
-		ObjectiveStatsWidget = CreateWidget<UMultiplayerFPSObjectiveStatsWidget>(GetWorld(), ObjectiveStatsWidgetClass);
+		ObjectiveStatsWidget = CreateWidget<UObjectiveStatsWidget>(GetWorld(), ObjectiveStatsWidgetClass);
 		if (IsValid(ObjectiveStatsWidget))
 		{
 			ObjectiveStatsWidget->AddToViewport();
@@ -55,7 +55,7 @@ void AMultiplayerFPSInGameHUD::BeginPlay()
 
 	if (IsValid(GameTimeWidgetClass))
 	{
-		GameTimeWidget = CreateWidget<UMultiplayerFPSGameTimeWidget>(GetWorld(), GameTimeWidgetClass);
+		GameTimeWidget = CreateWidget<UGameTimeWidget>(GetWorld(), GameTimeWidgetClass);
 		if (IsValid(GameTimeWidget))
 		{
 			GameTimeWidget->AddToViewport();
@@ -72,7 +72,7 @@ void AMultiplayerFPSInGameHUD::BeginPlay()
 
 	if (IsValid(EndGameScreenWidgetClass))
 	{
-		EndGameScreenWidget = CreateWidget<UMultiplayerFPSEndGameScreenWidget>(GetWorld(), EndGameScreenWidgetClass);
+		EndGameScreenWidget = CreateWidget<UEndGameScreenWidget>(GetWorld(), EndGameScreenWidgetClass);
 		if (IsValid(EndGameScreenWidget))
 		{
 			EndGameScreenWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -90,7 +90,7 @@ void AMultiplayerFPSInGameHUD::BeginPlay()
 
 	if (IsValid(BuyMenuWidgetClass))
 	{
-		BuyMenuWidget = CreateWidget<UMultiplayerFPSBuyMenuWidget>(GetWorld(), BuyMenuWidgetClass);
+		BuyMenuWidget = CreateWidget<UBuyMenuWidget>(GetWorld(), BuyMenuWidgetClass);
 		if (IsValid(BuyMenuWidget))
 		{
 			BuyMenuWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -108,7 +108,7 @@ void AMultiplayerFPSInGameHUD::BeginPlay()
 
 	if (IsValid(InGameMenuWidgetClass))
 	{
-		InGameMenuWidget = CreateWidget<UMultiplayerFPSInGameMenuWidget>(GetWorld(), InGameMenuWidgetClass);
+		InGameMenuWidget = CreateWidget<UInGameMenuWidget>(GetWorld(), InGameMenuWidgetClass);
 		if (IsValid(InGameMenuWidget))
 		{
 			InGameMenuWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -135,6 +135,7 @@ void AMultiplayerFPSInGameHUD::DrawHUD()
 {
 	Super::DrawHUD();
 }
+
 
 void AMultiplayerFPSInGameHUD::UpdateObjectiveStats(int32 RedScore, int32 BlueScore)
 {
@@ -197,21 +198,16 @@ void AMultiplayerFPSInGameHUD::SetOptionMenuVisibility(bool Visibility)
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::SetOptionsMenuVisibility(bool Visibility) -> InGameMenuWidget is not Valid !!!"));
 	}
 }
-
 void AMultiplayerFPSInGameHUD::ToggleLeaderBoardVisibility()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("AMultiplayerFPSInGameHUD::ToggleLeaderBoardVisibility()!!!!!!!!!!!!!!!!!!!!")));
-
 	if (IsValid(LeaderBoardWidget))
 	{
 		if (LeaderBoardWidget->IsVisible())
 		{
-			//UE_LOG(LogTemp, Error, TEXT("LeaderBoardWidget IS VISIBLE !!!"));
 			LeaderBoardWidget->RemoveFromParent();
 		}
 		else
 		{
-			//UE_LOG(LogTemp, Error, TEXT("LeaderBoardWidget IS NOT VISIBLE !!!"));
 			UpdateLeaderBoardStats();
 		}
 	}
@@ -225,12 +221,11 @@ void AMultiplayerFPSInGameHUD::UpdateLeaderBoardStats()
 {
 	if (IsValid(LeaderBoardWidget))
 	{
-		bool isVisible = LeaderBoardWidget->GetVisibility() == ESlateVisibility::Visible;
+		LeaderBoardWidget->SetVisibility(ESlateVisibility::Hidden);
 		LeaderBoardWidget->RemoveFromParent();
-		LeaderBoardWidget = CreateWidget<UMultiplayerFPSLeaderBoardWidget>(GetWorld(), LeaderBoardWidgetClass);
+		LeaderBoardWidget = CreateWidget<ULeaderBoardWidget>(GetWorld(), LeaderBoardWidgetClass);
 		if (IsValid(LeaderBoardWidget))
 		{
-			isVisible ? LeaderBoardWidget->SetVisibility(ESlateVisibility::Visible) : LeaderBoardWidget->SetVisibility(ESlateVisibility::Hidden);
 			LeaderBoardWidget->AddToViewport();
 		}
 		else

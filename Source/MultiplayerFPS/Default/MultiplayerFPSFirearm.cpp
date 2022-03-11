@@ -6,6 +6,7 @@
 #include "../Default/MultiplayerFPSCharacter.h"
 #include "../Default/MultiplayerFPSTeamBasedCharacter.h"
 #include "../Default/MultiplayerFPSPlayerController.h"
+#include "Net/UnrealNetwork.h"
 
 AMultiplayerFPSFirearm::AMultiplayerFPSFirearm()
 {
@@ -35,6 +36,16 @@ AMultiplayerFPSFirearm::AMultiplayerFPSFirearm()
 	this->BurstFiringInterval = 0.15f;
 
 	this->ReloadTime = 1.0f;
+
+	bReplicates = true;
+
+}
+
+void AMultiplayerFPSFirearm::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AMultiplayerFPSFirearm, CurrentMagazineCapacity);
 }
 
 void AMultiplayerFPSFirearm::BeginPlay()
@@ -140,7 +151,7 @@ void AMultiplayerFPSFirearm::BurstFire()
 	}
 }
 
-void AMultiplayerFPSFirearm::Fire()
+void AMultiplayerFPSFirearm::Fire_Implementation()
 {
 	AActor* PlayerActor = GetOwner();
 	if (!IsValid(PlayerActor))
@@ -192,7 +203,7 @@ void AMultiplayerFPSFirearm::Fire()
 	bool bHitResult = World->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Pawn, TraceParams, FCollisionResponseParams::DefaultResponseParam);
 	if (this->bShowDebugTrace)
 	{
-		DrawDebugLine(World, StartLocation, EndLocation, FColor::Red, false, 20.0f, ECC_WorldStatic, 0.35f);
+		DrawDebugLine(World, StartLocation, EndLocation, FColor::Red,	 false, 20.0f, ECC_WorldStatic, 0.35f);
 	}
 
 	if (CurrentFireMode == EFireMode::Burst)
@@ -211,6 +222,7 @@ void AMultiplayerFPSFirearm::Fire()
 		UE_LOG(LogTemp, Error, TEXT("Not A Blocking Hit!"));
 		return;
 	}
+
 	if (IsValid(HitResult.GetActor()))
 	{
 		AActor* HitActor = HitResult.GetActor();
@@ -239,6 +251,10 @@ void AMultiplayerFPSFirearm::Fire()
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Hit Team Player"));
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitResult.GetActor())"));
 	}
 
 	this->CurrentMagazineCapacity = FMath::Clamp(this->CurrentMagazineCapacity - 1, 0, this->MaxMagazineCapacity);

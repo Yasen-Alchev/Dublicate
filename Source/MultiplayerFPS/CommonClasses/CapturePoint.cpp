@@ -270,7 +270,7 @@ void ACapturePoint::CheckStatus()
 					UWorld* World = GetWorld();
 					if (IsValid(World))
 					{
-						AMultiplayerFPSGameState* GameStateVar = Cast<AMultiplayerFPSGameState>(World->GetGameState());
+						ATeamBasedGameState* GameStateVar = Cast<ATeamBasedGameState>(World->GetGameState());
 						if (IsValid(GameStateVar))
 						{
 							GameStateVar->RedFlagCaptured();
@@ -323,7 +323,7 @@ void ACapturePoint::CheckStatus()
 					UWorld* World = GetWorld();
 					if (IsValid(World))
 					{
-						AMultiplayerFPSGameState* GameStateVar = Cast<AMultiplayerFPSGameState>(World->GetGameState());
+						ATeamBasedGameState* GameStateVar = Cast<ATeamBasedGameState>(World->GetGameState());
 						if (IsValid(GameStateVar))
 						{
 							GameStateVar->BlueFlagCaptured();

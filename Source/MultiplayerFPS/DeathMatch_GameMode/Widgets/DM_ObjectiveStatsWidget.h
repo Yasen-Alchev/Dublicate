@@ -2,10 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "MultiplayerFPS/Default/Widgets/ObjectiveStatsWidget.h"
 #include "DM_ObjectiveStatsWidget.generated.h"
 
 UCLASS()
-class MULTIPLAYERFPS_API UDM_ObjectiveStatsWidget : public UUserWidget
+class MULTIPLAYERFPS_API UDM_ObjectiveStatsWidget : public UObjectiveStatsWidget
 {
 	GENERATED_BODY()
 
@@ -14,6 +15,6 @@ public:
 
 	virtual void NativeConstruct() override;
 
-	void UpdateStats();
-	void ResetStats();
+	virtual void ResetStats() override;
+
 };

@@ -3,10 +3,11 @@
 #include "CoreMinimal.h"
 #include "Components/Button.h"
 #include "Blueprint/UserWidget.h"
+#include "MultiplayerFPS/Default/Widgets/EndGameScreenWidget.h"
 #include "DM_EndGameScreenWidget.generated.h"
 
 UCLASS()
-class MULTIPLAYERFPS_API UDM_EndGameScreenWidget : public UUserWidget
+class MULTIPLAYERFPS_API UDM_EndGameScreenWidget : public UEndGameScreenWidget
 {
 	GENERATED_BODY()
 
@@ -16,26 +17,6 @@ public:
 
 	virtual void NativeConstruct() override;
 
-	UFUNCTION()
-	void QuitButtonClicked();
+	virtual void SetWinnerTeam(const FString& Winner) override;
 
-	UFUNCTION()
-	void ReturnToMainMenu();
-
-	UFUNCTION()
-	void SetWinner(const FString& WinnerName);
-
-	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-		class UTextBlock* TXTBlock_EndGameText;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-		class UTextBlock* TXTBlock_EndGameWinnerText;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-		class UButton* Button_EndGame;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-		class UButton* Button_ReturnToMainMenu;
 };

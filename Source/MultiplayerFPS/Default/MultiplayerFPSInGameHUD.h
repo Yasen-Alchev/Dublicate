@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MultiplayerFPS/CommonClasses/Teams.h"
 #include "GameFramework/HUD.h"
 #include "MultiplayerFPSInGameHUD.generated.h"
 
@@ -20,13 +19,16 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	UFUNCTION()
-		virtual void UpdateObjectiveStats(int32 RedScore, int32 BlueScore);
+		virtual void UpdateObjectiveStats(const TArray<FString>& ObjectiveStats);
 
 	UFUNCTION()
 		virtual void UpdateGameTime(int minutes, int seconds);
 
 	UFUNCTION()
 		virtual void ResetObjectiveStats();
+
+	UFUNCTION()
+		virtual void ResetGameLeader();
 
 	UFUNCTION()
 		virtual void SetOptionMenuVisibility(bool Visibility);
@@ -38,13 +40,9 @@ public:
 		virtual void UpdateLeaderBoardStats();
 
 	UFUNCTION()
-		virtual void GameEnded(ETeams WinnerTeam);
+		virtual void GameEnded(const FString& WinnerTeam);
 
 protected:
-
-	UPROPERTY()
-	class UTexture2D* CrosshairTex;
-
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets", Meta = (BlueprintProtected = "true"))
 		TSubclassOf<UUserWidget> GameTimeWidgetClass;
@@ -82,5 +80,4 @@ protected:
 
 	UPROPERTY()
 		class UEndGameScreenWidget* EndGameScreenWidget;
-
 };

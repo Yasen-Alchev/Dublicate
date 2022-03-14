@@ -1,11 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MultiplayerFPS/Default/MultiplayerFPSTeamBasedCharacter.h"
+#include "MultiplayerFPS/Default/TeamBasedClasses/TeamBasedCharacter.h"
 #include "CQ_Character.generated.h"
 
 UCLASS()
-class MULTIPLAYERFPS_API ACQ_Character : public AMultiplayerFPSTeamBasedCharacter
+class MULTIPLAYERFPS_API ACQ_Character : public ATeamBasedCharacter
 {
 	GENERATED_BODY()
 

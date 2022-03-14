@@ -46,24 +46,22 @@ void UEndGameScreenWidget::ReturnToMainMenu()
 	}
 }
 
-void UEndGameScreenWidget::SetWinnerTeam(ETeams WinnerTeam)
+void UEndGameScreenWidget::SetWinnerTeam(const FString& Winner)
 {
 	if(IsValid(TXTBlock_EndGameWinnerText))
 	{
-		switch (WinnerTeam)
+		TXTBlock_EndGameWinnerText->SetText(FText::FromString(Winner));
+		if(Winner.Contains("blue"))
 		{
-			case TEAM_BLUE:
-				TXTBlock_EndGameWinnerText->SetText(FText::FromString("BLUE TEAM WINS!"));
-				TXTBlock_EndGameWinnerText->SetColorAndOpacity(FLinearColor(FColor::Blue));
-				break;
-			case TEAM_RED:
-				TXTBlock_EndGameWinnerText->SetText(FText::FromString("RED TEAM WINS!"));
-				TXTBlock_EndGameWinnerText->SetColorAndOpacity(FLinearColor(FColor::Red));
-				break;
-			case TEAM_NONE:
-				TXTBlock_EndGameWinnerText->SetText(FText::FromString("DRAW"));
-				TXTBlock_EndGameWinnerText->SetColorAndOpacity(FLinearColor(FColor::Orange));
-				break;
+			TXTBlock_EndGameWinnerText->SetColorAndOpacity(FLinearColor(FColor::Blue));
+		}
+		else if(Winner.Contains("red"))
+		{
+			TXTBlock_EndGameWinnerText->SetColorAndOpacity(FLinearColor(FColor::Red));
+		}
+		else
+		{
+			TXTBlock_EndGameWinnerText->SetColorAndOpacity(FLinearColor(FColor::Orange));
 		}
 	}
 	else

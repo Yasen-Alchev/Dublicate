@@ -2,11 +2,12 @@
 
 
 #include "LeaderBoardWidget.h"
-#include "LeaderBoardUnitWidget.h"
-#include "ObjectiveLeaderBoardUnitWidget.h"
 #include "MultiplayerFPS/Default/MultiplayerFPSPlayerState.h"
-#include "MultiplayerFPS/Default/MultiplayerFPSTeamBasedCharacter.h"
+#include "MultiplayerFPS/Default/TeamBasedClasses/TeamBasedCharacter.h"
+#include "MultiplayerFPS/Default/TeamBasedClasses/TeamBasedPlayerState.h"
 #include "Runtime/UMG/Public/UMG.h"
+#include "WidgetUnits/LeaderBoardUnitWidget.h"
+#include "WidgetUnits/ObjectiveLeaderBoardUnitWidget.h"
 
 ULeaderBoardWidget::ULeaderBoardWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {}
 
@@ -56,19 +57,27 @@ void ULeaderBoardWidget::GenerateLeaderBoard()
 								UE_LOG(LogTemp, Error, TEXT("ULeaderBoardWidget::CreateNewLeaderBoardUnit(AActor* Owner) -> NewLeaderBoardUnit is not Valid !!!"));
 							}
 
-							if (TSubclassOf<UObjectiveLeaderBoardUnitWidget>(LeaderBoardUnitRef) && TSubclassOf<AMultiplayerFPSTeamBasedCharacter>(Player->GetClass()))
+							if (TSubclassOf<UObjectiveLeaderBoardUnitWidget>(LeaderBoardUnitRef) && TSubclassOf<ATeamBasedCharacter>(Player->GetClass()))
 							{
-								AMultiplayerFPSTeamBasedCharacter* TeamCharacter = Cast<AMultiplayerFPSTeamBasedCharacter>(Player);
+								ATeamBasedCharacter* TeamCharacter = Cast<ATeamBasedCharacter>(Player);
 								if (IsValid(TeamCharacter))
 								{
-									UObjectiveLeaderBoardUnitWidget* NewObjectLeaderBoardUnit = Cast<UObjectiveLeaderBoardUnitWidget>(NewLeaderBoardUnit);
-									if (IsValid(NewObjectLeaderBoardUnit))
+									ATeamBasedPlayerState* TeamBasedPlayerState = Cast<ATeamBasedPlayerState>(PlayerStateVar);
+									if (IsValid(TeamBasedPlayerState))
 									{
-										NewObjectLeaderBoardUnit->SetPlayerObjectiveScore(FString::FromInt(PlayerStateVar->getCapturedFlagsCount()));
+										UObjectiveLeaderBoardUnitWidget* NewObjectLeaderBoardUnit = Cast<UObjectiveLeaderBoardUnitWidget>(NewLeaderBoardUnit);
+										if (IsValid(NewObjectLeaderBoardUnit))
+										{
+											NewObjectLeaderBoardUnit->SetPlayerObjectiveScore(FString::FromInt(TeamBasedPlayerState->getCapturedFlagsCount()));
+										}
+										else
+										{
+											UE_LOG(LogTemp, Error, TEXT("ULeaderBoardWidget::CreateNewLeaderBoardUnit(AActor* Owner) -> NewObjectLeaderBoardUnit is not Valid !!!"));
+										}
 									}
 									else
 									{
-										UE_LOG(LogTemp, Error, TEXT("ULeaderBoardWidget::CreateNewLeaderBoardUnit(AActor* Owner) -> NewObjectLeaderBoardUnit is not Valid !!!"));
+										UE_LOG(LogTemp, Error, TEXT("ULeaderBoardWidget::CreateNewLeaderBoardUnit(AActor* Owner) -> TeamBasedPlayerState is not Valid !!!"));
 									}
 								}
 								else

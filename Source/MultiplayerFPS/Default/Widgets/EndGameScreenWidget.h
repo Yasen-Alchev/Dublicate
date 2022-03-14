@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Components/Button.h"
 #include "Blueprint/UserWidget.h"
-#include "MultiplayerFPS/CommonClasses/Teams.h"
 #include "EndGameScreenWidget.generated.h"
 
 /**
@@ -29,7 +28,7 @@ public:
 		virtual void ReturnToMainMenu();
 
 	UFUNCTION()
-		virtual void SetWinnerTeam(ETeams WinnerTeam);
+		virtual void SetWinnerTeam(const FString& WinnerTeam);
 
 	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 

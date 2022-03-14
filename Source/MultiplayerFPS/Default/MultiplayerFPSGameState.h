@@ -4,9 +4,6 @@
 #include "GameFramework/GameState.h"
 #include "MultiplayerFPSGameState.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class MULTIPLAYERFPS_API AMultiplayerFPSGameState : public AGameState
 {
@@ -15,25 +12,8 @@ class MULTIPLAYERFPS_API AMultiplayerFPSGameState : public AGameState
 public:
 	AMultiplayerFPSGameState();
 
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MaxFlagsToCapture", meta = (ClampMin = "1", UIMin = "1", UIMax = "10"))
-		int MaxFlagsToCapture;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Respawn", meta = (ClampMin = "0", ClampMax = "30"))
 		int PlayerRespawnTime;
-
-	UFUNCTION()
-		virtual void RedFlagCaptured();
-
-	UFUNCTION()
-		virtual void BlueFlagCaptured();
-
-	UFUNCTION()
-		virtual int GetRedTeamCapturedFlags() { return RedTeamCapturedFlags; }
-
-	UFUNCTION()
-		virtual int GetBlueTeamCapturedFlags() { return BlueTeamCapturedFlags; }
 
 	UFUNCTION()
 		virtual void UpdateObjectiveStats();
@@ -56,13 +36,6 @@ public:
 	UFUNCTION()
 		virtual void DisablePlayersControls(bool bDisable);
 
-protected:
-
-	UPROPERTY(Replicated)
-		int RedTeamCapturedFlags;
-
-	UPROPERTY(Replicated)
-		int BlueTeamCapturedFlags;
 };
 
 

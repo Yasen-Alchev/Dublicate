@@ -1,9 +1,8 @@
 #include "MultiplayerFPSInGameHUD.h"
 
-#include "CanvasItem.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
-#include "Engine/Canvas.h"
+#include "TeamBasedClasses/TeamBasedPlayerController.h"
 #include "Widgets/BuyMenuWidget.h"
 #include "Widgets/EndGameScreenWidget.h"
 #include "Widgets/GameTimeWidget.h"
@@ -12,11 +11,7 @@
 #include "Widgets/ObjectiveStatsWidget.h"
 
 
-AMultiplayerFPSInGameHUD::AMultiplayerFPSInGameHUD()
-{
-	static ConstructorHelpers::FObjectFinder<UTexture2D> CrosshairTexObj(TEXT("/Game/FirstPerson/Textures/FirstPersonCrosshair"));
-	CrosshairTex = CrosshairTexObj.Object;
-}
+AMultiplayerFPSInGameHUD::AMultiplayerFPSInGameHUD() {}
 
 void AMultiplayerFPSInGameHUD::BeginPlay()
 {
@@ -131,7 +126,6 @@ void AMultiplayerFPSInGameHUD::BeginPlay()
 	}
 }
 
-
 void AMultiplayerFPSInGameHUD::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -140,31 +134,58 @@ void AMultiplayerFPSInGameHUD::Tick(float DeltaSeconds)
 void AMultiplayerFPSInGameHUD::DrawHUD()
 {
 	Super::DrawHUD();
-	const FVector2D Center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
-	const FVector2D CrosshairDrawPosition((Center.X),(Center.Y - 5.35f/*+ 20.0f*/));
-
-	FCanvasTileItem TileItem(CrosshairDrawPosition, CrosshairTex->Resource, FLinearColor::White);
-	TileItem.BlendMode = SE_BLEND_Translucent;
-	Canvas->DrawItem(TileItem);
 }
 
-
-void AMultiplayerFPSInGameHUD::UpdateObjectiveStats(int32 RedScore, int32 BlueScore)
+void AMultiplayerFPSInGameHUD::UpdateObjectiveStats(const TArray<FString>& ObjectiveStats)
 {
-	if (RedScore >= 0 || BlueScore >= 0)
+	if (IsValid(ObjectiveStatsWidget))
 	{
-		if (IsValid(ObjectiveStatsWidget))
+		if (TSubclassOf<AMultiplayerFPSPlayerController>(GetOwningPlayerController()->GetClass()))
 		{
-			ObjectiveStatsWidget->UpdateStats(RedScore, BlueScore);
+			if (TSubclassOf<ATeamBasedPlayerController>(GetOwningPlayerController()->GetClass()))
+			{
+				if (ObjectiveStats.Num() == 2)
+				{
+					FString RedScore, BlueScore;
+					if (ObjectiveStats[0].Contains("Red", ESearchCase::IgnoreCase, ESearchDir::FromStart))
+					{
+						RedScore = ObjectiveStats[0];
+						BlueScore = ObjectiveStats[1];
+					}
+					else if (ObjectiveStats[1].Contains("Red", ESearchCase::IgnoreCase, ESearchDir::FromStart))
+					{
+						RedScore = ObjectiveStats[1];
+						BlueScore = ObjectiveStats[0];
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSInGameHUD::UpdateObjectiveStats() -> ObjectiveStats does not contain substring \"Red\" !!!"));
+						return;
+					}
+					ObjectiveStatsWidget->UpdateStats(RedScore, BlueScore);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSInGameHUD::UpdateObjectiveStats() -> ObjectiveStats.Num is not exactly 2 !!!"));
+				}
+			}
+			else if(ObjectiveStats.Num() == 1 && !ObjectiveStats[0].IsEmpty())
+			{
+				ObjectiveStatsWidget->SetGameLeader(ObjectiveStats[0]);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSInGameHUD::UpdateObjectiveStats() -> ObjectiveStats is Empty (No GameLeader provided) or  ObjectiveStats size is not exactly 1!!!"));
+			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::UpdateObjectiveStats(int32 RedScore, int32 BlueScore) -> ObjectiveStatsWidget is not Valid!!!"));
+			UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSInGameHUD::UpdateObjectiveStats() ->  GetOwningPlayerController's Class is Not TSubclassOf of AMultiplayerFPSPlayerController !!!"));
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSInGameHUD::UpdateObjectiveStats(int32 RedScore, int32 BlueScore) -> RedScore or BlueScore was less than Zero"));
+		UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSInGameHUD::UpdateObjectiveStats() ->  ObjectiveStatsWidget is not Valid !!!"));
 	}
 }
 
@@ -189,6 +210,18 @@ void AMultiplayerFPSInGameHUD::ResetObjectiveStats()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSInGameHUD::ResetObjectiveStats() -> ObjectiveStatsWidget is not Valid!!!"));
+	}
+}
+
+void AMultiplayerFPSInGameHUD::ResetGameLeader()
+{
+	if (IsValid(ObjectiveStatsWidget))
+	{
+		ObjectiveStatsWidget->ResetGameLeader();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSInGameHUD::ResetGameLeader() -> ObjectiveStatsWidget is not Valid!!!"));
 	}
 }
 
@@ -252,11 +285,11 @@ void AMultiplayerFPSInGameHUD::UpdateLeaderBoardStats()
 	}
 }
 
-void AMultiplayerFPSInGameHUD::GameEnded(ETeams WinnerTeam)
+void AMultiplayerFPSInGameHUD::GameEnded(const FString& Winner)
 {
 	if (IsValid(EndGameScreenWidget))
 	{
-		EndGameScreenWidget->SetWinnerTeam(WinnerTeam);
+		EndGameScreenWidget->SetWinnerTeam(Winner);
 		EndGameScreenWidget->SetVisibility(ESlateVisibility::Visible);
 	}
 	else

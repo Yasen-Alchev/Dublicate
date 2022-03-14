@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MultiplayerFPS/CommonClasses/Teams.h"
 #include "GameFramework/PlayerController.h"
 #include "MultiplayerFPSPlayerController.generated.h"
 
@@ -16,17 +15,14 @@ public:
 
 	virtual void BeginPlay() override;
 
-	UFUNCTION()
-		virtual void OnPossess(APawn* InPawn) override;
-
 	UFUNCTION(Client, Reliable)
-		virtual void ClientEndGame(ETeams WinnerTeam);
+		virtual void ClientEndGame(const FString& Winner);
 
 	UFUNCTION(Client, Reliable)
 		virtual void ClientUpdateGameTime(int minutes, int seconds);
 
 	UFUNCTION(Client, Reliable)
-		virtual void ClientUpdateObjectiveStats(int32 RedScore, int32 BlueScore);
+		virtual void ClientUpdateObjectiveStats(const TArray<FString>& ObjectiveStats);
 
 	UFUNCTION(Server, Reliable)
 		virtual void ServerSpawnPlayer();
@@ -42,9 +38,6 @@ public:
 
 	UFUNCTION()
 		virtual void KillPlayer();
-
-	UPROPERTY()
-	TEnumAsByte<ETeams> Team;
 
 protected:
 

@@ -177,7 +177,7 @@ void AMultiplayerFPSFirearm::Fire()
 	FRotator EndRotation = MultiplayerFPSPlayer->GetFirstPersonCameraComponent()->GetComponentRotation();
 	FVector EndLocation = StartLocation + (EndRotation.Vector() * 20000.0f);
 
-	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Bullet Trace")), true, MultiplayerFPSPlayer);
+	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Bullet Trace")), true, this);
 	TraceParams.AddIgnoredActor(MultiplayerFPSPlayer);
 
 	FHitResult HitResult(ForceInit);
@@ -189,7 +189,7 @@ void AMultiplayerFPSFirearm::Fire()
 		return;
 	}
 
-	bool bHitResult = World->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Pawn, TraceParams, FCollisionResponseParams::DefaultResponseParam);
+	bool bHitResult = World->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Hitscan, TraceParams, FCollisionResponseParams::DefaultResponseParam);
 	if (this->bShowDebugTrace)
 	{
 		DrawDebugLine(World, StartLocation, EndLocation, FColor::Red, false, 20.0f, ECC_WorldStatic, 0.35f);

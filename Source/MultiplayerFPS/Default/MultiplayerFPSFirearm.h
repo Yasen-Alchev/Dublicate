@@ -5,6 +5,8 @@
 
 #include "MultiplayerFPSFirearm.generated.h"
 
+#define ECC_Hitscan ECC_GameTraceChannel1
+
 class USkeletalMeshComponent;
 class USceneComponent;
 class UBoxComponent;

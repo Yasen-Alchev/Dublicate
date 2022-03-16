@@ -17,112 +17,118 @@ void AMultiplayerFPSInGameHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UWidgetLayoutLibrary::RemoveAllWidgets(this);
-
-	if (IsValid(LeaderBoardWidgetClass))
+	UWorld* World = GetWorld();
+	if (IsValid(World))
 	{
-		LeaderBoardWidget = CreateWidget<ULeaderBoardWidget>(GetWorld(), LeaderBoardWidgetClass);
-		if (IsValid(LeaderBoardWidget))
+		if (IsValid(LeaderBoardWidgetClass))
 		{
-			LeaderBoardWidget->SetVisibility(ESlateVisibility::Hidden);
-			LeaderBoardWidget->AddToViewport();
+			LeaderBoardWidget = CreateWidget<ULeaderBoardWidget>(World, LeaderBoardWidgetClass);
+			if (IsValid(LeaderBoardWidget))
+			{
+				LeaderBoardWidget->SetVisibility(ESlateVisibility::Hidden);
+				LeaderBoardWidget->AddToViewport();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> LeaderBoardWidget is not Valid!!!"));
+			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> LeaderBoardWidget is not Valid!!!"));
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> LeaderBoardWidgetClass is not Valid!!!"));
+		}
+
+		if (IsValid(ObjectiveStatsWidgetClass))
+		{
+			ObjectiveStatsWidget = CreateWidget<UObjectiveStatsWidget>(World, ObjectiveStatsWidgetClass);
+			if (IsValid(ObjectiveStatsWidget))
+			{
+				ObjectiveStatsWidget->AddToViewport();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> ObjectiveStatsWidget is not Valid!!!"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> ObjectiveStatsWidgetClass is not Valid!!!"));
+		}
+
+		if (IsValid(GameTimeWidgetClass))
+		{
+			GameTimeWidget = CreateWidget<UGameTimeWidget>(World, GameTimeWidgetClass);
+			if (IsValid(GameTimeWidget))
+			{
+				GameTimeWidget->AddToViewport();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> GameTimeWidget is not Valid!!!"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> GameTimeWidgetClass is not Valid!!!"));
+		}
+
+		if (IsValid(EndGameScreenWidgetClass))
+		{
+			EndGameScreenWidget = CreateWidget<UEndGameScreenWidget>(World, EndGameScreenWidgetClass);
+			if (IsValid(EndGameScreenWidget))
+			{
+				EndGameScreenWidget->SetVisibility(ESlateVisibility::Hidden);
+				EndGameScreenWidget->AddToViewport();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> EndGameScreenWidget is not Valid!!!"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> EndGameScreenWidgetClass is not Valid!!!"));
+		}
+
+		if (IsValid(BuyMenuWidgetClass))
+		{
+			BuyMenuWidget = CreateWidget<UBuyMenuWidget>(World, BuyMenuWidgetClass);
+			if (IsValid(BuyMenuWidget))
+			{
+				BuyMenuWidget->SetVisibility(ESlateVisibility::Hidden);
+				BuyMenuWidget->AddToViewport();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> BuyMenuWidget is not Valid!!!"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> BuyMenuWidgetClass is not Valid!!!"));
+		}
+
+		if (IsValid(InGameMenuWidgetClass))
+		{
+			InGameMenuWidget = CreateWidget<UInGameMenuWidget>(World, InGameMenuWidgetClass);
+			if (IsValid(InGameMenuWidget))
+			{
+				InGameMenuWidget->SetVisibility(ESlateVisibility::Hidden);
+				InGameMenuWidget->AddToViewport();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> InGameMenuWidget is not Valid!!!"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> InGameMenuWidgetClass is not Valid!!!"));
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> LeaderBoardWidgetClass is not Valid!!!"));
-	}
-
-	if (IsValid(ObjectiveStatsWidgetClass))
-	{
-		ObjectiveStatsWidget = CreateWidget<UObjectiveStatsWidget>(GetWorld(), ObjectiveStatsWidgetClass);
-		if (IsValid(ObjectiveStatsWidget))
-		{
-			ObjectiveStatsWidget->AddToViewport();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> ObjectiveStatsWidget is not Valid!!!"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> ObjectiveStatsWidgetClass is not Valid!!!"));
-	}
-
-	if (IsValid(GameTimeWidgetClass))
-	{
-		GameTimeWidget = CreateWidget<UGameTimeWidget>(GetWorld(), GameTimeWidgetClass);
-		if (IsValid(GameTimeWidget))
-		{
-			GameTimeWidget->AddToViewport();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> GameTimeWidget is not Valid!!!"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> GameTimeWidgetClass is not Valid!!!"));
-	}
-
-	if (IsValid(EndGameScreenWidgetClass))
-	{
-		EndGameScreenWidget = CreateWidget<UEndGameScreenWidget>(GetWorld(), EndGameScreenWidgetClass);
-		if (IsValid(EndGameScreenWidget))
-		{
-			EndGameScreenWidget->SetVisibility(ESlateVisibility::Hidden);
-			EndGameScreenWidget->AddToViewport();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> EndGameScreenWidget is not Valid!!!"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> EndGameScreenWidgetClass is not Valid!!!"));
-	}
-
-	if (IsValid(BuyMenuWidgetClass))
-	{
-		BuyMenuWidget = CreateWidget<UBuyMenuWidget>(GetWorld(), BuyMenuWidgetClass);
-		if (IsValid(BuyMenuWidget))
-		{
-			BuyMenuWidget->SetVisibility(ESlateVisibility::Hidden);
-			BuyMenuWidget->AddToViewport();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> BuyMenuWidget is not Valid!!!"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> BuyMenuWidgetClass is not Valid!!!"));
-	}
-
-	if (IsValid(InGameMenuWidgetClass))
-	{
-		InGameMenuWidget = CreateWidget<UInGameMenuWidget>(GetWorld(), InGameMenuWidgetClass);
-		if (IsValid(InGameMenuWidget))
-		{
-			InGameMenuWidget->SetVisibility(ESlateVisibility::Hidden);
-			InGameMenuWidget->AddToViewport();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> InGameMenuWidget is not Valid!!!"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> InGameMenuWidgetClass is not Valid!!!"));
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::BeginPlay() -> World is not Valid!!!"));
 	}
 }
 
@@ -169,7 +175,7 @@ void AMultiplayerFPSInGameHUD::UpdateObjectiveStats(const TArray<FString>& Objec
 					UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSInGameHUD::UpdateObjectiveStats() -> ObjectiveStats.Num is not exactly 2 !!!"));
 				}
 			}
-			else if(ObjectiveStats.Num() == 1 && !ObjectiveStats[0].IsEmpty())
+			else if (ObjectiveStats.Num() == 1 && !ObjectiveStats[0].IsEmpty())
 			{
 				ObjectiveStatsWidget->SetGameLeader(ObjectiveStats[0]);
 			}

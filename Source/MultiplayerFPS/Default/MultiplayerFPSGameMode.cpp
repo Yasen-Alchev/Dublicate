@@ -24,7 +24,6 @@ AMultiplayerFPSGameMode::AMultiplayerFPSGameMode()
     PrimaryActorTick.bCanEverTick = true;
     PrimaryActorTick.bAllowTickOnDedicatedServer = true;
 
-
     minutes = 5;
     seconds = 0;
     minPlayersToStart = 2;
@@ -58,6 +57,10 @@ void AMultiplayerFPSGameMode::Tick(float DeltaSeconds)
             if (IsValid(GameStateVar))
             {
                 bStarted = true;
+                if (GetWorldTimerManager().IsTimerActive(GameTimer))
+                {
+                    GetWorldTimerManager().ClearTimer(GameTimer);
+                }
                 GetWorldTimerManager().SetTimer(GameTimer, [this, GameStateVar]()
                     {
                         GameStateVar->DisablePlayersControls(true);
@@ -101,7 +104,10 @@ void AMultiplayerFPSGameMode::UpdateGlobalGameTimer(int& min, int& sec)
             {
                 min = 0;
                 sec = 0;
-                GetWorldTimerManager().ClearTimer(GameTimer);
+                if(GetWorldTimerManager().IsTimerActive(GameTimer))
+                {
+					GetWorldTimerManager().ClearTimer(GameTimer);
+                }
                 GameStateVar->GameEnded();
             }
         }
@@ -141,14 +147,20 @@ void AMultiplayerFPSGameMode::StartingGame()
     AMultiplayerFPSGameState* GameStateVar = GetGameState<AMultiplayerFPSGameState>();
     if (IsValid(GameStateVar))
     {
-        GetWorldTimerManager().ClearTimer(GameTimer);
+        if (GetWorldTimerManager().IsTimerActive(StartingTimer))
+        {
+            GetWorldTimerManager().ClearTimer(StartingTimer);
+        }
         GetWorldTimerManager().SetTimer(StartingTimer, [this, GameStateVar]()
             {
                 GameStateVar->DisablePlayersControls(false);
                 GameStateVar->RespawnPlayers(true);
                 GetWorldTimerManager().SetTimer(GameTimer, [this]()
                     {
+                    if(GetWorldTimerManager().IsTimerActive(StartingTimer))
+                    {
                         GetWorldTimerManager().ClearTimer(StartingTimer);
+                    }
                         UpdateGlobalGameTimer(minutes, seconds);
                     }, 1, true, 0.f);
 

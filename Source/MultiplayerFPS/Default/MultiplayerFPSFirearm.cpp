@@ -4,7 +4,6 @@
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "../Default/MultiplayerFPSCharacter.h"
-#include "../Default/MultiplayerFPSTeamBasedCharacter.h"
 #include "../Default/MultiplayerFPSPlayerController.h"
 #include "Net/UnrealNetwork.h"
 
@@ -183,9 +182,9 @@ void AMultiplayerFPSFirearm::Fire_Implementation()
 
 	AnimInstance->Montage_Play(FireAnimation, 1.f);
 
-	FVector StartLocation = MultiplayerFPSPlayer->GetFirstPersonCameraComponent()->GetComponentLocation();
+	FVector StartLocation = MultiplayerFPSPlayer->FirstPersonCamera->GetComponentLocation();
 
-	FRotator EndRotation = MultiplayerFPSPlayer->GetFirstPersonCameraComponent()->GetComponentRotation();
+	FRotator EndRotation = MultiplayerFPSPlayer->FirstPersonCamera->GetComponentRotation();
 	FVector EndLocation = StartLocation + (EndRotation.Vector() * 20000.0f);
 
 	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Bullet Trace")), true, MultiplayerFPSPlayer);

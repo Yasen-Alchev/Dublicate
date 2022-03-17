@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MultiplayerFPS/CommonClasses/Teams.h"
 #include "MultiplayerFPS/Default/MultiplayerFPSPlayerController.h"
 #include "TeamBasedPlayerController.generated.h"
 
@@ -18,5 +19,7 @@ public:
 	UFUNCTION()
 		virtual void OnPossess(APawn* InPawn) override;
 
+	UPROPERTY()
+	TEnumAsByte<ETeams> Team;
 };
 

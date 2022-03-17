@@ -27,24 +27,14 @@ void ATeamBasedGameMode::HandleStartingNewPlayer_Implementation(APlayerControlle
 {
     Super::HandleStartingNewPlayer_Implementation(MovieSceneBlends);
 
-    ATeamBasedPlayerController* PlayerController = Cast<ATeamBasedPlayerController>(MovieSceneBlends);
-    if (IsValid(PlayerController))
+    ATeamBasedPlayerState* PlayerStateVar = MovieSceneBlends->GetPlayerState<ATeamBasedPlayerState>();
+    if (IsValid(PlayerStateVar))
     {
-        PlayerController->Team = assignTeam();
-
-        ATeamBasedPlayerState* PlayerStateVar = MovieSceneBlends->GetPlayerState<ATeamBasedPlayerState>();
-        if (IsValid(PlayerStateVar))
-        {
-            PlayerStateVar->Team = PlayerController->Team;
-        }
-        else
-        {
-            UE_LOG(LogTemp, Error, TEXT("%s ATeamBasedGameMode::HandleStartingNewPlayer_Implementation(APlayerController* MovieSceneBlends) -> PlayerStateVar is not Valid !!!"), *MovieSceneBlends->GetName());
-        }
+        PlayerStateVar->Team = assignTeam();
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("%s ATeamBasedGameMode::HandleStartingNewPlayer_Implementation(APlayerController* MovieSceneBlends) -> PlayerController is not Valid !!!"), *MovieSceneBlends->GetName());
+        UE_LOG(LogTemp, Error, TEXT("%s ATeamBasedGameMode::HandleStartingNewPlayer_Implementation(APlayerController* MovieSceneBlends) -> PlayerStateVar is not Valid !!!"), *MovieSceneBlends->GetName());
     }
 }
 

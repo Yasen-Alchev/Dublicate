@@ -33,7 +33,7 @@ void ATeamBasedPlayerState::FlagWasCaptured()
 			PlayerHud->UpdateLeaderBoardStats();
 
 			// TODO: REM
-			PlayerHud->ToggleLeaderBoardVisibility();
+			//PlayerHud->ToggleLeaderBoardVisibility();
 		}
 		else
 		{

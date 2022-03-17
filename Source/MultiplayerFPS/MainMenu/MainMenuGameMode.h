@@ -4,9 +4,6 @@
 #include "GameFramework/GameMode.h"
 #include "MainMenuGameMode.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class MULTIPLAYERFPS_API AMainMenuGameMode : public AGameMode
 {

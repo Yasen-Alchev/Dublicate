@@ -188,7 +188,7 @@ void AMultiplayerFPSFirearm::Fire_Implementation()
 	FRotator EndRotation = MultiplayerFPSPlayer->GetFirstPersonCameraComponent()->GetComponentRotation();
 	FVector EndLocation = StartLocation + (EndRotation.Vector() * 20000.0f);
 
-	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Bullet Trace")), true, this);
+	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Bullet Trace")), true, MultiplayerFPSPlayer);
 	TraceParams.AddIgnoredActor(MultiplayerFPSPlayer);
 
 	FHitResult HitResult(ForceInit);

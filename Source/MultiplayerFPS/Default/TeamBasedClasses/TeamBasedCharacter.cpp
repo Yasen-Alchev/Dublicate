@@ -1,6 +1,6 @@
 #include "TeamBasedCharacter.h"
 
-#include "TeamBasedPlayerController.h"
+#include "TeamBasedPlayerState.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
@@ -33,14 +33,14 @@ void ATeamBasedCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 void ATeamBasedCharacter::InitTeam()
 {
-	ATeamBasedPlayerController* PlayerController = Cast<ATeamBasedPlayerController>(this->GetController());
-	if (IsValid(PlayerController))
+	ATeamBasedPlayerState* PlayerStateVar = Cast<ATeamBasedPlayerState>(GetPlayerState());
+	if (IsValid(PlayerStateVar))
 	{
-		this->Team = PlayerController->Team;
+		this->Team = PlayerStateVar->Team;
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s ATeamBasedCharacter::InitTeam(AActor * Player)->PlayerController is not Valid !!!"), *PlayerName);
+		UE_LOG(LogTemp, Error, TEXT("%s ATeamBasedCharacter::InitTeam(AActor * Player)->PlayerStateVar is not Valid !!!"), *PlayerName);
 	}
 	MaterialChange();
 }

@@ -38,7 +38,7 @@ void UEndGameScreenWidget::ReturnToMainMenu()
 	UWorld* World = GetWorld();
 	if (IsValid(World))
 	{
-		World->GetFirstPlayerController()->ClientTravel("/Game/ThirdPersonCPP/Maps/MainMenuLevel", TRAVEL_Absolute);
+		World->GetFirstPlayerController()->ClientTravel("/Game/ThirdPersonCPP/Maps/MainMenuLevel.MainMenuLevel", TRAVEL_Absolute);
 	}
 	else
 	{

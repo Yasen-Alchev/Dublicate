@@ -5,12 +5,12 @@
 
 #include "MultiplayerFPSFirearm.generated.h"
 
-#define ECC_Hitscan ECC_GameTraceChannel1
-
 class USkeletalMeshComponent;
 class USceneComponent;
 class UBoxComponent;
 class UAnimMontage;
+
+#define ECC_Hitscan ECC_GameTraceChannel1
 
 UENUM()
 enum class EFireMode : uint8

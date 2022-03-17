@@ -28,6 +28,8 @@ class MULTIPLAYERFPS_API AMultiplayerFPSFirearm : public AActor
 public:	
 	AMultiplayerFPSFirearm();
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* GunMesh;
 
@@ -76,7 +78,7 @@ private:
 	UPROPERTY()
 	EFireMode CurrentFireMode;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	int32 CurrentMagazineCapacity;
 
 	UPROPERTY()
@@ -91,7 +93,7 @@ private:
 	UPROPERTY()
 	FTimerHandle AllowFiringTimer;
 
-	UFUNCTION()
+	UFUNCTION(Server, Reliable)
 	void Fire();
 
 	UFUNCTION()

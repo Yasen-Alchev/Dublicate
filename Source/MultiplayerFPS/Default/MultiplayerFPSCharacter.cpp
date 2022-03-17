@@ -3,13 +3,11 @@
 #include "MultiplayerFPSPlayerController.h"
 #include "MultiplayerFPSInGameHUD.h"
 #include "MultiplayerFPSFirearm.h"
-#include "MultiplayerFPSPlayerState.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "MultiplayerFPSHealthSystem.h"
 
@@ -34,6 +32,8 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
+	GetMesh()->SetOwnerNoSee(true);
+
 	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh"));
 	FirstPersonMesh->SetOnlyOwnerSee(true);
 	FirstPersonMesh->SetupAttachment(FirstPersonCameraComponent);
@@ -51,6 +51,7 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	Team = TEAM_NONE;
 
 	HealthSystem = CreateDefaultSubobject<UMultiplayerFPSHealthSystem>(TEXT("HealthSystem"));
+	HealthSystem->SetIsReplicated(true);
 
 	this->WeaponInHand = 0;
 
@@ -296,7 +297,7 @@ void AMultiplayerFPSCharacter::InitTeam()
 	}
 }
 
-void AMultiplayerFPSCharacter::StartFiring()
+void AMultiplayerFPSCharacter::StartFiring_Implementation()
 {
 	if (this->CanFireFirearmArray[this->WeaponInHand])
 	{
@@ -304,7 +305,7 @@ void AMultiplayerFPSCharacter::StartFiring()
 	}
 }
 
-void AMultiplayerFPSCharacter::StopFiring()
+void AMultiplayerFPSCharacter::StopFiring_Implementation()
 {
 	this->FirearmArray[(this->WeaponInHand)]->StopFiring();
 }

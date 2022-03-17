@@ -12,6 +12,8 @@ class MULTIPLAYERFPS_API UMultiplayerFPSHealthSystem : public UActorComponent
 public:	
 	UMultiplayerFPSHealthSystem();
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	UPROPERTY(EditAnywhere, Category = "Health")
 	float MaxHealth;
 
@@ -34,10 +36,10 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	float CurrentHealth;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	float CurrentShield;
 
 	UPROPERTY()
@@ -54,13 +56,13 @@ private:
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION()
+	UFUNCTION(Server, Reliable)
 	void RechargeShield();
 
 	UFUNCTION()
 	void StartShieldRecharge();
 
-	UFUNCTION()
+	UFUNCTION(Server, Reliable)
 	void TakeDamage(AActor* DamagedActor, float Damage,
 		const class UDamageType* DamageType, class AController* InstigatedBy,
 		AActor* DamageCauser);
@@ -85,9 +87,9 @@ public:
 		return this->MaxShield;
 	}
 
-	UFUNCTION()
+	UFUNCTION(Server, Reliable)
 	void Heal(float Value);
 
-	UFUNCTION()
+	UFUNCTION(Server, Reliable)
 	void Death();
 };

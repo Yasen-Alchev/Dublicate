@@ -2,6 +2,7 @@
 #include "../Default/MultiplayerFPSCharacter.h"
 #include "../Default/MultiplayerFPSPlayerController.h"
 #include "GameFramework/Actor.h"
+#include "Net/UnrealNetwork.h"
 
 UMultiplayerFPSHealthSystem::UMultiplayerFPSHealthSystem()
 {
@@ -16,9 +17,18 @@ UMultiplayerFPSHealthSystem::UMultiplayerFPSHealthSystem()
 	this->ShieldRechargeRate = 0.0f;
 	this->ShieldRechargeCooldownAfterDamage = ShieldRechargeCooldownAfterDamage;
 
+
 	this->bShouldRechargeShield = false;
 
 	this->ShieldRateCounter = 0;
+}
+
+void UMultiplayerFPSHealthSystem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UMultiplayerFPSHealthSystem, CurrentHealth);
+	DOREPLIFETIME(UMultiplayerFPSHealthSystem, CurrentShield);
 }
 
 void UMultiplayerFPSHealthSystem::BeginPlay()
@@ -44,10 +54,12 @@ void UMultiplayerFPSHealthSystem::TickComponent(float DeltaTime, ELevelTick Tick
 
 }
 
-void UMultiplayerFPSHealthSystem::TakeDamage(AActor* DamagedActor, float Damage,
+void UMultiplayerFPSHealthSystem::TakeDamage_Implementation(AActor* DamagedActor, float Damage,
 	const class UDamageType* DamageType, class AController* InstigatedBy,
 	AActor* DamageCauser)
 {
+	UE_LOG(LogTemp, Error, TEXT("TakeDamage Called!!!"));
+
 	AActor* OwnerActor = GetOwner();
 	if (!IsValid(OwnerActor))
 	{
@@ -104,7 +116,7 @@ void UMultiplayerFPSHealthSystem::StartShieldRecharge()
 	OwnerActor->GetWorldTimerManager().SetTimer(this->ShieldRechargeTimer, ShieldRechargeDelegate, this->ShieldRechargeInterval, true, 0.0f);
 }
 
-void UMultiplayerFPSHealthSystem::RechargeShield()
+void UMultiplayerFPSHealthSystem::RechargeShield_Implementation()
 {
 	AActor* OwnerActor = GetOwner();
 	if (!IsValid(OwnerActor))
@@ -132,7 +144,7 @@ void UMultiplayerFPSHealthSystem::RechargeShield()
 	}
 }
 
-void UMultiplayerFPSHealthSystem::Heal(float Value)
+void UMultiplayerFPSHealthSystem::Heal_Implementation(float Value)
 {
 	if (Value == 100)
 	{
@@ -149,7 +161,7 @@ void UMultiplayerFPSHealthSystem::Heal(float Value)
 	}
 }
 
-void UMultiplayerFPSHealthSystem::Death()
+void UMultiplayerFPSHealthSystem::Death_Implementation()
 {
 	AActor* OwnerActor = GetOwner();
 	if (!IsValid(OwnerActor))

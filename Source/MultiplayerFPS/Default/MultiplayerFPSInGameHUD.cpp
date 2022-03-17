@@ -1,7 +1,9 @@
 #include "MultiplayerFPSInGameHUD.h"
 
+#include "CanvasItem.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "Engine/Canvas.h"
 #include "Widgets/BuyMenuWidget.h"
 #include "Widgets/EndGameScreenWidget.h"
 #include "Widgets/GameTimeWidget.h"
@@ -10,7 +12,11 @@
 #include "Widgets/ObjectiveStatsWidget.h"
 
 
-AMultiplayerFPSInGameHUD::AMultiplayerFPSInGameHUD() {}
+AMultiplayerFPSInGameHUD::AMultiplayerFPSInGameHUD()
+{
+	static ConstructorHelpers::FObjectFinder<UTexture2D> CrosshairTexObj(TEXT("/Game/FirstPerson/Textures/FirstPersonCrosshair"));
+	CrosshairTex = CrosshairTexObj.Object;
+}
 
 void AMultiplayerFPSInGameHUD::BeginPlay()
 {
@@ -134,6 +140,12 @@ void AMultiplayerFPSInGameHUD::Tick(float DeltaSeconds)
 void AMultiplayerFPSInGameHUD::DrawHUD()
 {
 	Super::DrawHUD();
+	const FVector2D Center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
+	const FVector2D CrosshairDrawPosition((Center.X),(Center.Y - 5.35f/*+ 20.0f*/));
+
+	FCanvasTileItem TileItem(CrosshairDrawPosition, CrosshairTex->Resource, FLinearColor::White);
+	TileItem.BlendMode = SE_BLEND_Translucent;
+	Canvas->DrawItem(TileItem);
 }
 
 

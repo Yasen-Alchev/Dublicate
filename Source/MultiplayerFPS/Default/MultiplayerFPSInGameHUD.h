@@ -42,6 +42,10 @@ public:
 
 protected:
 
+	UPROPERTY()
+	class UTexture2D* CrosshairTex;
+
+
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets", Meta = (BlueprintProtected = "true"))
 		TSubclassOf<UUserWidget> GameTimeWidgetClass;
 
@@ -78,4 +82,5 @@ protected:
 
 	UPROPERTY()
 		class UEndGameScreenWidget* EndGameScreenWidget;
+
 };

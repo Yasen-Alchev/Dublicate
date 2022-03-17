@@ -68,6 +68,7 @@ void ULeaderBoardWidget::GenerateLeaderBoard()
 										UObjectiveLeaderBoardUnitWidget* NewObjectLeaderBoardUnit = Cast<UObjectiveLeaderBoardUnitWidget>(NewLeaderBoardUnit);
 										if (IsValid(NewObjectLeaderBoardUnit))
 										{
+											NewObjectLeaderBoardUnit->SetPlayerName(TeamCharacter->PlayerName);
 											NewObjectLeaderBoardUnit->SetPlayerObjectiveScore(FString::FromInt(TeamBasedPlayerState->getCapturedFlagsCount()));
 										}
 										else

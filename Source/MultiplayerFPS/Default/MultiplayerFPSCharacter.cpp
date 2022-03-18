@@ -43,8 +43,8 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	this->FullBodyMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FullBodyMesh"));
 	this->FullBodyMesh->SetOwnerNoSee(true);
 	this->FullBodyMesh->SetupAttachment(this->FirstPersonCamera);
-	this->FirstPersonMesh->bCastDynamicShadow = true;
-	this->FirstPersonMesh->CastShadow = true;
+	this->FullBodyMesh->bCastDynamicShadow = true;
+	this->FullBodyMesh->CastShadow = true;
 
 	this->HealthSystem = CreateDefaultSubobject<UMultiplayerFPSHealthSystem>(TEXT("HealthSystem"));
 

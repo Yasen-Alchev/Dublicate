@@ -48,6 +48,18 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 
 	this->HealthSystem = CreateDefaultSubobject<UMultiplayerFPSHealthSystem>(TEXT("HealthSystem"));
 
+	this->BodyHitboxCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BodyHitboxCapsule"));
+	this->BodyHitboxCapsule->InitCapsuleSize(42.0f, 77.0f);
+	this->BodyHitboxCapsule->SetRelativeLocation(FVector(0.0f, 0.0f, -20.0f));
+	this->BodyHitboxCapsule->SetupAttachment(RootComponent);
+	this->BodyHitboxCapsule->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	this->HeadHitboxBox = CreateDefaultSubobject<UBoxComponent>(TEXT("HeadHitboxBox"));
+	this->HeadHitboxBox->SetBoxExtent(FVector(16.0f, 16.0f, 16.0f));
+	this->HeadHitboxBox->SetRelativeLocation(FVector(5.0f, 0.0f, 70.0f));
+	this->HeadHitboxBox->SetupAttachment(RootComponent);	
+	this->HeadHitboxBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 

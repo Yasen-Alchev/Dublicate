@@ -202,7 +202,7 @@ void AMultiplayerFPSFirearm::Fire()
 	bool bHitResult = World->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Hitscan, TraceParams, FCollisionResponseParams::DefaultResponseParam);
 	if (this->bShowDebugTrace)
 	{
-		DrawDebugLine(World, StartLocation, EndLocation, FColor::Red,	 false, 20.0f, ECC_WorldStatic, 0.35f);
+		DrawDebugLine(World, StartLocation, EndLocation, FColor::Red, false, 20.0f, ECC_WorldStatic, 0.35f);
 	}
 
 	if (CurrentFireMode == EFireMode::Burst)
@@ -241,10 +241,33 @@ void AMultiplayerFPSFirearm::Fire()
 			FDamageEvent DamageEvent;
 
 			AMultiplayerFPSPlayerController* MultiplayerFPSPlayerController = Cast<AMultiplayerFPSPlayerController>(MultiplayerFPSPlayer->GetController());
+			if (!IsValid(MultiplayerFPSPlayerController))
+			{
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(MultiplayerFPSPlayerController)"));
+			}
 
 			UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSFirearm::Fire -> Enemy Hit"));
 
-			HitPlayer->TakeDamage(this->Damage, DamageEvent, MultiplayerFPSPlayerController, MultiplayerFPSPlayer);
+			UPrimitiveComponent* HitComponent = HitResult.GetComponent();
+			if (!IsValid(HitComponent))
+			{
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitComponent)"));
+			}
+
+			if (HitComponent->ComponentHasTag("HeadHitbox"))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Head Hit"));
+				HitPlayer->TakeDamage((this->Damage * 1.5f), DamageEvent, MultiplayerFPSPlayerController, MultiplayerFPSPlayer);
+			}
+			else if (HitComponent->ComponentHasTag("BodyHitbox"))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Body Hit"));
+				HitPlayer->TakeDamage(this->Damage, DamageEvent, MultiplayerFPSPlayerController, MultiplayerFPSPlayer);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire No Valid Component Tag Found"));
+			}
 		}
 		else
 		{
@@ -258,7 +281,7 @@ void AMultiplayerFPSFirearm::Fire()
 
 	this->CurrentMagazineCapacity = FMath::Clamp(this->CurrentMagazineCapacity - 1, 0, this->MaxMagazineCapacity);
 
-	//UE_LOG(LogTemp, Warning, TEXT("Current Magazine Capacity: %d"), this->CurrentMagazineCapacity);
+	UE_LOG(LogTemp, Warning, TEXT("Current Magazine Capacity: %d"), this->CurrentMagazineCapacity);
 
 	if (this->CurrentMagazineCapacity == 0)
 	{

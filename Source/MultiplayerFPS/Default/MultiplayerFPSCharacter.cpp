@@ -283,7 +283,7 @@ void AMultiplayerFPSCharacter::StartFiring()
 
 void AMultiplayerFPSCharacter::StopFiring()
 {
-	this->FirearmArray[(this->WeaponInHand)]->StopFiring();
+	this->FirearmArray[this->WeaponInHand]->StopFiring();
 }
 
 void AMultiplayerFPSCharacter::SwitchWeapon()
@@ -308,7 +308,7 @@ void AMultiplayerFPSCharacter::SwitchFireMode()
 {
 	if (!this->bIsReloading)
 	{
-		this->FirearmArray[(this->WeaponInHand)]->SwitchFireMode();
+		this->FirearmArray[this->WeaponInHand]->SwitchFireMode();
 	}
 }
 
@@ -316,11 +316,11 @@ void AMultiplayerFPSCharacter::Reload()
 {
 	if (!bIsReloading && FirearmArray[this->WeaponInHand]->ShouldReloadFirearm())
 	{
-		this->FirearmArray[(this->WeaponInHand)]->Reload();
+		this->FirearmArray[this->WeaponInHand]->Reload();
 		if (bIsZoomedIn)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Reloading -> Zoomed Out!"))
-				AMultiplayerFPSCharacter::ZoomOut();
+			UE_LOG(LogTemp, Warning, TEXT("Reloading -> Zoomed Out!"));
+			AMultiplayerFPSCharacter::ZoomOut();
 		}
 	}
 }

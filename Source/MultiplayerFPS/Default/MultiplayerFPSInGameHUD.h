@@ -80,4 +80,10 @@ protected:
 
 	UPROPERTY()
 		class UEndGameScreenWidget* EndGameScreenWidget;
+
+private:
+
+	UPROPERTY()
+			class UTexture2D* CrosshairTex;
+
 };

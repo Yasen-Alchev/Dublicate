@@ -93,7 +93,7 @@ private:
 	UPROPERTY()
 	FTimerHandle AllowFiringTimer;
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION()
 	void Fire();
 
 	UFUNCTION()

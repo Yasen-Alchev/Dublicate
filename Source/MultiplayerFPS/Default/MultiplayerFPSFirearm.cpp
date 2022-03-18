@@ -150,7 +150,7 @@ void AMultiplayerFPSFirearm::BurstFire()
 	}
 }
 
-void AMultiplayerFPSFirearm::Fire_Implementation()
+void AMultiplayerFPSFirearm::Fire()
 {
 	AActor* PlayerActor = GetOwner();
 	if (!IsValid(PlayerActor))
@@ -218,7 +218,7 @@ void AMultiplayerFPSFirearm::Fire_Implementation()
 
 	if (!bHitResult)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Not A Blocking Hit!"));
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire -> Not A Blocking Hit!"));
 		return;
 	}
 
@@ -242,13 +242,13 @@ void AMultiplayerFPSFirearm::Fire_Implementation()
 
 			AMultiplayerFPSPlayerController* MultiplayerFPSPlayerController = Cast<AMultiplayerFPSPlayerController>(MultiplayerFPSPlayer->GetController());
 
-			UE_LOG(LogTemp, Warning, TEXT("Enemy Hit"));
+			UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSFirearm::Fire -> Enemy Hit"));
 
 			HitPlayer->TakeDamage(this->Damage, DamageEvent, MultiplayerFPSPlayerController, MultiplayerFPSPlayer);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Hit Team Player"));
+			UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSFirearm::Fire -> Hit Team Player"));
 		}
 	}
 	else
@@ -258,7 +258,7 @@ void AMultiplayerFPSFirearm::Fire_Implementation()
 
 	this->CurrentMagazineCapacity = FMath::Clamp(this->CurrentMagazineCapacity - 1, 0, this->MaxMagazineCapacity);
 
-	UE_LOG(LogTemp, Warning, TEXT("Current Magazine Capacity: %d"), this->CurrentMagazineCapacity);
+	//UE_LOG(LogTemp, Warning, TEXT("Current Magazine Capacity: %d"), this->CurrentMagazineCapacity);
 
 	if (this->CurrentMagazineCapacity == 0)
 	{
@@ -284,7 +284,7 @@ void AMultiplayerFPSFirearm::SwitchFireMode()
 
 	if (FireModesArraySize == 1)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No Other Firing Mode Available!"));
+		UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSFirearm::SwitchFireMode() -> No Other Firing Mode Available!"));
 	}
 	else
 	{
@@ -304,7 +304,7 @@ void AMultiplayerFPSFirearm::SwitchFireMode()
 			CurrentFireMode = FireModesArray[CurrentFireModeIndex + 1];
 		}
 
-		UE_LOG(LogTemp, Warning, TEXT("Switched Fire Mode"));
+		UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSFirearm::SwitchFireMode() -> Switched Fire Mode"));
 	}
 }
 

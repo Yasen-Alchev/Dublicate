@@ -23,8 +23,14 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
 	class USkeletalMeshComponent* FullBodyMesh;
 
-	UPROPERTY(VisibleAnywhere, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	class UCameraComponent* FirstPersonCamera;
+
+	UPROPERTY(VisibleAnywhere, Category = "Hitbox")
+	class UCapsuleComponent* BodyHitboxCapsule;
+
+	UPROPERTY(VisibleAnywhere, Category = "Hitbox")
+	class UBoxComponent* HeadHitboxBox;
 
 	UPROPERTY()
 	TArray<class AMultiplayerFPSFirearm*> FirearmArray;

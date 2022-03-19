@@ -1,4 +1,6 @@
 #include "MultiplayerFPSHealthSystem.h"
+
+#include "MultiplayerFPSGameMode.h"
 #include "../Default/MultiplayerFPSCharacter.h"
 #include "../Default/MultiplayerFPSPlayerController.h"
 #include "GameFramework/Actor.h"
@@ -19,8 +21,8 @@ UMultiplayerFPSHealthSystem::UMultiplayerFPSHealthSystem()
 
 
 	this->bShouldRechargeShield = false;
-
 	this->ShieldRateCounter = 0;
+
 }
 
 void UMultiplayerFPSHealthSystem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -34,6 +36,8 @@ void UMultiplayerFPSHealthSystem::GetLifetimeReplicatedProps(TArray<FLifetimePro
 void UMultiplayerFPSHealthSystem::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SetIsReplicated(true);
 
 	AActor* OwnerActor = GetOwner();
 	if (!IsValid(OwnerActor))
@@ -54,9 +58,35 @@ void UMultiplayerFPSHealthSystem::TickComponent(float DeltaTime, ELevelTick Tick
 
 }
 
-void UMultiplayerFPSHealthSystem::TakeDamage_Implementation(AActor* DamagedActor, float Damage,
-	const class UDamageType* DamageType, class AController* InstigatedBy,
-	AActor* DamageCauser)
+//void UMultiplayerFPSHealthSystem::TakeDamage(AActor* DamagedActor, float Damage,
+//	const class UDamageType* DamageType, class AController* InstigatedBy,
+//	AActor* DamageCauser)
+//{
+//	AActor* OwnerActor = GetOwner();
+//	if (!IsValid(OwnerActor))
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::TakeDamage !IsValid(OwnerActor)"));
+//		return;
+//	}
+//	if(OwnerActor->HasAuthority())
+//	{
+//		ClientTakeDamage(DamagedActor, Damage, DamageType, InstigatedBy, DamageCauser);
+//	}
+//	else
+//	{
+//		TakeDamageBody(DamagedActor, Damage, DamageType, InstigatedBy, DamageCauser);
+//	}
+//}
+//
+//
+//void UMultiplayerFPSHealthSystem::ClientTakeDamage_Implementation(AActor* DamagedActor, float Damage,
+//                                                                  const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+//{
+//	TakeDamageBody(DamagedActor, Damage, DamageType, InstigatedBy, DamageCauser);
+//}
+
+void UMultiplayerFPSHealthSystem::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+	AController* InstigatedBy, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Error, TEXT("TakeDamage Called!!!"));
 
@@ -86,6 +116,7 @@ void UMultiplayerFPSHealthSystem::TakeDamage_Implementation(AActor* DamagedActor
 
 		UE_LOG(LogTemp, Warning, TEXT("Health Damage Taken - %.2f"), Damage);
 
+
 		if (this->CurrentHealth == 0.0f)
 		{
 			this->Death();
@@ -97,6 +128,7 @@ void UMultiplayerFPSHealthSystem::TakeDamage_Implementation(AActor* DamagedActor
 
 		UE_LOG(LogTemp, Warning, TEXT("Shield Damage Taken - %.2f"), Damage);
 	}
+
 }
 
 void UMultiplayerFPSHealthSystem::StartShieldRecharge()
@@ -116,7 +148,7 @@ void UMultiplayerFPSHealthSystem::StartShieldRecharge()
 	OwnerActor->GetWorldTimerManager().SetTimer(this->ShieldRechargeTimer, ShieldRechargeDelegate, this->ShieldRechargeInterval, true, 0.0f);
 }
 
-void UMultiplayerFPSHealthSystem::RechargeShield_Implementation()
+void UMultiplayerFPSHealthSystem::RechargeShield()
 {
 	AActor* OwnerActor = GetOwner();
 	if (!IsValid(OwnerActor))
@@ -144,7 +176,7 @@ void UMultiplayerFPSHealthSystem::RechargeShield_Implementation()
 	}
 }
 
-void UMultiplayerFPSHealthSystem::Heal_Implementation(float Value)
+void UMultiplayerFPSHealthSystem::Heal(float Value)
 {
 	if (Value == 100)
 	{
@@ -161,7 +193,24 @@ void UMultiplayerFPSHealthSystem::Heal_Implementation(float Value)
 	}
 }
 
-void UMultiplayerFPSHealthSystem::Death_Implementation()
+void UMultiplayerFPSHealthSystem::Death()
+{
+	AActor* OwnerActor = GetOwner();
+	if (!IsValid(OwnerActor))
+	{
+		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::Death !IsValid(OwnerActor)"));
+		return;
+	}
+	if(OwnerActor->HasAuthority())
+	{
+		UE_LOG(LogTemp, Error, TEXT("OwnerActor->HasAuthority() called "));
+		DeathBody();
+	}
+	UE_LOG(LogTemp, Error, TEXT("NonServer Death called "));
+	ServerDeath();
+}
+
+void UMultiplayerFPSHealthSystem::DeathBody()
 {
 	AActor* OwnerActor = GetOwner();
 	if (!IsValid(OwnerActor))
@@ -170,14 +219,24 @@ void UMultiplayerFPSHealthSystem::Death_Implementation()
 		return;
 	}
 
+	if (OwnerActor->GetNetOwner()->GetLocalRole() == ROLE_Authority)
+		UE_LOG(LogTemp, Error, TEXT("ROLE_Authority ROLE!!!"));
+	if (OwnerActor->GetNetOwner()->GetLocalRole() == ROLE_AutonomousProxy)
+		UE_LOG(LogTemp, Error, TEXT("ROLE_AutonomousProxy ROLE!!!"));
+	if (OwnerActor->GetNetOwner()->GetLocalRole() == ROLE_SimulatedProxy)
+		UE_LOG(LogTemp, Error, TEXT("ROLE_SimulatedProxy ROLE!!!"));
+
+
+	UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::Death OwnerActor = %s"), *OwnerActor->GetName());
+
+
 	AMultiplayerFPSCharacter* MultiplayerFPSPlayer = Cast<AMultiplayerFPSCharacter>(OwnerActor);
 	if (!IsValid(MultiplayerFPSPlayer))
 	{
 		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::Death !IsValid(MultiplayerFPSPlayer)"));
 		return;
 	}
-
-	MultiplayerFPSPlayer->Destroy(true);
+	//MultiplayerFPSPlayer->KillPlayer();
 
 	AMultiplayerFPSPlayerController* MultiplayerFPSPlayerController = Cast<AMultiplayerFPSPlayerController>(MultiplayerFPSPlayer->GetController());
 	if (!IsValid(MultiplayerFPSPlayerController))
@@ -186,5 +245,11 @@ void UMultiplayerFPSHealthSystem::Death_Implementation()
 		return;
 	}
 
-	MultiplayerFPSPlayerController->UnPossess();
+	MultiplayerFPSPlayerController->KillPlayer();
+}
+
+void UMultiplayerFPSHealthSystem::ServerDeath_Implementation()
+{
+	UE_LOG(LogTemp, Error, TEXT("Server Death called "));
+	DeathBody();
 }

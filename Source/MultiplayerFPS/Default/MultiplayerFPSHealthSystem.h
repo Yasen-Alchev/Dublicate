@@ -56,13 +56,13 @@ private:
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION()
 	void RechargeShield();
 
 	UFUNCTION()
 	void StartShieldRecharge();
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION()
 	void TakeDamage(AActor* DamagedActor, float Damage,
 		const class UDamageType* DamageType, class AController* InstigatedBy,
 		AActor* DamageCauser);
@@ -87,9 +87,15 @@ public:
 		return this->MaxShield;
 	}
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION()
 	void Heal(float Value);
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION()
 	void Death();
+
+	UFUNCTION(Server, Reliable)
+		void ServerDeath();
+
+	UFUNCTION()
+		void DeathBody();
 };

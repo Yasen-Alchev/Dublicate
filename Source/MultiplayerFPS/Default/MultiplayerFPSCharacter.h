@@ -58,6 +58,12 @@ protected:
 	UFUNCTION(BlueprintCallable)
 		virtual void SprintStop();
 
+	UFUNCTION(Server, Reliable)
+		virtual void ServerSpawnFirearmActor();
+
+	UFUNCTION(Client, Reliable)
+		virtual void ClientSpawnFirearmActor();
+
 	UPROPERTY(Replicated)
 		bool bIsSprinting;
 
@@ -73,6 +79,16 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
+		virtual float TakeDamage(
+			float DamageAmount,
+			struct FDamageEvent const& DamageEvent,
+			class AController* EventInstigator,
+			AActor* DamageCauser) override;
+
+	UFUNCTION(Server, Reliable)
+		virtual void KillPlayer();
+
+	UFUNCTION()
 		virtual void SetOptionsMenuVisibility(bool Visibility);
 
 	UFUNCTION()
@@ -80,6 +96,12 @@ public:
 
 	UFUNCTION()
 		virtual void ToggleOptionsMenu();
+
+	UFUNCTION()
+		virtual void DestoryPlayer();
+
+	UFUNCTION(Client, Reliable)
+		virtual void ClientDestoryPlayer();
 
 	UPROPERTY()
 		FString PlayerName;

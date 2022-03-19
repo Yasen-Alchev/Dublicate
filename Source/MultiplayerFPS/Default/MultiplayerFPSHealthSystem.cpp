@@ -80,6 +80,11 @@ void UMultiplayerFPSHealthSystem::TakeDamage_Implementation(AActor* DamagedActor
 		OwnerActor->GetWorldTimerManager().SetTimer(this->ShieldRechargeStartTimer, ShieldRechargeDelegate, this->ShieldRechargeCooldownAfterDamage, false);
 	}
 
+	if (OwnerActor->GetWorldTimerManager().IsTimerActive(this->ShieldRechargeTimer))
+	{
+		OwnerActor->GetWorldTimerManager().ClearTimer(this->ShieldRechargeTimer);
+	}
+
 	if (this->CurrentShield == 0.0f)
 	{
 		this->CurrentHealth = FMath::Clamp(this->CurrentHealth - Damage, 0.0f, this->MaxHealth);

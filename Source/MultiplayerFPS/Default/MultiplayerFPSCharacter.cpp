@@ -48,15 +48,15 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 
 	this->HealthSystem = CreateDefaultSubobject<UMultiplayerFPSHealthSystem>(TEXT("HealthSystem"));
 
-	this->BodyHitboxCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BodyHitboxCapsule"));
-	this->BodyHitboxCapsule->InitCapsuleSize(42.0f, 77.0f);
-	this->BodyHitboxCapsule->SetRelativeLocation(FVector(0.0f, 0.0f, -20.0f));
-	this->BodyHitboxCapsule->SetupAttachment(RootComponent);
-	this->BodyHitboxCapsule->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	this->BodyHitboxBox = CreateDefaultSubobject<UBoxComponent>(TEXT("BodyHitboxBox"));
+	this->BodyHitboxBox->SetBoxExtent(FVector(27.0f, 36.0f, 73.0f));
+	this->BodyHitboxBox->SetRelativeLocation(FVector(0.0f, 0.0f, -18.0f));
+	this->BodyHitboxBox->SetupAttachment(RootComponent);
+	this->BodyHitboxBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	this->HeadHitboxBox = CreateDefaultSubobject<UBoxComponent>(TEXT("HeadHitboxBox"));
 	this->HeadHitboxBox->SetBoxExtent(FVector(16.0f, 16.0f, 16.0f));
-	this->HeadHitboxBox->SetRelativeLocation(FVector(5.0f, 0.0f, 70.0f));
+	this->HeadHitboxBox->SetRelativeLocation(FVector(5.0f, 4.0f, 70.0f));
 	this->HeadHitboxBox->SetupAttachment(RootComponent);	
 	this->HeadHitboxBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 

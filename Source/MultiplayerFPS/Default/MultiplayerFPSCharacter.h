@@ -27,7 +27,7 @@ public:
 	class UCameraComponent* FirstPersonCamera;
 
 	UPROPERTY(VisibleAnywhere, Category = "Hitbox")
-	class UCapsuleComponent* BodyHitboxCapsule;
+	class UBoxComponent* BodyHitboxBox;
 
 	UPROPERTY(VisibleAnywhere, Category = "Hitbox")
 	class UBoxComponent* HeadHitboxBox;

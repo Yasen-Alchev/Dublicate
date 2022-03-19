@@ -155,6 +155,10 @@ void AMultiplayerFPSGameMode::StartingGame()
             {
                 GameStateVar->DisablePlayersControls(false);
                 GameStateVar->RespawnPlayers(true);
+				if(GetWorldTimerManager().IsTimerActive(GameTimer))
+				{
+                    GetWorldTimerManager().ClearTimer(GameTimer);
+				}
                 GetWorldTimerManager().SetTimer(GameTimer, [this]()
                     {
                     if(GetWorldTimerManager().IsTimerActive(StartingTimer))
@@ -164,7 +168,7 @@ void AMultiplayerFPSGameMode::StartingGame()
                         UpdateGlobalGameTimer(minutes, seconds);
                     }, 1, true, 0.f);
 
-            }, 4, false, 4);
+            }, 1, false);
     }
     else
     {

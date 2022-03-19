@@ -185,7 +185,11 @@ void AMultiplayerFPSPlayerController::KillPlayer()
 	AMultiplayerFPSCharacter* PlayerPawn = Cast<AMultiplayerFPSCharacter>(GetPawn());
 	if (IsValid(PlayerPawn))
 	{
-		PlayerPawn->Destroy(true);
+		if (HasAuthority())
+		{
+			PlayerPawn->ClientDestoryPlayer();
+		}
+		PlayerPawn->DestoryPlayer();
 		UnPossess();
 	}
 	else

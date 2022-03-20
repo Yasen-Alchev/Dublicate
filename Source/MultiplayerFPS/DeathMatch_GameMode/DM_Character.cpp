@@ -3,8 +3,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "MultiplayerFPS/Default/MultiplayerFPSGameInstance.h"
 
+ADM_Character::ADM_Character() 
+{
 
-ADM_Character::ADM_Character() {}
+}
 
 void ADM_Character::BeginPlay()
 {

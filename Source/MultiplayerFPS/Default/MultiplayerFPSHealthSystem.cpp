@@ -19,8 +19,9 @@ UMultiplayerFPSHealthSystem::UMultiplayerFPSHealthSystem()
 
 
 	this->bShouldRechargeShield = false;
-
 	this->ShieldRateCounter = 0;
+
+	SetIsReplicatedByDefault(true);
 }
 
 void UMultiplayerFPSHealthSystem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -54,11 +55,11 @@ void UMultiplayerFPSHealthSystem::TickComponent(float DeltaTime, ELevelTick Tick
 
 }
 
-void UMultiplayerFPSHealthSystem::TakeDamage_Implementation(AActor* DamagedActor, float Damage,
-	const class UDamageType* DamageType, class AController* InstigatedBy,
-	AActor* DamageCauser)
+
+void UMultiplayerFPSHealthSystem::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+	AController* InstigatedBy, AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Error, TEXT("TakeDamage Called!!!"));
+	UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem -> TakeDamage Called!!!"));
 
 	AActor* OwnerActor = GetOwner();
 	if (!IsValid(OwnerActor))
@@ -102,6 +103,8 @@ void UMultiplayerFPSHealthSystem::TakeDamage_Implementation(AActor* DamagedActor
 
 		UE_LOG(LogTemp, Warning, TEXT("Shield Damage Taken - %.2f"), Damage);
 	}
+
+	OnHealthChangedEvent.Broadcast(this, CurrentHealth, Damage, DamageType, InstigatedBy, DamageCauser);
 }
 
 void UMultiplayerFPSHealthSystem::StartShieldRecharge()
@@ -121,7 +124,7 @@ void UMultiplayerFPSHealthSystem::StartShieldRecharge()
 	OwnerActor->GetWorldTimerManager().SetTimer(this->ShieldRechargeTimer, ShieldRechargeDelegate, this->ShieldRechargeInterval, true, 0.0f);
 }
 
-void UMultiplayerFPSHealthSystem::RechargeShield_Implementation()
+void UMultiplayerFPSHealthSystem::RechargeShield()
 {
 	AActor* OwnerActor = GetOwner();
 	if (!IsValid(OwnerActor))
@@ -149,7 +152,7 @@ void UMultiplayerFPSHealthSystem::RechargeShield_Implementation()
 	}
 }
 
-void UMultiplayerFPSHealthSystem::Heal_Implementation(float Value)
+void UMultiplayerFPSHealthSystem::Heal(float Value)
 {
 	if (Value == 100)
 	{

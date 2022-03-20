@@ -4,6 +4,8 @@
 #include "MultiplayerFPSInGameHUD.h"
 #include "MultiplayerFPSHealthSystem.h"
 #include "MultiplayerFPSFirearm.h"
+#include "MultiplayerFPSGameMode.h"
+#include "MultiplayerFPSGameState.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -47,12 +49,16 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	this->FullBodyMesh->CastShadow = true;
 
 	this->HealthSystem = CreateDefaultSubobject<UMultiplayerFPSHealthSystem>(TEXT("HealthSystem"));
+	HealthSystem->OnHealthChangedEvent.AddDynamic(this, &AMultiplayerFPSCharacter::OnHealthChanged);
 
 	this->BodyHitboxBox = CreateDefaultSubobject<UBoxComponent>(TEXT("BodyHitboxBox"));
 	this->BodyHitboxBox->SetBoxExtent(FVector(28.0f, 40.0f, 73.0f));
 	this->BodyHitboxBox->SetRelativeLocation(FVector(0.0f, 0.0f, -18.0f));
 	this->BodyHitboxBox->SetupAttachment(RootComponent);
 	this->BodyHitboxBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	HealthSystem->SetIsReplicated(true);
+	HealthSystem->SetNetAddressable();
 
 	this->HeadHitboxBox = CreateDefaultSubobject<UBoxComponent>(TEXT("HeadHitboxBox"));	
 	this->HeadHitboxBox->SetBoxExtent(FVector(16.0f, 16.0f, 16.0f));
@@ -66,6 +72,8 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	bIsInOptionsMenu = false;
 	bIsSprinting = false;
 	bDead = false;
+
+	bNetUseOwnerRelevancy = true;
 
 	this->WeaponInHand = 0;
 
@@ -86,46 +94,71 @@ void AMultiplayerFPSCharacter::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay() -> GameInstanceVar is not Valid !!!"));
 	}
-
-	FActorSpawnParameters ActorSpawnParameters;
-	ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	ActorSpawnParameters.Owner = this;
-	const FVector WeaponLocationVector = FVector(0.0f, 0.0f, 0.0f);
-	const FRotator WeaponRotationRotator = FRotator(0.0f, 0.0f, 0.0f);
-
-	for (int32 i = 0; i < FirearmClassArray.Num(); ++i)
-	{
-		AActor* FirearmActor = GetWorld()->SpawnActor(FirearmClassArray[i], &WeaponLocationVector, &WeaponRotationRotator, ActorSpawnParameters);
-		if (!IsValid(FirearmActor))
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay !IsValid(FirearmActor)"));
-			return;
-		}
-
-		AMultiplayerFPSFirearm* Firearm = Cast<AMultiplayerFPSFirearm>(FirearmActor);
-		if (!IsValid(Firearm))
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay !IsValid(Firearm)"));
-			return;
-		}
-
-		FirearmArray.Add(Firearm);
-		if (!IsValid(FirearmArray[i]))
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay !IsValid(FirearmArray[i])"));
-			return;
-		}
-	}
-
-	FirearmArray[0]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
-	FirearmArray[1]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
 	
-	CanFireFirearmArray.Init(true, FirearmArray.Num());
+	ServerSpawnFirearmActor();
 }
 
 void AMultiplayerFPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AMultiplayerFPSCharacter::OnHealthChanged(UMultiplayerFPSHealthSystem* HealthSystemComp, float health,
+	float damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	if ((health <= 0) && (!bDead))
+	{
+		UWorld* World = GetWorld();
+		if (!IsValid(World))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> World is not Valid !!!"));
+			return;
+		}
+		if(!IsValid(GEngine))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> GEngine is not Valid !!!"));
+			return;
+		}
+
+		AMultiplayerFPSPlayerController* const PlayerController = Cast<AMultiplayerFPSPlayerController>(GEngine->GetFirstLocalPlayerController(World));
+		if (!IsValid(PlayerController))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> PlayerControlle2 is not Valid !!!"));
+				return;
+		}
+
+		AMultiplayerFPSCharacter* AutonomousProxyPlayer = Cast<AMultiplayerFPSCharacter>(PlayerController->GetPawn());
+		if (!IsValid(AutonomousProxyPlayer))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> AutonomousProxyPlayer is not Valid !!!"));
+			return;
+		}
+		AutonomousProxyPlayer->ServerOnRemoteProxyPlayerDeath(this);
+	}
+}
+
+float AMultiplayerFPSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& MovieSceneBlends,
+                                           AController* EventInstigator, AActor* DamageCauser)
+{
+	if(!HasAuthority())
+	{
+		this->HealthSystem->TakeDamage(this, DamageAmount,  nullptr, EventInstigator, DamageCauser);
+	}
+	return Super::TakeDamage(DamageAmount, MovieSceneBlends, EventInstigator, DamageCauser);
+}
+
+void AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation()
+{
+	AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(GetController());
+	if(IsValid(PlayerController))
+	{
+		PlayerController->RespawnPlayer();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation() -> PlayerController is not Valid !!!"));
+	}
+
 }
 
 void AMultiplayerFPSCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
@@ -209,6 +242,61 @@ void AMultiplayerFPSCharacter::SprintStop()
 	bIsSprinting = false;
 }
 
+void AMultiplayerFPSCharacter::ClientSpawnFirearmActor_Implementation()
+{
+	FActorSpawnParameters ActorSpawnParameters;
+	ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	ActorSpawnParameters.Owner = this;
+	const FVector WeaponLocationVector = FVector(0.0f, 0.0f, 0.0f);
+	const FRotator WeaponRotationRotator = FRotator(0.0f, 0.0f, 0.0f);
+
+	for (int32 i = 0; i < FirearmClassArray.Num(); ++i)
+	{
+		AActor* FirearmActor = GetWorld()->SpawnActor(FirearmClassArray[i], &WeaponLocationVector, &WeaponRotationRotator, ActorSpawnParameters);
+		if (!IsValid(FirearmActor))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay !IsValid(FirearmActor)"));
+			return;
+		}
+
+		AMultiplayerFPSFirearm* Firearm = Cast<AMultiplayerFPSFirearm>(FirearmActor);
+		if (!IsValid(Firearm))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay !IsValid(Firearm)"));
+			return;
+		}
+
+		FirearmArray.Add(Firearm);
+		if (!IsValid(FirearmArray[i]))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay !IsValid(FirearmArray[i])"));
+			return;
+		}
+	}
+
+	FirearmArray[0]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	FirearmArray[1]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
+
+	CanFireFirearmArray.Init(true, FirearmArray.Num());
+}
+
+void AMultiplayerFPSCharacter::ServerSpawnFirearmActor_Implementation()
+{
+	if (HasAuthority())
+	{
+		ClientSpawnFirearmActor();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerSpawnFirearmActor_Implementation() -> HasAuthority() is not Valid !!!"));
+	}
+}
+
+void AMultiplayerFPSCharacter::ServerOnRemoteProxyPlayerDeath_Implementation(AMultiplayerFPSCharacter* ProxyCharacter)
+{
+	ProxyCharacter->ServerOnPlayerDeath();
+}
+
 void AMultiplayerFPSCharacter::SetOptionsMenuVisibility(bool Visibility)
 {
 	UWorld* World = GetWorld();
@@ -283,6 +371,23 @@ void AMultiplayerFPSCharacter::ToggleOptionsMenu()
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ToggleOptionsMenu() -> MyController is not Valid !!!"));
 	}
+}
+
+void AMultiplayerFPSCharacter::DestoryPlayer()
+{
+	TArray<AActor*> AttachedActors;
+	GetAttachedActors(AttachedActors, true);
+
+	for(auto Attached: AttachedActors)
+	{
+		Attached->Destroy(true);
+	}
+	Destroy(true);
+}
+
+void AMultiplayerFPSCharacter::ClientDestoryPlayer_Implementation()
+{
+	DestoryPlayer();
 }
 
 void AMultiplayerFPSCharacter::StartFiring()

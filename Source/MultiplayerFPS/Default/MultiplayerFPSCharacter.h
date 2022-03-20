@@ -32,6 +32,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Hitbox")
 	class UBoxComponent* HeadHitboxBox;
 
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
+	bool bDead;
+
 	UPROPERTY()
 	TArray<class AMultiplayerFPSFirearm*> FirearmArray;
 
@@ -64,6 +67,12 @@ protected:
 	UFUNCTION(BlueprintCallable)
 		virtual void SprintStop();
 
+	UFUNCTION(Server, Reliable)
+		virtual void ServerSpawnFirearmActor();
+
+	UFUNCTION(Client, Reliable)
+		virtual void ClientSpawnFirearmActor();
+
 	UPROPERTY(Replicated)
 		bool bIsSprinting;
 
@@ -79,6 +88,22 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
+		void OnHealthChanged(class UMultiplayerFPSHealthSystem* HealthSystemComp, float health, float damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
+	UFUNCTION()
+		virtual float TakeDamage(
+			float DamageAmount,
+			struct FDamageEvent const& DamageEvent,
+			class AController* EventInstigator,
+			AActor* DamageCauser) override;
+
+	UFUNCTION(Server, Reliable)
+		virtual void ServerOnPlayerDeath();
+
+	UFUNCTION(Server, Reliable)
+		virtual void ServerOnRemoteProxyPlayerDeath(AMultiplayerFPSCharacter* ProxyCharacter);
+
+	UFUNCTION()
 		virtual void SetOptionsMenuVisibility(bool Visibility);
 
 	UFUNCTION()
@@ -86,6 +111,12 @@ public:
 
 	UFUNCTION()
 		virtual void ToggleOptionsMenu();
+
+	UFUNCTION()
+		virtual void DestoryPlayer();
+
+	UFUNCTION(Client, Reliable)
+		virtual void ClientDestoryPlayer();
 
 	UPROPERTY()
 		FString PlayerName;

@@ -34,6 +34,8 @@ AMultiplayerFPSFirearm::AMultiplayerFPSFirearm()
 
 	this->BurstFiringInterval = 0.15f;
 
+	bNetUseOwnerRelevancy = true;
+
 	this->ReloadTime = 1.0f;
 
 	bReplicates = true;
@@ -45,6 +47,8 @@ void AMultiplayerFPSFirearm::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AMultiplayerFPSFirearm, CurrentMagazineCapacity);
+	DOREPLIFETIME(AMultiplayerFPSFirearm, bIsFiring);
+	DOREPLIFETIME(AMultiplayerFPSFirearm, BurstsFired);
 }
 
 void AMultiplayerFPSFirearm::BeginPlay()
@@ -78,13 +82,27 @@ void AMultiplayerFPSFirearm::StartFiring()
 		{
 			GetWorldTimerManager().ClearTimer(this->HeldFiringIntervalTimer);
 			GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
-				this->Fire();
+				if (HasAuthority())
+				{
+					this->Fire();
+				}
+				else
+				{
+					this->ServerFire();
+				}
 				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 		}
 		else
 		{
 			GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
-				this->Fire();
+				if (HasAuthority())
+				{
+					this->Fire();
+				}
+				else
+				{
+					this->ServerFire();
+				}
 				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 		}
 	}
@@ -103,7 +121,7 @@ void AMultiplayerFPSFirearm::StartFiring()
 			{
 				GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
 					this->BurstFire();
-					}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 			}
 		}
 		else
@@ -119,19 +137,40 @@ void AMultiplayerFPSFirearm::StartFiring()
 			{
 				GetWorldTimerManager().ClearTimer(this->HeldFiringIntervalTimer);
 				GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
-					this->Fire();
-					}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+					if (HasAuthority())
+					{
+						this->Fire();
+					}
+					else
+					{
+						this->ServerFire();
+					}
+				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 			}
 			else
 			{
 				GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
-					this->Fire();
-					}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+					if (HasAuthority())
+					{
+						this->Fire();
+					}
+					else
+					{
+						this->ServerFire();
+					}
+				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 			}
 		}
 		else
 		{
-			this->Fire();
+			if (HasAuthority())
+			{
+				this->Fire();
+			}
+			else
+			{
+				this->ServerFire();
+			}
 		}
 	}
 }
@@ -144,9 +183,14 @@ void AMultiplayerFPSFirearm::BurstFire()
 	}
 	else
 	{
-		GetWorldTimerManager().SetTimer(this->BurstFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
-			this->Fire();
-			}), this->BurstFiringInterval, true, 0.0f);
+		GetWorldTimerManager().SetTimer(this->BurstFiringIntervalTimer, FTimerDelegate::CreateLambda([&]
+		{
+			if (HasAuthority())
+			{
+				this->Fire();
+			}
+			this->ServerFire();
+		}), this->BurstFiringInterval, true, 0.0f);
 	}
 }
 
@@ -289,6 +333,12 @@ void AMultiplayerFPSFirearm::Fire()
 		GetWorldTimerManager().ClearTimer(this->BurstFiringIntervalTimer);
 		return;
 	}
+}
+
+void AMultiplayerFPSFirearm::ServerFire_Implementation()
+{
+	UE_LOG(LogTemp, Error, TEXT("ServerFire Called !!!"));
+	Fire();
 }
 
 void AMultiplayerFPSFirearm::StopFiring()

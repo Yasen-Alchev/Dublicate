@@ -51,15 +51,16 @@ void ATeamBasedCharacter::MaterialChange()
 	{
 		if (Team == TEAM_BLUE)
 		{
-			myMaterial = GetMesh()->CreateDynamicMaterialInstance(0, TeamBlueSkin);
+			myMaterial = FullBodyMesh->CreateDynamicMaterialInstance(0, TeamBlueSkin);
 		}
 		else
 		{
-			myMaterial = GetMesh()->CreateDynamicMaterialInstance(0, TeamRedSkin);
+			myMaterial = FullBodyMesh->CreateDynamicMaterialInstance(0, TeamRedSkin);
 		}
 		if (IsValid(myMaterial))
 		{
-			GetMesh()->SetMaterial(0, myMaterial);
+			FullBodyMesh->SetMaterial(0, myMaterial);
+			FirstPersonMesh->SetMaterial(0, myMaterial);
 		}
 		else
 		{

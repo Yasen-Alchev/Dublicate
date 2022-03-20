@@ -15,6 +15,9 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UPROPERTY()
+		bool bShouldRespawn;
+
 	UFUNCTION(Client, Reliable)
 		virtual void ClientEndGame(const FString& Winner);
 
@@ -25,13 +28,10 @@ public:
 		virtual void ClientUpdateObjectiveStats(const TArray<FString>& ObjectiveStats);
 
 	UFUNCTION(Server, Reliable)
-		virtual void ServerSpawnPlayer();
+		virtual void ServerRestartPlayerOnStart();
 
 	UFUNCTION()
 		virtual void RespawnPlayer(bool instant = false);
-
-	UFUNCTION(Server, Reliable)
-		virtual void ServerRespawnPlayer();
 
 	UFUNCTION(Client, Reliable)
 		virtual void DisableControls(bool disable);
@@ -40,6 +40,9 @@ public:
 		virtual void KillPlayer();
 
 protected:
+
+	UFUNCTION(Server, Reliable)
+		virtual void ServerRespawnPlayer();
 
 	UPROPERTY()
 		FTimerHandle AntiBlurHandle;

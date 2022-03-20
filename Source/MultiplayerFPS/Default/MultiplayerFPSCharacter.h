@@ -14,7 +14,7 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere)
 	class UMultiplayerFPSHealthSystem* HealthSystem;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
@@ -25,6 +25,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FirstPersonCamera;
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
+		bool bDead;
 
 	UPROPERTY()
 	TArray<class AMultiplayerFPSFirearm*> FirearmArray;
@@ -67,9 +70,6 @@ protected:
 	UPROPERTY(Replicated)
 		bool bIsSprinting;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
-		bool bDead;
-
 	UPROPERTY()
 		bool bIsInOptionsMenu;
 
@@ -79,6 +79,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
+		void OnHealthChanged(class UMultiplayerFPSHealthSystem* HealthSystemComp, float health, float damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
+	UFUNCTION()
 		virtual float TakeDamage(
 			float DamageAmount,
 			struct FDamageEvent const& DamageEvent,
@@ -86,7 +89,10 @@ public:
 			AActor* DamageCauser) override;
 
 	UFUNCTION(Server, Reliable)
-		virtual void KillPlayer();
+		virtual void ServerOnPlayerDeath();
+
+	UFUNCTION(Server, Reliable)
+		virtual void ServerOnRemoteProxyPlayerDeath(AMultiplayerFPSCharacter* ProxyCharacter);
 
 	UFUNCTION()
 		virtual void SetOptionsMenuVisibility(bool Visibility);

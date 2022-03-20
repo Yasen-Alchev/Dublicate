@@ -4,6 +4,8 @@
 #include "MultiplayerFPSInGameHUD.h"
 #include "MultiplayerFPSHealthSystem.h"
 #include "MultiplayerFPSFirearm.h"
+#include "MultiplayerFPSGameMode.h"
+#include "MultiplayerFPSGameState.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -46,6 +48,7 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	this->FullBodyMesh->CastShadow = true;
 
 	this->HealthSystem = CreateDefaultSubobject<UMultiplayerFPSHealthSystem>(TEXT("HealthSystem"));
+	HealthSystem->OnHealthChangedEvent.AddDynamic(this, &AMultiplayerFPSCharacter::OnHealthChanged);
 
 	HealthSystem->SetIsReplicated(true);
 	HealthSystem->SetNetAddressable();
@@ -87,27 +90,63 @@ void AMultiplayerFPSCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-float AMultiplayerFPSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& MovieSceneBlends,
-	AController* EventInstigator, AActor* DamageCauser)
+void AMultiplayerFPSCharacter::OnHealthChanged(UMultiplayerFPSHealthSystem* HealthSystemComp, float health,
+	float damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-	this->HealthSystem->TakeDamage(this, DamageAmount,  nullptr, EventInstigator, DamageCauser);
+	if ((health <= 0) && (!bDead))
+	{
+		UWorld* World = GetWorld();
+		if (!IsValid(World))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> World is not Valid !!!"));
+			return;
+		}
+		if(!IsValid(GEngine))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> GEngine is not Valid !!!"));
+			return;
+		}
+
+		AMultiplayerFPSPlayerController* const PlayerController = Cast<AMultiplayerFPSPlayerController>(GEngine->GetFirstLocalPlayerController(World));
+		if (!IsValid(PlayerController))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> PlayerControlle2 is not Valid !!!"));
+				return;
+		}
+
+		AMultiplayerFPSCharacter* AutonomousProxyPlayer = Cast<AMultiplayerFPSCharacter>(PlayerController->GetPawn());
+		if (!IsValid(AutonomousProxyPlayer))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> AutonomousProxyPlayer is not Valid !!!"));
+			return;
+		}
+		AutonomousProxyPlayer->ServerOnRemoteProxyPlayerDeath(this);
+	}
+}
+
+float AMultiplayerFPSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& MovieSceneBlends,
+                                           AController* EventInstigator, AActor* DamageCauser)
+{
+	if(!HasAuthority())
+	{
+		this->HealthSystem->TakeDamage(this, DamageAmount,  nullptr, EventInstigator, DamageCauser);
+	}
 	return Super::TakeDamage(DamageAmount, MovieSceneBlends, EventInstigator, DamageCauser);
 }
 
-void AMultiplayerFPSCharacter::KillPlayer_Implementation()
+void AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation()
 {
 	AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(GetController());
 	if(IsValid(PlayerController))
 	{
-		PlayerController->KillPlayer();
+		PlayerController->RespawnPlayer();
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::KillPlayer_Implementation() -> PlayerController is not Valid !!!"));
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation() -> PlayerController is not Valid !!!"));
 	}
 
 }
-
 
 void AMultiplayerFPSCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -238,6 +277,11 @@ void AMultiplayerFPSCharacter::ServerSpawnFirearmActor_Implementation()
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerSpawnFirearmActor_Implementation() -> HasAuthority() is not Valid !!!"));
 	}
+}
+
+void AMultiplayerFPSCharacter::ServerOnRemoteProxyPlayerDeath_Implementation(AMultiplayerFPSCharacter* ProxyCharacter)
+{
+	ProxyCharacter->ServerOnPlayerDeath();
 }
 
 void AMultiplayerFPSCharacter::SetOptionsMenuVisibility(bool Visibility)

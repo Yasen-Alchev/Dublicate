@@ -59,8 +59,6 @@ void UMultiplayerFPSHealthSystem::TickComponent(float DeltaTime, ELevelTick Tick
 void UMultiplayerFPSHealthSystem::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 	AController* InstigatedBy, AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem -> TakeDamage Called!!!"));
-
 	AActor* OwnerActor = GetOwner();
 	if (!IsValid(OwnerActor))
 	{
@@ -91,11 +89,6 @@ void UMultiplayerFPSHealthSystem::TakeDamage(AActor* DamagedActor, float Damage,
 		this->CurrentHealth = FMath::Clamp(this->CurrentHealth - Damage, 0.0f, this->MaxHealth);
 
 		UE_LOG(LogTemp, Warning, TEXT("Health Damage Taken - %.2f"), Damage);
-
-		if (this->CurrentHealth == 0.0f)
-		{
-			this->Death();
-		}
 	}
 	else
 	{
@@ -167,32 +160,4 @@ void UMultiplayerFPSHealthSystem::Heal(float Value)
 		UE_LOG(LogTemp, Warning, TEXT("Player Healed for: %.2f"), Value);
 		UE_LOG(LogTemp, Warning, TEXT("Current Player Health: %.2f"), this->CurrentHealth);
 	}
-}
-
-void UMultiplayerFPSHealthSystem::Death_Implementation()
-{
-	AActor* OwnerActor = GetOwner();
-	if (!IsValid(OwnerActor))
-	{
-		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::Death !IsValid(OwnerActor)"));
-		return;
-	}
-
-	AMultiplayerFPSCharacter* MultiplayerFPSPlayer = Cast<AMultiplayerFPSCharacter>(OwnerActor);
-	if (!IsValid(MultiplayerFPSPlayer))
-	{
-		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::Death !IsValid(MultiplayerFPSPlayer)"));
-		return;
-	}
-
-	MultiplayerFPSPlayer->Destroy(true);
-
-	AMultiplayerFPSPlayerController* MultiplayerFPSPlayerController = Cast<AMultiplayerFPSPlayerController>(MultiplayerFPSPlayer->GetController());
-	if (!IsValid(MultiplayerFPSPlayerController))
-	{
-		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::Death !IsValid(MultiplayerFPSPlayerController)"));
-		return;
-	}
-
-	MultiplayerFPSPlayerController->UnPossess();
 }

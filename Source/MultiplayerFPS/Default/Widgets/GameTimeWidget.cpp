@@ -24,3 +24,29 @@ void UGameTimeWidget::UpdateGameTime(int minutes, int seconds)
 	}
 }
 
+void UGameTimeWidget::SetGlobalGameMessage(FString Message)
+{
+	if (IsValid(TXTBlock_GlobalGameMessage))
+	{
+		TXTBlock_GlobalGameMessage->SetText(FText::FromString(Message));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("UGameTimeWidget::SetGlobalGameMessage(FString Message) -> TXTBlock_GlobalGameMessage is not Valid !!! "));
+	}
+}
+
+void UGameTimeWidget::ClearGlobalGameMessage()
+{
+	if (IsValid(TXTBlock_GlobalGameMessage))
+	{
+		TXTBlock_GlobalGameMessage->SetText(FText::FromString(""));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("UGameTimeWidget::ClearGlobalGameMessage() -> TXTBlock_GlobalGameMessage is not Valid !!! "));
+	}
+}
+
+
+

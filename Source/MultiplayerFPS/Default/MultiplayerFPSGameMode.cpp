@@ -147,6 +147,7 @@ void AMultiplayerFPSGameMode::StartingGame()
     AMultiplayerFPSGameState* GameStateVar = GetGameState<AMultiplayerFPSGameState>();
     if (IsValid(GameStateVar))
     {
+        GameStateVar->SetGlobalGameMessage("Game is Starting! Please Wait...");
         if (GetWorldTimerManager().IsTimerActive(StartingTimer))
         {
             GetWorldTimerManager().ClearTimer(StartingTimer);
@@ -155,6 +156,7 @@ void AMultiplayerFPSGameMode::StartingGame()
             {
                 GameStateVar->DisablePlayersControls(false);
                 GameStateVar->RespawnPlayers(true);
+                GameStateVar->ClearGlobalGameMessage();
 				if(GetWorldTimerManager().IsTimerActive(GameTimer))
 				{
                     GetWorldTimerManager().ClearTimer(GameTimer);

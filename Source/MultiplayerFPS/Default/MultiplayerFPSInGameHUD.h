@@ -40,6 +40,12 @@ public:
 		virtual void UpdateLeaderBoardStats();
 
 	UFUNCTION()
+		virtual void SetGlobalGameMessage(FString Message);
+
+	UFUNCTION()
+		virtual void ClearGlobalGameMessage();
+
+	UFUNCTION()
 		virtual void GameEnded(const FString& WinnerTeam);
 
 protected:

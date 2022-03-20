@@ -103,6 +103,32 @@ void AMultiplayerFPSPlayerController::ServerRestartPlayerOnStart_Implementation(
 	}
 }
 
+void AMultiplayerFPSPlayerController::ClientSetGlobalGameMessage_Implementation(const FString& Message)
+{
+	AMultiplayerFPSInGameHUD* InGameHud = Cast<AMultiplayerFPSInGameHUD>(GetHUD());
+	if (IsValid(InGameHud))
+	{
+		InGameHud->SetGlobalGameMessage(Message);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerController::ClientSetGlobalGameMessage_Implementation(FString Message) -> InGameHud is not Valid !!!"));
+	}
+}
+
+void AMultiplayerFPSPlayerController::ClientClearGlobalGameMessage_Implementation()
+{
+	AMultiplayerFPSInGameHUD* InGameHud = Cast<AMultiplayerFPSInGameHUD>(GetHUD());
+	if (IsValid(InGameHud))
+	{
+		InGameHud->ClearGlobalGameMessage();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerController::ClientClearGlobalGameMessage_Implementation() -> InGameHud is not Valid !!!"));
+	}
+}
+
 void AMultiplayerFPSPlayerController::RespawnPlayer(bool instant)
 {
 	KillPlayer();

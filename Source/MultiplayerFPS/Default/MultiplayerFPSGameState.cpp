@@ -37,6 +37,54 @@ void AMultiplayerFPSGameState::UpdateGameTime(int minutes, int seconds)
 	}
 }
 
+void AMultiplayerFPSGameState::SetGlobalGameMessage(const FString& Message)
+{
+	for (APlayerState* CurrentPlayerState : PlayerArray)
+	{
+		AMultiplayerFPSPlayerState* PlayerState = Cast<AMultiplayerFPSPlayerState>(CurrentPlayerState);
+		if (IsValid(PlayerState))
+		{
+			AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(PlayerState->GetOwner());
+			if (IsValid(PlayerController))
+			{
+				PlayerController->ClientSetGlobalGameMessage(Message);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSGameState::SetGlobalGameMessage(FString Message) -> PlayerController is not Valid !!!"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSGameState::SetGlobalGameMessage(FString Message) -> PlayerState is not Valid !!!"));
+		}
+	}
+}
+
+void AMultiplayerFPSGameState::ClearGlobalGameMessage()
+{
+	for (APlayerState* CurrentPlayerState : PlayerArray)
+	{
+		AMultiplayerFPSPlayerState* PlayerState = Cast<AMultiplayerFPSPlayerState>(CurrentPlayerState);
+		if (IsValid(PlayerState))
+		{
+			AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(PlayerState->GetOwner());
+			if (IsValid(PlayerController))
+			{
+				PlayerController->ClientClearGlobalGameMessage();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSGameState::ClearGlobalGameMessage() -> PlayerController is not Valid !!!"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSGameState::ClearGlobalGameMessage() -> PlayerState is not Valid !!!"));
+		}
+	}
+}
+
 void AMultiplayerFPSGameState::GameEnded()
 {
 	for (APlayerState* CurrentPlayerState : PlayerArray)

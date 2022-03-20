@@ -27,6 +27,12 @@ public:
 	UFUNCTION(Client, Reliable)
 		virtual void ClientUpdateObjectiveStats(const TArray<FString>& ObjectiveStats);
 
+	UFUNCTION(Client, Reliable)
+		virtual void ClientSetGlobalGameMessage(const FString& Message);
+
+	UFUNCTION(Client, Reliable)
+		virtual void ClientClearGlobalGameMessage();
+
 	UFUNCTION(Server, Reliable)
 		virtual void ServerRestartPlayerOnStart();
 

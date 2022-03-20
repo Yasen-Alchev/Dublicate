@@ -43,6 +43,7 @@ ACapturePoint::ACapturePoint()
 		FlagMeshComponent->SetRelativeScale3D(FVector(0.02, 0.37, 3));
 		FlagMeshComponent->SetCollisionProfileName(FName("NoCollision"));
 	}
+
 	CapturePointDetectionRangeSphere->SetRelativeScale3D(FVector(65, 65, 65));
 	CapturePointDetectionRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &ACapturePoint::OnBeginOverlap);
 	CapturePointDetectionRangeSphere->OnComponentEndOverlap.AddDynamic(this, &ACapturePoint::OnEndOverlap);
@@ -100,7 +101,6 @@ void ACapturePoint::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 void ACapturePoint::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 	CurveTimeLine.TickTimeline(DeltaTime);
 }
 
@@ -216,6 +216,7 @@ void ACapturePoint::CheckStatus()
 			CQ_Players.Add(Player);
 			if (Player->getTeam() == TEAM_BLUE) blue++;
 			else if (Player->getTeam() == TEAM_RED) red++;
+			else UE_LOG(LogTemp, Error, TEXT("ACapturePoint::CheckStatus() -> Player has NO TEAM !!!"));
 		}
 		else
 		{

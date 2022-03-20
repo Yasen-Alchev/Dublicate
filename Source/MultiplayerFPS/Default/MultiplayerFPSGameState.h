@@ -25,6 +25,12 @@ public:
 		virtual void UpdateGameTime(int minutes, int seconds);
 
 	UFUNCTION()
+		virtual void SetGlobalGameMessage(const FString& Message);
+
+	UFUNCTION()
+		virtual void ClearGlobalGameMessage();
+
+	UFUNCTION()
 		virtual void GameEnded();
 
 	UFUNCTION()

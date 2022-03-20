@@ -305,6 +305,30 @@ void AMultiplayerFPSInGameHUD::UpdateLeaderBoardStats()
 	}
 }
 
+void AMultiplayerFPSInGameHUD::SetGlobalGameMessage(FString Message)
+{
+	if (IsValid(GameTimeWidget))
+	{
+		GameTimeWidget->SetGlobalGameMessage(Message);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::SetGlobalGameMessage(FString Message) -> GameTimeWidget is not Valid!!!"));
+	}
+}
+
+void AMultiplayerFPSInGameHUD::ClearGlobalGameMessage()
+{
+	if (IsValid(GameTimeWidget))
+	{
+		GameTimeWidget->ClearGlobalGameMessage();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::ClearGlobalGameMessage() -> GameTimeWidget is not Valid!!!"));
+	}
+}
+
 void AMultiplayerFPSInGameHUD::GameEnded(const FString& Winner)
 {
 	if (IsValid(EndGameScreenWidget))

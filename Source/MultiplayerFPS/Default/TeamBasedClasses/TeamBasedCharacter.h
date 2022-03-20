@@ -21,27 +21,42 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skins")
-		UMaterialInterface* TeamRedSkin;
+	UMaterialInterface* TeamRedSkinTP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skins")
-		UMaterialInterface* TeamBlueSkin;
+	UMaterialInterface* TeamBlueSkinTP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skins")
+	UMaterialInterface* TeamNoneSkinTP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skins")
+	UMaterialInterface* TeamRedSkinFP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skins")
+	UMaterialInterface* TeamBlueSkinFP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skins")
+	UMaterialInterface* TeamNoneSkinFP;
+	
+	UPROPERTY()
+	UMaterialInterface* ThirdPersonMaterial;
 
 	UPROPERTY()
-		UMaterialInterface* myMaterial;
+	UMaterialInterface* FirstPersonMaterial;
 
+public:
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
-		TEnumAsByte<ETeams> Team;
+	TEnumAsByte<ETeams> Team;
 
 	UFUNCTION()
-		virtual TEnumAsByte<ETeams> getTeam() { return Team; }
+	virtual TEnumAsByte<ETeams> getTeam() { return Team; }
 
 	UFUNCTION()
-		virtual void InitTeam();
+	virtual void InitTeam();
 
 protected:
-
 	UFUNCTION()
-		virtual void MaterialChange();
+	virtual void MaterialChange();
 
 };
 

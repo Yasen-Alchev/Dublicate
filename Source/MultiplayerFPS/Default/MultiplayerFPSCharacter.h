@@ -32,14 +32,14 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Hitbox")
 	class UBoxComponent* HeadHitboxBox;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
-	bool bDead;
-
 	UPROPERTY()
 	TArray<class AMultiplayerFPSFirearm*> FirearmArray;
 
 	UPROPERTY()
 	TArray<bool> CanFireFirearmArray;
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
+		bool bDead;
 
 	UPROPERTY()
 	bool bIsReloading;
@@ -76,8 +76,6 @@ protected:
 	UPROPERTY(Replicated)
 		bool bIsSprinting;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
-		bool bDead;
 
 	UPROPERTY()
 		bool bIsInOptionsMenu;

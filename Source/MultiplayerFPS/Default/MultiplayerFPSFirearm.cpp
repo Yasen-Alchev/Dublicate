@@ -90,7 +90,7 @@ void AMultiplayerFPSFirearm::StartFiring()
 				{
 					this->ServerFire();
 				}
-				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+			}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 		}
 		else
 		{
@@ -103,7 +103,7 @@ void AMultiplayerFPSFirearm::StartFiring()
 				{
 					this->ServerFire();
 				}
-				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+			}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 		}
 	}
 	else if (CurrentFireMode == EFireMode::Burst)
@@ -115,7 +115,7 @@ void AMultiplayerFPSFirearm::StartFiring()
 				GetWorldTimerManager().ClearTimer(this->HeldFiringIntervalTimer);
 				GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
 					this->BurstFire();
-					}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 			}
 			else
 			{
@@ -189,7 +189,10 @@ void AMultiplayerFPSFirearm::BurstFire()
 			{
 				this->Fire();
 			}
-			this->ServerFire();
+			else
+			{
+				this->ServerFire();
+			}
 		}), this->BurstFiringInterval, true, 0.0f);
 	}
 }
@@ -210,7 +213,28 @@ void AMultiplayerFPSFirearm::Fire()
 		return;
 	}
 
-	
+	this->CurrentMagazineCapacity = FMath::Clamp(this->CurrentMagazineCapacity - 1, 0, this->MaxMagazineCapacity);
+
+	if (CurrentFireMode == EFireMode::Burst)
+	{
+		this->BurstsFired++;
+
+		if (this->BurstsFired == this->BurstCount)
+		{
+			GetWorldTimerManager().ClearTimer(this->BurstFiringIntervalTimer);
+			this->BurstsFired = 0;
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Current Magazine Capacity: %d"), this->CurrentMagazineCapacity);
+
+	if (this->CurrentMagazineCapacity == 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Insufficient Ammo!"));
+		GetWorldTimerManager().ClearTimer(this->BurstFiringIntervalTimer);
+		return;
+	}
+
 	if (!IsValid(this->FireAnimation))
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(this->FireAnimation)"));	
@@ -247,17 +271,6 @@ void AMultiplayerFPSFirearm::Fire()
 	if (this->bShowDebugTrace)
 	{
 		DrawDebugLine(World, StartLocation, EndLocation, FColor::Red, false, 20.0f, ECC_WorldStatic, 0.35f);
-	}
-
-	if (CurrentFireMode == EFireMode::Burst)
-	{
-		this->BurstsFired++;
-
-		if (this->BurstsFired == this->BurstCount)
-		{
-			GetWorldTimerManager().ClearTimer(this->BurstFiringIntervalTimer);
-			this->BurstsFired = 0;
-		}
 	}
 
 	if (!bHitResult)
@@ -321,17 +334,6 @@ void AMultiplayerFPSFirearm::Fire()
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitResult.GetActor())"));
-	}
-
-	this->CurrentMagazineCapacity = FMath::Clamp(this->CurrentMagazineCapacity - 1, 0, this->MaxMagazineCapacity);
-
-	UE_LOG(LogTemp, Warning, TEXT("Current Magazine Capacity: %d"), this->CurrentMagazineCapacity);
-
-	if (this->CurrentMagazineCapacity == 0)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Insufficient Ammo!"));
-		GetWorldTimerManager().ClearTimer(this->BurstFiringIntervalTimer);
-		return;
 	}
 }
 

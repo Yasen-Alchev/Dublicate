@@ -7,8 +7,9 @@
 
 ATeamBasedCharacter::ATeamBasedCharacter()
 {
-	myMaterial = nullptr;
-	Team = TEAM_NONE;
+	this->ThirdPersonMaterial = nullptr;
+	this->FirstPersonMaterial = nullptr;
+	this->Team = TEAM_NONE;
 }
 
 void ATeamBasedCharacter::BeginPlay()
@@ -51,15 +52,18 @@ void ATeamBasedCharacter::MaterialChange()
 	{
 		if (Team == TEAM_BLUE)
 		{
-			myMaterial = GetMesh()->CreateDynamicMaterialInstance(0, TeamBlueSkin);
+			this->ThirdPersonMaterial = this->FullBodyMesh->CreateDynamicMaterialInstance(0, this->TeamBlueSkinTP);
+			this->FirstPersonMaterial = this->FirstPersonMesh->CreateDynamicMaterialInstance(0, this->TeamBlueSkinFP);
 		}
 		else
 		{
-			myMaterial = GetMesh()->CreateDynamicMaterialInstance(0, TeamRedSkin);
+			this->ThirdPersonMaterial = this->FullBodyMesh->CreateDynamicMaterialInstance(0, this->TeamRedSkinTP);
+			this->FirstPersonMaterial = this->FirstPersonMesh->CreateDynamicMaterialInstance(0, this->TeamRedSkinFP);
 		}
-		if (IsValid(myMaterial))
+		if (IsValid(this->ThirdPersonMaterial) && IsValid(this->FirstPersonMaterial))
 		{
-			GetMesh()->SetMaterial(0, myMaterial);
+			this->FullBodyMesh->SetMaterial(0, this->ThirdPersonMaterial);
+			this->FirstPersonMesh->SetMaterial(0, this->FirstPersonMaterial);
 		}
 		else
 		{
@@ -68,6 +72,19 @@ void ATeamBasedCharacter::MaterialChange()
 	}
 	else
 	{
+		this->ThirdPersonMaterial = this->FullBodyMesh->CreateDynamicMaterialInstance(0, this->TeamNoneSkinTP);
+		this->FirstPersonMaterial = this->FirstPersonMesh->CreateDynamicMaterialInstance(0, this->TeamNoneSkinFP);
+
+		if (IsValid(this->ThirdPersonMaterial) && IsValid(this->FirstPersonMaterial))
+		{
+			this->FullBodyMesh->SetMaterial(0, this->ThirdPersonMaterial);
+			this->FirstPersonMesh->SetMaterial(0, this->FirstPersonMaterial);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s ATeamBasedCharacter::MaterialChange()-> MaterialInstance is not Valid!!!"), *PlayerName);
+		}
+
 		UE_LOG(LogTemp, Warning, TEXT("%s ATeamBasedCharacter::MaterialChange() -> Team is TEAM_NONE"), *PlayerName);
 	}
 }

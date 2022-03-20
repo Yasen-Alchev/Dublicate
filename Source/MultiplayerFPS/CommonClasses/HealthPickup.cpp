@@ -51,16 +51,28 @@ void AHealthPickup::OnBeginOverlap(class UPrimitiveComponent* HitComponent,
 			return;
 		}
 
-		MultiplayerFPSPlayer->HealthSystem->Heal(100);
-		MultiplayerFPSPlayer->HealthSystem->StartShieldRecharge();
+		MultiplayerFPSPlayer->OnHealEvent.Broadcast(100.0f, this);
 
 		UE_LOG(LogTemp, Warning, TEXT("Player Health Restored!"));
 
+		if (MultiplayerFPSPlayer->HasAuthority())
+		{
+			this->ClientDestroyHealthPickup();
+		}
 		this->DestroyHealthPickup();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHealthPickup::OnBeginOverlap OtherActor->ActorHasTag(\"Player\")"));
 	}
 }
 
 void AHealthPickup::DestroyHealthPickup()
+{
+	this->Destroy();
+}
+
+void AHealthPickup::ClientDestroyHealthPickup_Implementation()
 {
 	this->Destroy();
 }

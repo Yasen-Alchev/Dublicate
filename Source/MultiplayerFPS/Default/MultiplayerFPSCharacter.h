@@ -4,6 +4,8 @@
 #include "GameFramework/Character.h"
 #include "MultiplayerFPSCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealSignature, float, Heal, AActor*, HealthPickupActor);
+
 UCLASS(config = Game)
 class AMultiplayerFPSCharacter : public ACharacter
 {
@@ -39,7 +41,7 @@ public:
 	TArray<bool> CanFireFirearmArray;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
-		bool bDead;
+	bool bDead;
 
 	UPROPERTY()
 	bool bIsReloading;
@@ -62,23 +64,22 @@ protected:
 	virtual void MoveRight(float Value);
 
 	UFUNCTION(BlueprintCallable)
-		virtual void SprintStart();
+	virtual void SprintStart();
 
 	UFUNCTION(BlueprintCallable)
-		virtual void SprintStop();
+	virtual void SprintStop();
 
 	UFUNCTION(Server, Reliable)
-		virtual void ServerSpawnFirearmActor();
+	virtual void ServerSpawnFirearmActor();
 
 	UFUNCTION(Client, Reliable)
-		virtual void ClientSpawnFirearmActor();
+	virtual void ClientSpawnFirearmActor();
 
 	UPROPERTY(Replicated)
-		bool bIsSprinting;
-
+	bool bIsSprinting;
 
 	UPROPERTY()
-		bool bIsInOptionsMenu;
+	bool bIsInOptionsMenu;
 
 public:
 	virtual void BeginPlay() override;
@@ -86,70 +87,73 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-		void OnHealthChanged(class UMultiplayerFPSHealthSystem* HealthSystemComp, float health, float damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
-
-	UFUNCTION()
-		virtual float TakeDamage(
-			float DamageAmount,
-			struct FDamageEvent const& DamageEvent,
-			class AController* EventInstigator,
-			AActor* DamageCauser) override;
-
-	UFUNCTION(Server, Reliable)
-		virtual void ServerOnPlayerDeath();
-
-	UFUNCTION(Server, Reliable)
-		virtual void ServerOnRemoteProxyPlayerDeath(AMultiplayerFPSCharacter* ProxyCharacter);
-
-	UFUNCTION()
-		virtual void SetOptionsMenuVisibility(bool Visibility);
-
-	UFUNCTION()
-		virtual void ToggleLeaderBoardVisibility();
-
-	UFUNCTION()
-		virtual void ToggleOptionsMenu();
-
-	UFUNCTION()
-		virtual void DestoryPlayer();
-
-	UFUNCTION(Client, Reliable)
-		virtual void ClientDestoryPlayer();
+	void OnHealthChanged(class UMultiplayerFPSHealthSystem* HealthSystemComp, float Health, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	UPROPERTY()
-		FString PlayerName;
+	FOnHealSignature OnHealEvent;
 
 	UFUNCTION()
-		virtual void StartFiring();
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+		class AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(Server, Reliable)
+	virtual void ServerOnPlayerDeath();
+
+	UFUNCTION(Server, Reliable)
+	virtual void ServerOnRemoteProxyPlayerDeath(AMultiplayerFPSCharacter* ProxyCharacter);
 
 	UFUNCTION()
-		virtual void StopFiring();
+	void Heal(float Value, AActor* HealthPickupActor);
 
 	UFUNCTION()
-		virtual void SwitchWeapon();
+	virtual void SetOptionsMenuVisibility(bool Visibility);
 
 	UFUNCTION()
-		virtual void SwitchFireMode();
+	virtual void ToggleLeaderBoardVisibility();
 
 	UFUNCTION()
-		virtual void Reload();
+	virtual void ToggleOptionsMenu();
 
 	UFUNCTION()
-		virtual void Zoom();
+	virtual void DestoryPlayer();
+
+	UFUNCTION(Client, Reliable)
+	virtual void ClientDestoryPlayer();
+
+	UPROPERTY()
+	FString PlayerName;
 
 	UFUNCTION()
-		virtual void ZoomOut();
+	virtual void StartFiring();
 
 	UFUNCTION()
-		void SetFOV(float FOV);
+	virtual void StopFiring();
 
 	UFUNCTION()
-		void HideFPMeshes();
+	virtual void SwitchWeapon();
 
 	UFUNCTION()
-		void ShowFPMeshes();
+	virtual void SwitchFireMode();
 
 	UFUNCTION()
-		void SetIsReloading();
+	virtual void Reload();
+
+	UFUNCTION()
+	virtual void Zoom();
+
+	UFUNCTION()
+	virtual void ZoomOut();
+
+	UFUNCTION()
+	void SetFOV(float FOV);
+
+	UFUNCTION()
+	void HideFPMeshes();
+
+	UFUNCTION()
+	void ShowFPMeshes();
+
+	UFUNCTION()
+	void SetIsReloading();
 };
 

@@ -303,8 +303,6 @@ void AMultiplayerFPSFirearm::Fire()
 				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(MultiplayerFPSPlayerController)"));
 			}
 
-			UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSFirearm::Fire -> Enemy Hit"));
-
 			UPrimitiveComponent* HitComponent = HitResult.GetComponent();
 			if (!IsValid(HitComponent))
 			{
@@ -328,7 +326,7 @@ void AMultiplayerFPSFirearm::Fire()
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSFirearm::Fire -> Hit Team Player"));
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire IsValid(HitPlayer)"));
 		}
 	}
 	else
@@ -339,7 +337,6 @@ void AMultiplayerFPSFirearm::Fire()
 
 void AMultiplayerFPSFirearm::ServerFire_Implementation()
 {
-	UE_LOG(LogTemp, Error, TEXT("ServerFire Called !!!"));
 	Fire();
 }
 

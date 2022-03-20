@@ -13,15 +13,12 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "../CommonClasses/HealthPickup.h"
 
 
 AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 {
 	GetCapsuleComponent()->InitCapsuleSize(55.0f, 96.0f);
-
-	//bUseControllerRotationPitch = false;
-	//bUseControllerRotationYaw = false;
-	//bUseControllerRotationRoll = true;
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
@@ -50,6 +47,8 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 
 	this->HealthSystem = CreateDefaultSubobject<UMultiplayerFPSHealthSystem>(TEXT("HealthSystem"));
 	HealthSystem->OnHealthChangedEvent.AddDynamic(this, &AMultiplayerFPSCharacter::OnHealthChanged);
+
+	this->OnHealEvent.AddDynamic(this, &AMultiplayerFPSCharacter::Heal);
 
 	this->BodyHitboxBox = CreateDefaultSubobject<UBoxComponent>(TEXT("BodyHitboxBox"));
 	this->BodyHitboxBox->SetBoxExtent(FVector(28.0f, 40.0f, 73.0f));
@@ -103,10 +102,10 @@ void AMultiplayerFPSCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AMultiplayerFPSCharacter::OnHealthChanged(UMultiplayerFPSHealthSystem* HealthSystemComp, float health,
-	float damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+void AMultiplayerFPSCharacter::OnHealthChanged(UMultiplayerFPSHealthSystem* HealthSystemComp, float Health,
+	float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-	if ((health <= 0) && (!bDead))
+	if ((Health <= 0) && (!bDead))
 	{
 		UWorld* World = GetWorld();
 		if (!IsValid(World))
@@ -137,8 +136,8 @@ void AMultiplayerFPSCharacter::OnHealthChanged(UMultiplayerFPSHealthSystem* Heal
 	}
 }
 
-float AMultiplayerFPSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& MovieSceneBlends,
-                                           AController* EventInstigator, AActor* DamageCauser)
+float AMultiplayerFPSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& MovieSceneBlends, 
+	AController* EventInstigator, AActor* DamageCauser)
 {
 	if(!HasAuthority())
 	{
@@ -159,6 +158,30 @@ void AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation()
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation() -> PlayerController is not Valid !!!"));
 	}
 
+}
+
+void AMultiplayerFPSCharacter::Heal(float Value, AActor* HealthPickupActor)
+{
+	this->HealthSystem->Heal(Value);
+
+	if (!IsValid(HealthPickupActor))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation !IsValid(HealthPickupActor)"));
+		return;
+	}
+
+	AHealthPickup* HealthPickup = Cast<AHealthPickup>(HealthPickupActor);
+	if (!IsValid(HealthPickup))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation !IsValid(HealthPickup)"));
+		return;
+	}
+
+	if (HasAuthority())
+	{
+		HealthPickup->ClientDestroyHealthPickup();
+	}
+	HealthPickup->DestroyHealthPickup();
 }
 
 void AMultiplayerFPSCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const

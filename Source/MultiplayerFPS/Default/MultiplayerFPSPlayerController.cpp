@@ -5,14 +5,17 @@
 #include "MultiplayerFPSInGameHUD.h"
 #include "TeamBasedClasses/TeamBasedCharacter.h"
 
-AMultiplayerFPSPlayerController::AMultiplayerFPSPlayerController(){}
+AMultiplayerFPSPlayerController::AMultiplayerFPSPlayerController()
+{
+	bShouldRespawn = true;
+}
 
 void AMultiplayerFPSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SetInputMode(FInputModeGameOnly());
-	ServerSpawnPlayer();
+	ServerRestartPlayerOnStart();
 }
 
 void AMultiplayerFPSPlayerController::ClientEndGame_Implementation(const FString& Winner)
@@ -20,6 +23,7 @@ void AMultiplayerFPSPlayerController::ClientEndGame_Implementation(const FString
 	UWorld* World = GetWorld();
 	if (IsValid(World))
 	{
+		bShouldRespawn = false;
 		SetIgnoreMoveInput(true);
 		SetIgnoreLookInput(true);
 		World->GetTimerManager().SetTimer(AntiBlurHandle, [this, World]()
@@ -71,8 +75,7 @@ void AMultiplayerFPSPlayerController::ClientUpdateObjectiveStats_Implementation(
 	}
 }
 
-
-void AMultiplayerFPSPlayerController::ServerSpawnPlayer_Implementation()
+void AMultiplayerFPSPlayerController::ServerRestartPlayerOnStart_Implementation()
 {
 	if (HasAuthority())
 	{
@@ -86,23 +89,25 @@ void AMultiplayerFPSPlayerController::ServerSpawnPlayer_Implementation()
 			}
 			else
 			{
-				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerController::ServerSpawnPlayer_Implementation() -> GameMode is not Valid !!!"));
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerController::ServerRestartPlayerOnStart_Implementation() -> GameMode is not Valid !!!"));
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerController::ServerSpawnPlayer_Implementation() -> World is  not Valid !!!"));
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerController::ServerRestartPlayerOnStart_Implementation() -> World is  not Valid !!!"));
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerController::ServerSpawnPlayer_Implementation() -> Does not have Authority !!!"));
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerController::ServerRestartPlayerOnStart_Implementation() -> Does not have Authority !!!"));
 	}
 }
 
 void AMultiplayerFPSPlayerController::RespawnPlayer(bool instant)
 {
 	KillPlayer();
+	if (!bShouldRespawn) return;
+
 	if (instant)
 	{
 		ServerRespawnPlayer();
@@ -131,6 +136,8 @@ void AMultiplayerFPSPlayerController::RespawnPlayer(bool instant)
 
 void AMultiplayerFPSPlayerController::ServerRespawnPlayer_Implementation()
 {
+	if (!bShouldRespawn) return;
+
 	GetWorldTimerManager().ClearTimer(RespawnHandle);
 	if (HasAuthority())
 	{
@@ -187,6 +194,7 @@ void AMultiplayerFPSPlayerController::KillPlayer()
 	{
 		if (HasAuthority())
 		{
+			PlayerPawn->bDead = true;
 			PlayerPawn->ClientDestoryPlayer();
 		}
 		PlayerPawn->DestoryPlayer();
@@ -194,7 +202,7 @@ void AMultiplayerFPSPlayerController::KillPlayer()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSPlayerController::KillPlayer() -> PlayerPawn is not Valid !!!"), *this->GetName());
+		UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSPlayerController::ServerKillPlayer() -> PlayerPawn is not Valid !!!"), *this->GetName());
 	}
 }
 

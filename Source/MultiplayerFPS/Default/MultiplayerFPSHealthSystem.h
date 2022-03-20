@@ -4,6 +4,8 @@
 #include "Components/ActorComponent.h"
 #include "MultiplayerFPSHealthSystem.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnHealthChangedSignature, UMultiplayerFPSHealthSystem*, HealthComponent, float, health, float, damage, const class UDamageType*, DamageType, class  AController*, InstigatedBy, AActor*, DamageCauser);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MULTIPLAYERFPS_API UMultiplayerFPSHealthSystem : public UActorComponent
 {
@@ -13,6 +15,8 @@ public:
 	UMultiplayerFPSHealthSystem();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")  FOnHealthChangedSignature OnHealthChangedEvent;
 
 	UPROPERTY(EditAnywhere, Category = "Health")
 	float MaxHealth;
@@ -90,12 +94,4 @@ public:
 	UFUNCTION()
 	void Heal(float Value);
 
-	UFUNCTION()
-	void Death();
-
-	UFUNCTION(Server, Reliable)
-		void ServerDeath();
-
-	UFUNCTION()
-		void DeathBody();
 };

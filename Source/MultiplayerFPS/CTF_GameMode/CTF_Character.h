@@ -22,16 +22,10 @@ public:
 	UPROPERTY(Replicated, BlueprintReadOnly)
 		bool bHasFlag;
 
-	UFUNCTION()
-		void Died();
-
-	UFUNCTION()
-		void DropFlag();
-
-private:
+	virtual void ServerOnPlayerDeath() override;
 
 	UFUNCTION(Server, Reliable)
-		void ServerRPCDropFlag();
+		void ServerDropFlag();
 
 };
 

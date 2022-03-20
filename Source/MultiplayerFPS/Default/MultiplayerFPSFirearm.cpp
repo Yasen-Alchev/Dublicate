@@ -34,11 +34,11 @@ AMultiplayerFPSFirearm::AMultiplayerFPSFirearm()
 
 	this->BurstFiringInterval = 0.15f;
 
-	//bNetUseOwnerRelevancy = true;
+	bNetUseOwnerRelevancy = true;
 
 	this->ReloadTime = 1.0f;
-	bReplicates = true;
 
+	bReplicates = true;
 }
 
 void AMultiplayerFPSFirearm::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -84,7 +84,10 @@ void AMultiplayerFPSFirearm::StartFiring()
 				{
 					this->Fire();
 				}
-				this->ServerFire();
+				else
+				{
+					this->ServerFire();
+				}
 				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 		}
 		else
@@ -94,7 +97,10 @@ void AMultiplayerFPSFirearm::StartFiring()
 				{
 					this->Fire();
 				}
-				this->ServerFire();
+				else
+				{
+					this->ServerFire();
+				}
 				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 		}
 	}
@@ -133,7 +139,10 @@ void AMultiplayerFPSFirearm::StartFiring()
 					{
 						this->Fire();
 					}
-					this->ServerFire();
+					else
+					{
+						this->ServerFire();
+					}
 					}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 			}
 			else
@@ -143,17 +152,23 @@ void AMultiplayerFPSFirearm::StartFiring()
 					{
 						this->Fire();
 					}
-					this->ServerFire();
+					else
+					{
+						this->ServerFire();
+					}
 					}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 			}
 		}
 		else
 		{
-			if(HasAuthority())
+			if (HasAuthority())
 			{
 				this->Fire();
 			}
-			this->ServerFire();
+			else
+			{
+				this->ServerFire();
+			}
 		}
 	}
 }
@@ -180,7 +195,6 @@ void AMultiplayerFPSFirearm::BurstFire()
 
 void AMultiplayerFPSFirearm::Fire()
 {
-	UE_LOG(LogTemp, Error, TEXT("Fire Called"));
 	AActor* PlayerActor = GetOwner();
 	if (!IsValid(PlayerActor))
 	{
@@ -194,7 +208,6 @@ void AMultiplayerFPSFirearm::Fire()
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(MultiplayerFPSPlayer)"));
 		return;
 	}
-
 	
 	if (!IsValid(this->FireAnimation))
 	{
@@ -274,13 +287,7 @@ void AMultiplayerFPSFirearm::Fire()
 				return;
 			}
 
-			UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSFirearm::Fire -> Enemy Hit"));
-			if(HasAuthority())
-			{
-				UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSFirearm::Fire -> HasAutority Hit"));
-				HitPlayer->TakeDamage(this->Damage, DamageEvent, MultiplayerFPSPlayerController, MultiplayerFPSPlayer);
-			}
-
+			HitPlayer->TakeDamage(this->Damage, DamageEvent, MultiplayerFPSPlayerController, MultiplayerFPSPlayer);
 		}
 		else
 		{

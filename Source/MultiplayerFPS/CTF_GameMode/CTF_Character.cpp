@@ -24,47 +24,23 @@ void ACTF_Character::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutL
 void ACTF_Character::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if(bDead)
-	{
-		Died();
-	}
 }
 
-void ACTF_Character::Died()
+void ACTF_Character::ServerOnPlayerDeath()
 {
-	UWorld* World = GetWorld();
-	if (IsValid(World))
+	if (bHasFlag)
 	{
-		ACTF_PlayerController* PlayerController = Cast<ACTF_PlayerController>(Controller);
-		if (IsValid(PlayerController))
-		{
-			if(bHasFlag)
-			{
-				DropFlag();
-			}
-			PlayerController->RespawnPlayer();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("ACTF_Character::Died() -> PlayerController is not Valid !!!"));
-		}
+		ServerDropFlag();
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("ACTF_Character::Died() -> World is not Valid !!!"));
-	}
+	Super::ServerOnPlayerDeath();
 }
 
-void ACTF_Character::DropFlag()
+void ACTF_Character::ServerDropFlag_Implementation()
 {
-	bHasFlag = false;
-	ServerRPCDropFlag();
-}
-
-void ACTF_Character::ServerRPCDropFlag_Implementation()
-{
+	UE_LOG(LogTemp, Error, TEXT("ServerDropFlag_Implementation"));
 	if(HasAuthority())
 	{
+		bHasFlag = false;
 		UWorld* World = GetWorld();
 		if (IsValid(World))
 		{
@@ -87,7 +63,7 @@ void ACTF_Character::ServerRPCDropFlag_Implementation()
 				}
 				else
 				{
-					UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerRPCDropFlag_Implementation() -> Team is TEAM_NONE !!!"));
+					UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerDropFlag_Implementation() -> Team is TEAM_NONE !!!"));
 					return;
 				}
 
@@ -96,17 +72,17 @@ void ACTF_Character::ServerRPCDropFlag_Implementation()
 			}
 			else
 			{
-				UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerRPCDropFlag_Implementation() -> GameMode is not Valid !!!"));
+				UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerDropFlag_Implementation() -> GameMode is not Valid !!!"));
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerRPCDropFlag_Implementation() -> World is not Valid !!!"));
+			UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerDropFlag_Implementation() -> World is not Valid !!!"));
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerRPCDropFlag_Implementation() -> Does not have Authority !!!"));
+		UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerDropFlag_Implementation() -> Does not have Authority !!!"));
 	}
 }
 

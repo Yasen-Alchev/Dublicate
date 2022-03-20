@@ -33,9 +33,6 @@ public:
 	UFUNCTION()
 		virtual void RespawnPlayer(bool instant = false);
 
-	UFUNCTION(Server, Reliable)
-		virtual void ServerRespawnPlayer();
-
 	UFUNCTION(Client, Reliable)
 		virtual void DisableControls(bool disable);
 

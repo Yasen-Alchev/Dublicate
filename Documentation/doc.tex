@@ -1,0 +1,172 @@
+\documentclass[14pt]{extreport}
+
+\usepackage[utf8]{inputenc}
+\usepackage[bulgarian]{babel}
+
+\usepackage{etoolbox,titling}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{geometry}
+\geometry{verbose, tmargin=3cm, bmargin=3cm, lmargin=3cm, rmargin=3cm}
+
+\setcounter{chapter}{-1}
+
+\usepackage{caption}
+\captionsetup[figure]{font=small}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Overleaf Example},
+    pdfpagemode=FullScreen,
+}
+
+\usepackage{chngcntr}
+\counterwithin{figure}{chapter}
+
+\usepackage{scrextend}
+
+\usepackage{minted}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{keycolor}{rgb}{0,0.6,0}
+\definecolor{backcolor}{rgb}{1, 1, 1}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolor},   
+	commentstyle=\color{gray},
+    keywordstyle=\color{keycolor},
+    numberstyle=\tiny\color{black},
+    stringstyle=\color{red},
+    basicstyle=\small\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+	tabsize=4
+}
+
+\lstset{style=mystyle}
+
+\renewcommand{\lstlistingname}{Код}
+
+\begin{document}
+
+\chapter{Увод}
+
+\chapter{Разработка на игри с Unreal Engine 4}
+
+\chapter{Подбор на технологии за разработка на игри с Unreal Engine 4}
+
+\section{Функционални изисквания към разработката}
+
+Разработката на играта има за цел да постави основите на качествено разработен проект, който ще позволява лесно надграждане върху него.
+
+\subsection{Изисквания към оръжията}
+\begin{itemize}
+	\item Параметри на оръжията, които позволяват висока разновидност.
+	\item Функция за пълнител и презареждане на пълнителя.
+	\item Функция за пиближаване (zoom).
+	\item Различни режими на стрелба.
+	\begin{itemize}
+		\item Полуавтоматичен (Semi-automatic).
+		\item Залпов (Burst).
+		\item Автоматичен (Automatic).
+	\end{itemize}
+	\item Стрелба и откриване на удари чрез лъчево проследяване.
+\end{itemize}
+
+\subsection{Изисквания към системата за кръв}
+\begin{itemize}
+	\item Щит (Shield), които се възстановява за определено време, след поемане на удар.
+	\item Живот (Кръв, Health), който не се възстановява от самосебе си.
+	\item Предмет, който може да бъде използван от играча, ако животът му е под максималния.
+\end{itemize}
+
+\subsection{Изисквания към слотовете за оръжия}
+\begin{itemize}
+	\item Възможност за пазене на 2 оръжия и смяна между двете по време на игра.
+\end{itemize}
+
+\subsection{Изисквания към изкуствения интелект}
+\begin{itemize}
+	\item TO DO
+\end{itemize}
+
+\section{Избор на Unreal Engine 4}
+
+\section{Избор на програмен език}
+
+За разработка на игри в Unreal Engine 4 се използва C++. При стандартна работа със C++ в Unreal Engine се използват макрота, които позволяват по-лесна работа с класовете и дефиниране на типовете нужни за работа с обектите в Unreal Engine. 
+
+\section{Избор на среда за разработка}
+
+\subsection{Игрови двигател (Game Engine)}
+
+За игрови двигател е, естествено, избран Unreal Engine, като по-точно версия 4.27. Разликата между версия 4.27 и 4.26 е най-вече във визуалните подобрения, но най-важното за тази версия, отнасящо се до разработката на проекта е новите алгоритми за компресиране на файлвоте нужини на Unreal Engine и файловете използвани от разработчиците на проекта. Това прави крайния продукт по-малкът от страна на размер, скорост на зареждане и предаване на мрежови пакети. 
+
+Unreal Engine е избран вместо други игрови двигатели поради следните причини: 
+
+\begin{itemize}
+	\item Използва се C++ за разработка на функционалностите.
+	\item Кодът му е свободно достъпен за всеки разработчик.
+	\item Разработен е с 3D игри в предвид и позволява лесна работа в 3D пространството.
+	\item Има всичко нужно за разработването на игри и в повечето случаи не се нуждае от външни добавки за да може да върши добра работа.
+\end{itemize}
+
+Разликата между Unreal Engine и други игрови двигатели, Unity например, е че Unreal Engine е направен за 3D игри. Unity е фокусиран върху 2D и мобилни игри, а Unreal Engine - към 3D игри за настолни компютри и конзоли. Разликата между Unreal Engine и други по-известни и големи игрови двигатели, е това че кодът на Unreal Engine е напълно отворен за четене от всеки разработчик на продукти с Unreal Engine.
+Това позолява по-лесно откриване на проблеми в кода, по-добро разбиране базовите класове, върху които работят всички други части на Unreal Engine.
+
+\subsection{IDE (Integrated Development Environment)}
+
+За среда на разработка на прокета е избран Visual Studio 2019 Community Edition. Той се интегрира лесно с Unreal Engine, дебъгването с него става лесно и компилирането на проекта става сравнително бързо. IntelliSense, който е част от Visual Studio помага на по-бърза разработка, завършването на кода работи добре и се интегрира добре с начина на писане на код за Unreal Engine. 
+
+\subsection{Среда за контрол на версиите}
+
+За контрол на версиите е избран github, както и интеграцията му с git LFS (Large File Storage). Git LFS позволява качването на големи файлове, най-често бинарни, които се използват често при работата с Unreal Engine. Github позволява лесен начин за интегриране на нови свойства и промени на проекта, както и проверка на минали версии на проекта.
+
+\chapter{Разработка на проекта}
+
+\section{AMultiplayerFPSFirearm}
+
+\section{AMultiplayerFPSCharacter}
+
+\section{UMultiplayerFPSHealthSystem}
+
+\section{AHealthPickup}
+
+Този клас наследява AActor като дефинира предмет, който може да бъде поставен на картата и може да бъде взет от играча. Той се състои от два компонента - колизионна кутия и модел. За основен компонент е избран моделът, като кутията е прикрепна към основният компонент - моделът и позицията на кутията се смята спрямо моделът.
+
+\lstinputlisting[language={[11]C++}, label={lst:hpickupdef}, caption=Дефиниция на класа AHealthPickup]{code/hpickupdef.h}
+
+\lstinputlisting[language={[11]C++}, label={lst:hpickupcomp}, caption=Инициализация на компонентите в AHealthPickup]{code/hpickupcomp.cpp}
+
+В код \ref{lst:hpickupdef} са дефинирани пет функции и един конструктор. В конструктора се инизиализират компонентите (показано в код \ref{lst:hpickupcomp}), BeginPlay се изпълнява след започване на tick на нивото, Tick се изпълнява на всеки кадър (frame), OnBeginOverlap се изпълнява след като кутията за колизия се пресече с друг обект за колизия, и Destroy функциите се викат съответно на сървъра и клиента. 
+
+В BeginPlay се извиква макро за извикване на AddDynamic() върху динамични делегати за многократно предаване. 
+
+\chapter{Ръководство на потребителя}
+
+\section{Инсталиране на проекта}
+
+\section{Работа с проекта}
+
+\section{Стартиране на проекта}
+
+\chapter{Заключение}
+
+\tableofcontents
+
+\end{document}

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "Widgets/WidgetUnits/BuyMenuWeaponUnitWidget.h"
 #include "MultiplayerFPSInGameHUD.generated.h"
 
 UCLASS()
@@ -34,6 +35,9 @@ public:
 		virtual void SetOptionMenuVisibility(bool Visibility);
 
 	UFUNCTION()
+		virtual void SetBuyMenuVisibility(bool Visibility);
+
+	UFUNCTION()
 		virtual void ToggleLeaderBoardVisibility();
 
 	UFUNCTION()
@@ -41,6 +45,9 @@ public:
 
 	UFUNCTION()
 		virtual void SetGlobalGameMessage(FString Message);
+
+	UFUNCTION()
+		virtual void SelectWeapon(TSubclassOf<AMultiplayerFPSFirearm> WeaponClass);
 
 	UFUNCTION()
 		virtual void ClearGlobalGameMessage();

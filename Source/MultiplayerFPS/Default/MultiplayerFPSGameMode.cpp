@@ -9,7 +9,7 @@
 #include "MultiplayerFPS/CommonClasses/PlayerStartPoint.h"
 #include "UObject/ConstructorHelpers.h"
 
-AMultiplayerFPSGameMode::AMultiplayerFPSGameMode()
+AMultiplayerFPSGameMode::   AMultiplayerFPSGameMode()
 {
     static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPersonCPP/Blueprints/ThirdPersonCharacter"));
     if (PlayerPawnBPClass.Class != NULL)
@@ -157,6 +157,7 @@ void AMultiplayerFPSGameMode::StartingGame()
                 GameStateVar->DisablePlayersControls(false);
                 GameStateVar->RespawnPlayers(true);
                 GameStateVar->ClearGlobalGameMessage();
+
 				if(GetWorldTimerManager().IsTimerActive(GameTimer))
 				{
                     GetWorldTimerManager().ClearTimer(GameTimer);
@@ -170,7 +171,7 @@ void AMultiplayerFPSGameMode::StartingGame()
                         UpdateGlobalGameTimer(minutes, seconds);
                     }, 1, true, 0.f);
 
-            }, 1, false);
+            }, 2, false);
     }
     else
     {

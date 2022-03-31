@@ -134,7 +134,7 @@ void ULeaderBoardWidget::InitLeaderBoardColumns()
 					if (TSubclassOf<UObjectiveLeaderBoardUnitWidget>(LeaderBoardUnitRef))
 					{
 						UObjectiveLeaderBoardUnitWidget* NewObjectLeaderBoardUnit = Cast<UObjectiveLeaderBoardUnitWidget>(NewLeaderBoardUnit);
-						if (IsValid(NewObjectLeaderBoardUnit))
+						if (IsValid(NewObjectLeaderBoardUnit))	
 						{
 							NewObjectLeaderBoardUnit->SetPlayerObjectiveScore("Flags Captured");
 						}

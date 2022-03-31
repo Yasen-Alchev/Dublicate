@@ -264,6 +264,27 @@ void AMultiplayerFPSInGameHUD::SetOptionMenuVisibility(bool Visibility)
 	}
 }
 
+void AMultiplayerFPSInGameHUD::SetBuyMenuVisibility(bool Visibility)
+{
+	if (IsValid(BuyMenuWidget))
+	{
+		if (Visibility)
+		{
+			BuyMenuWidget->SetFocus();
+			BuyMenuWidget->SetKeyboardFocus();
+			BuyMenuWidget->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			BuyMenuWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT(" AMultiplayerFPSInGameHUD::ToggleBuyMenu() -> BuyMenuWidget is not Valid !!!"));
+	}
+}
+
 void AMultiplayerFPSInGameHUD::ToggleLeaderBoardVisibility()
 {
 	if (IsValid(LeaderBoardWidget))
@@ -317,6 +338,18 @@ void AMultiplayerFPSInGameHUD::SetGlobalGameMessage(FString Message)
 	}
 }
 
+void AMultiplayerFPSInGameHUD::SelectWeapon(TSubclassOf<AMultiplayerFPSFirearm> WeaponClass)
+{
+	if (IsValid(BuyMenuWidget))
+	{
+		BuyMenuWidget->SelectWeapon(WeaponClass);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::SelectWeapon() -> BuyMenuWidget is not Valid !!!"));
+	}
+}
+
 void AMultiplayerFPSInGameHUD::ClearGlobalGameMessage()
 {
 	if (IsValid(GameTimeWidget))
@@ -331,14 +364,22 @@ void AMultiplayerFPSInGameHUD::ClearGlobalGameMessage()
 
 void AMultiplayerFPSInGameHUD::GameEnded(const FString& Winner)
 {
-	if (IsValid(EndGameScreenWidget))
+	if (IsValid(LeaderBoardWidget))
 	{
-		EndGameScreenWidget->SetWinnerTeam(Winner);
-		EndGameScreenWidget->SetVisibility(ESlateVisibility::Visible);
+		LeaderBoardWidget->RemoveFromViewport();
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::GameEnded(ETeams WinnerTeam) -> EndGameScreenWidget is not Valid!!!"));
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::GameEnded(ETeams WinnerTeam) -> LeaderBoardWidget is not Valid!!!"));
+	}
+
+	if (IsValid(BuyMenuWidget))
+	{
+		BuyMenuWidget->RemoveFromViewport();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::GameEnded(ETeams WinnerTeam) -> BuyMenuWidget is not Valid!!!"));
 	}
 
 	if (IsValid(InGameMenuWidget))
@@ -348,6 +389,16 @@ void AMultiplayerFPSInGameHUD::GameEnded(const FString& Winner)
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::GameEnded(ETeams WinnerTeam) -> InGameMenuWidget is not Valid!!!"));
+	}
+
+	if (IsValid(EndGameScreenWidget))
+	{
+		EndGameScreenWidget->SetWinnerTeam(Winner);
+		EndGameScreenWidget->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSInGameHUD::GameEnded(ETeams WinnerTeam) -> EndGameScreenWidget is not Valid!!!"));
 	}
 }
 

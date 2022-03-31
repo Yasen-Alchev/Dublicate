@@ -18,6 +18,8 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void InitTeam() override;
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skins")
@@ -34,9 +36,6 @@ public:
 
 	UFUNCTION()
 		virtual TEnumAsByte<ETeams> getTeam() { return Team; }
-
-	UFUNCTION()
-		virtual void InitTeam();
 
 protected:
 

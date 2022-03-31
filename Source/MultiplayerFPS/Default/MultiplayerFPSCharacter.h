@@ -73,10 +73,16 @@ protected:
 	UPROPERTY()
 		bool bIsInOptionsMenu;
 
+	UPROPERTY()
+		bool bIsInBuyMenu;
+
 public:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION()
+		virtual void InitTeam();
 
 	UFUNCTION()
 		void OnHealthChanged(class UMultiplayerFPSHealthSystem* HealthSystemComp, float health, float damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
@@ -98,10 +104,22 @@ public:
 		virtual void SetOptionsMenuVisibility(bool Visibility);
 
 	UFUNCTION()
+		virtual void SetBuyMenuVisibility(bool Visibility);
+
+	UFUNCTION()
 		virtual void ToggleLeaderBoardVisibility();
 
 	UFUNCTION()
 		virtual void ToggleOptionsMenu();
+
+	UFUNCTION()
+		virtual void ToggleBuyMenu();
+
+	UFUNCTION(Server, Reliable)
+		virtual void ServerChangeWeapon(int32 slotIndex, TSubclassOf<class AMultiplayerFPSFirearm> WeaponClass);
+
+	UFUNCTION(Client, Reliable)
+		virtual void ClientChangeWeapon(int32 slotIndex, TSubclassOf<class AMultiplayerFPSFirearm> WeaponClass);
 
 	UFUNCTION()
 		virtual void DestoryPlayer();

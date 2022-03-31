@@ -18,6 +18,21 @@ void AMultiplayerFPSPlayerController::BeginPlay()
 	ServerRestartPlayerOnStart();
 }
 
+void AMultiplayerFPSPlayerController::OnPossess(APawn* MovieSceneBlends)
+{
+	Super::OnPossess(MovieSceneBlends);
+
+	ATeamBasedCharacter* MyPawn = Cast<ATeamBasedCharacter>(MovieSceneBlends);
+	if (IsValid(MyPawn))
+	{
+		MyPawn->InitTeam();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s ATeamBasedPlayerController::OnPossess(APawn* MovieSceneBlends) -> MyPawn is not Valid !!!"), *this->GetName());
+	}
+}
+
 void AMultiplayerFPSPlayerController::ClientEndGame_Implementation(const FString& Winner)
 {
 	UWorld* World = GetWorld();

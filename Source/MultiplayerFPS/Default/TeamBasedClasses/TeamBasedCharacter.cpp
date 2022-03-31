@@ -43,6 +43,8 @@ void ATeamBasedCharacter::InitTeam()
 		UE_LOG(LogTemp, Error, TEXT("%s ATeamBasedCharacter::InitTeam(AActor * Player)->PlayerStateVar is not Valid !!!"), *PlayerName);
 	}
 	MaterialChange();
+
+	Super::InitTeam();
 }
 
 void ATeamBasedCharacter::MaterialChange()

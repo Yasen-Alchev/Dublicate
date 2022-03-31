@@ -15,6 +15,9 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+		virtual void OnPossess(APawn* InPawn) override;
+
 	UPROPERTY()
 		bool bShouldRespawn;
 

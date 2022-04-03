@@ -27,6 +27,12 @@ public:
 	UFUNCTION()
 		virtual int getPlayerScore() const { return PlayerScore; }
 
+	UFUNCTION()
+		virtual void KilledPlayer() { ++Kills; PlayerScore += 5; }
+
+	UFUNCTION()
+		virtual void Dided() { ++Deaths; }
+
 protected:
 
 	UPROPERTY(Replicated)

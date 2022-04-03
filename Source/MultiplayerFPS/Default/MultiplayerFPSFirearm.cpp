@@ -177,7 +177,7 @@ void AMultiplayerFPSFirearm::BurstFire()
 {
 	if (GetWorldTimerManager().IsTimerActive(this->BurstFiringIntervalTimer))
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s BurstFire BurstFiringIntervalTimer HAS ACTIVE TIMER Called !!!"), *GetNetOwner()->GetName());
+		UE_LOG(LogTemp, Error, TEXT("BurstFire BurstFiringIntervalTimer HAS ACTIVE TIMER Called !!!"));
 		return;
 	}
 	else

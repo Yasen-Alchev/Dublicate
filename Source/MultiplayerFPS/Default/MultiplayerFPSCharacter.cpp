@@ -4,6 +4,7 @@
 #include "MultiplayerFPSInGameHUD.h"
 #include "MultiplayerFPSHealthSystem.h"
 #include "MultiplayerFPSFirearm.h"
+#include "MultiplayerFPSPlayerState.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -86,7 +87,7 @@ void AMultiplayerFPSCharacter::BeginPlay()
 void AMultiplayerFPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-}
+}	
 
 void AMultiplayerFPSCharacter::InitTeam()
 {
@@ -113,9 +114,17 @@ void AMultiplayerFPSCharacter::OnHealthChanged(UMultiplayerFPSHealthSystem* Heal
 		AMultiplayerFPSPlayerController* const PlayerController = Cast<AMultiplayerFPSPlayerController>(GEngine->GetFirstLocalPlayerController(World));
 		if (!IsValid(PlayerController))
 		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> PlayerControlle2 is not Valid !!!"));
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> PlayerController is not Valid !!!"));
 				return;
 		}
+		UE_LOG(LogTemp, Error, TEXT("%s Died AMultiplayerFPSCharacter::OnHealthChanged() -> InstigatorController is not Valid !!!"), *PlayerController->GetPawn()->GetName());
+		AMultiplayerFPSPlayerState* PlayerStateVar = PlayerController->GetPlayerState<AMultiplayerFPSPlayerState>();
+		if (!IsValid(PlayerStateVar))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> PlayerStateVar is not Valid !!!"));
+			return;
+		}
+		PlayerStateVar->KilledPlayer();
 
 		AMultiplayerFPSCharacter* AutonomousProxyPlayer = Cast<AMultiplayerFPSCharacter>(PlayerController->GetPawn());
 		if (!IsValid(AutonomousProxyPlayer))
@@ -143,6 +152,13 @@ void AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation()
 	if(IsValid(PlayerController))
 	{
 		PlayerController->RespawnPlayer();
+		AMultiplayerFPSPlayerState* PlayerStateVar = PlayerController->GetPlayerState<AMultiplayerFPSPlayerState>();
+		if (!IsValid(PlayerController))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation() -> PlayerController is not Valid !!!"));
+			return;
+		}
+		PlayerStateVar->Dided();
 	}
 	else
 	{

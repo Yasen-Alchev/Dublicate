@@ -22,14 +22,14 @@ void AMultiplayerFPSPlayerController::OnPossess(APawn* MovieSceneBlends)
 {
 	Super::OnPossess(MovieSceneBlends);
 
-	ATeamBasedCharacter* MyPawn = Cast<ATeamBasedCharacter>(MovieSceneBlends);
+	AMultiplayerFPSCharacter* MyPawn = Cast<AMultiplayerFPSCharacter>(MovieSceneBlends);
 	if (IsValid(MyPawn))
 	{
 		MyPawn->InitTeam();
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s ATeamBasedPlayerController::OnPossess(APawn* MovieSceneBlends) -> MyPawn is not Valid !!!"), *this->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("%s AMultiplayerFPSPlayerController::OnPossess(APawn* MovieSceneBlends) -> MyPawn is not Valid !!!"), *this->GetName());
 	}
 }
 

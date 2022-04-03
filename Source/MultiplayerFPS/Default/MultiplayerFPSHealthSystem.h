@@ -11,7 +11,7 @@ class MULTIPLAYERFPS_API UMultiplayerFPSHealthSystem : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UMultiplayerFPSHealthSystem();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

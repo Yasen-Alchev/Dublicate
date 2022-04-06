@@ -30,8 +30,8 @@ public:
 		class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	UFUNCTION()
-	void DestroyHealthPickup();
+	UFUNCTION(Server, Reliable)
+	void ServerDestroyHealthPickup();
 
 	UFUNCTION(Client, Reliable)
 	void ClientDestroyHealthPickup();

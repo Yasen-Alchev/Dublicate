@@ -10,7 +10,6 @@ ACQ_Character::ACQ_Character()
 	bIsInOptionsMenu = false;
 }
 
-
 void ACQ_Character::BeginPlay()
 {
 	Super::BeginPlay();

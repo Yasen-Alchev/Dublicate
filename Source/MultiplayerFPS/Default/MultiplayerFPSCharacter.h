@@ -4,7 +4,7 @@
 #include "GameFramework/Character.h"
 #include "MultiplayerFPSCharacter.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealSignature, float, Heal, AActor*, HealthPickupActor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealSignature, float, Heal);
 
 UCLASS(config = Game)
 class AMultiplayerFPSCharacter : public ACharacter
@@ -16,9 +16,6 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
-	UPROPERTY(EditAnywhere)
-	class UMultiplayerFPSHealthSystem* HealthSystem;
-
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
 	class USkeletalMeshComponent* FirstPersonMesh;
 
@@ -33,6 +30,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Hitbox")
 	class UBoxComponent* HeadHitboxBox;
+
+	UPROPERTY(EditAnywhere)
+	class UMultiplayerFPSHealthSystem* HealthSystem;
 
 	UPROPERTY()
 	TArray<class AMultiplayerFPSFirearm*> FirearmArray;
@@ -103,7 +103,7 @@ public:
 	virtual void ServerOnRemoteProxyPlayerDeath(AMultiplayerFPSCharacter* ProxyCharacter);
 
 	UFUNCTION()
-	void Heal(float Value, AActor* HealthPickupActor);
+	void Heal(float Value);
 
 	UFUNCTION()
 	virtual void SetOptionsMenuVisibility(bool Visibility);

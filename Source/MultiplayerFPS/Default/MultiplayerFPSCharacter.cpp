@@ -20,7 +20,7 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 {
 	GetCapsuleComponent()->InitCapsuleSize(55.0f, 96.0f);
 
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
@@ -40,7 +40,7 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	this->FirstPersonMesh->SetRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
 
 	this->FullBodyMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FullBodyMesh"));
-	this->FullBodyMesh->SetOwnerNoSee(true);
+	this->FullBodyMesh->SetOwnerNoSee(true);	
 	this->FullBodyMesh->SetupAttachment(this->FirstPersonCamera);
 	this->FullBodyMesh->bCastDynamicShadow = true;
 	this->FullBodyMesh->CastShadow = true;
@@ -160,28 +160,9 @@ void AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation()
 
 }
 
-void AMultiplayerFPSCharacter::Heal(float Value, AActor* HealthPickupActor)
+void AMultiplayerFPSCharacter::Heal(float Value)
 {
 	this->HealthSystem->Heal(Value);
-
-	if (!IsValid(HealthPickupActor))
-	{
-		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation !IsValid(HealthPickupActor)"));
-		return;
-	}
-
-	AHealthPickup* HealthPickup = Cast<AHealthPickup>(HealthPickupActor);
-	if (!IsValid(HealthPickup))
-	{
-		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation !IsValid(HealthPickup)"));
-		return;
-	}
-
-	if (HasAuthority())
-	{
-		HealthPickup->ClientDestroyHealthPickup();
-	}
-	HealthPickup->DestroyHealthPickup();
 }
 
 void AMultiplayerFPSCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
@@ -197,7 +178,7 @@ void AMultiplayerFPSCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	
 	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);	
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AMultiplayerFPSCharacter::SprintStart);
@@ -271,7 +252,7 @@ void AMultiplayerFPSCharacter::ClientSpawnFirearmActor_Implementation()
 	ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	ActorSpawnParameters.Owner = this;
 	const FVector WeaponLocationVector = FVector(0.0f, 0.0f, 0.0f);
-	const FRotator WeaponRotationRotator = FRotator(0.0f, 0.0f, 0.0f);
+	const FRotator WeaponRotationRotator = FRotator(0.0f, 0.0f, 0.0f);	
 
 	for (int32 i = 0; i < FirearmClassArray.Num(); ++i)
 	{

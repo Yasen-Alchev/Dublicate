@@ -15,10 +15,8 @@ UMultiplayerFPSHealthSystem::UMultiplayerFPSHealthSystem()
 	this->CurrentShield = this->MaxShield;
 
 	this->ShieldRechargeRate = 0.0f;
-	this->ShieldRechargeCooldownAfterDamage = ShieldRechargeCooldownAfterDamage;
+	this->ShieldRechargeCooldownAfterDamage = 0.0f;
 
-
-	this->bShouldRechargeShield = false;
 	this->ShieldRateCounter = 0;
 
 	SetIsReplicatedByDefault(true);
@@ -54,7 +52,6 @@ void UMultiplayerFPSHealthSystem::TickComponent(float DeltaTime, ELevelTick Tick
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 }
-
 
 void UMultiplayerFPSHealthSystem::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 	AController* InstigatedBy, AActor* DamageCauser)
@@ -137,15 +134,15 @@ void UMultiplayerFPSHealthSystem::RechargeShield()
 	this->CurrentShield = FMath::Clamp(this->CurrentShield + this->ShieldRechargeRate, 0.0f, this->MaxShield);
 	UE_LOG(LogTemp, Warning, TEXT("Shield is at: %.2f"), this->CurrentShield);
 
-	if (this->CurrentShield == this->MaxHealth)
+	if (this->CurrentShield == this->MaxShield)
 	{
 		GetOwner()->GetWorldTimerManager().ClearTimer(this->ShieldRechargeTimer);
 		
 		return;
 	}
 }
-
-void UMultiplayerFPSHealthSystem::Heal(float Value)
+	
+void UMultiplayerFPSHealthSystem::Heal(float Value)	
 {
 	if (Value == 100)
 	{

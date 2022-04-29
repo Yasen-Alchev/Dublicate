@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DM_PlayerState.h"
 #include "MultiplayerFPS/Default/MultiplayerFPSGameState.h"
 #include "DM_GameState.generated.h"
 
@@ -14,8 +13,6 @@ public:
 	ADM_GameState();
 
 	virtual void BeginPlay() override;
-
-	virtual void UpdateObjectiveStats() override;
 
 	virtual void GameEnded() override;
 

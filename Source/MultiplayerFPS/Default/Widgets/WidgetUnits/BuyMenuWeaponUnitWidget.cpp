@@ -48,6 +48,5 @@ void UBuyMenuWeaponUnitWidget::SelectWeapon()
 		return;
 	}
 
-	PlayerHUD->SelectWeapon(WeaponClass);
-
+	PlayerHUD->SelectWeapon(this);
 }

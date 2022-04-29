@@ -31,47 +31,44 @@ void ATeamBasedCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 }
 
 
-void ATeamBasedCharacter::InitTeam()
+void ATeamBasedCharacter::Init()
 {
 	ATeamBasedPlayerState* PlayerStateVar = Cast<ATeamBasedPlayerState>(GetPlayerState());
-	if (IsValid(PlayerStateVar))
+	if (!IsValid(PlayerStateVar))
 	{
-		this->Team = PlayerStateVar->Team;
+		UE_LOG(LogTemp, Error, TEXT("ATeamBasedCharacter::Init(AActor * Player)->PlayerStateVar is not Valid !!!"));
+		return;
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("%s ATeamBasedCharacter::InitTeam(AActor * Player)->PlayerStateVar is not Valid !!!"), *PlayerName);
-	}
+	this->Team = PlayerStateVar->Team;
 	MaterialChange();
 
-	Super::InitTeam();
+	Super::Init();
 }
 
 void ATeamBasedCharacter::MaterialChange()
 {
-	if (Team != TEAM_NONE)
+	if (Team == TEAM_NONE)
 	{
-		if (Team == TEAM_BLUE)
-		{
-			myMaterial = FullBodyMesh->CreateDynamicMaterialInstance(0, TeamBlueSkin);
-		}
-		else
-		{
-			myMaterial = FullBodyMesh->CreateDynamicMaterialInstance(0, TeamRedSkin);
-		}
-		if (IsValid(myMaterial))
-		{
-			FullBodyMesh->SetMaterial(0, myMaterial);
-			FirstPersonMesh->SetMaterial(0, myMaterial);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s ATeamBasedCharacter::MaterialChange()-> MaterialInstance is not Valid!!!"), *PlayerName);
-		}
+		UE_LOG(LogTemp, Warning, TEXT("ATeamBasedCharacter::MaterialChange() -> Team is TEAM_NONE"));
+		return;
+	}
+
+	if (Team == TEAM_BLUE)
+	{
+		myMaterial = FullBodyMesh->CreateDynamicMaterialInstance(0, TeamBlueSkin);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s ATeamBasedCharacter::MaterialChange() -> Team is TEAM_NONE"), *PlayerName);
+		myMaterial = FullBodyMesh->CreateDynamicMaterialInstance(0, TeamRedSkin);
 	}
+
+	if (!IsValid(myMaterial))
+	{
+		UE_LOG(LogTemp, Error, TEXT("ATeamBasedCharacter::MaterialChange()-> MaterialInstance is not Valid!!!"));
+		return;
+	}
+
+	FullBodyMesh->SetMaterial(0, myMaterial);
+	FirstPersonMesh->SetMaterial(0, myMaterial);
 }
 

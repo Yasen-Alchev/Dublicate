@@ -26,6 +26,9 @@ public:
 	UFUNCTION()
 		void SelectWeapon();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+		UImage* Image_Weapon;
+
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<AMultiplayerFPSFirearm> WeaponClass;
 

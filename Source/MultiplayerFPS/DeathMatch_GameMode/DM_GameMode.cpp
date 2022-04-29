@@ -14,26 +14,5 @@ void ADM_GameMode::BeginPlay()
 void  ADM_GameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	if (!bStarted)
-	{
-		if (NumPlayers >= minPlayersToStart)
-		{
-			ADM_GameState* GameStateVar = GetGameState<ADM_GameState>();
-			if (IsValid(GameStateVar))
-			{
-				bStarted = true;
-				GetWorldTimerManager().SetTimer(GameTimer, [this, GameStateVar]()
-					{
-						GameStateVar->DisablePlayersControls(true);
-						StartingGame();
-					}, 1, false);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSGameMode::Tick(float DeltaSeconds) -> GameStateVar is not Valid !!!"));
-			}
-		}
-	}
 }
 

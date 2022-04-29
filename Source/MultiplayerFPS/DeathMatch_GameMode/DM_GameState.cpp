@@ -11,54 +11,25 @@ void ADM_GameState::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ADM_GameState::UpdateObjectiveStats()
-{
-	Super::UpdateObjectiveStats();
-
-	for (APlayerState* CurrentPlayerState : PlayerArray)
-	{
-		AMultiplayerFPSPlayerState* PlayerState = Cast<AMultiplayerFPSPlayerState>(CurrentPlayerState);
-		if (IsValid(PlayerState))
-		{
-			AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(PlayerState->GetOwner());
-			if (IsValid(PlayerController))
-			{
-
-				TArray<FString> ObjectiveStats;
-				ObjectiveStats.Emplace("Game Has No Leader");
-				PlayerController->ClientUpdateObjectiveStats(ObjectiveStats);
-
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSGameState::UpdateObjectiveStats() -> PlayerController is not Valid !!!"), *PlayerState->GetName());
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSGameState::UpdateObjectiveStats() -> PlayerState is not Valid !!!"));
-		}
-	}
-}
-
 void ADM_GameState::GameEnded()
 {
 	Super::GameEnded();
 
-	int mostKills = 0;
-	ADM_PlayerState* WinnerPlayerState = nullptr;
+	ADM_PlayerState* WinnerPlayerState = Cast<ADM_PlayerState>(PlayerArray[0]);
+	if (!IsValid(WinnerPlayerState))
+	{
+		UE_LOG(LogTemp, Error, TEXT("ADM_GameState::GameEnded() -> WinnerPlayerState is not Valid !!!"));
+		return;
+	}
+
+	int mostKills = WinnerPlayerState->getPlayerKills();
 
 	for (APlayerState* CurrentPlayerStateVar : PlayerArray)
 	{
 		ADM_PlayerState* PlayerStateVar = Cast<ADM_PlayerState>(CurrentPlayerStateVar);
 		if (IsValid(PlayerStateVar))
 		{
-			if(WinnerPlayerState == nullptr)
-			{
-				WinnerPlayerState = PlayerStateVar;
-				mostKills = WinnerPlayerState->getPlayerKills();
-			}
-			else if (PlayerStateVar->getPlayerKills() > mostKills)
+			if (PlayerStateVar->getPlayerKills() > mostKills)
 			{
 				WinnerPlayerState = PlayerStateVar;
 				mostKills = WinnerPlayerState->getPlayerKills();
@@ -66,15 +37,11 @@ void ADM_GameState::GameEnded()
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("ADM_GameState::GameEnded() -> PlayerState is not Valid !!!"));
+			UE_LOG(LogTemp, Error, TEXT("ADM_GameState::GameEnded() -> PlayerStateVar is not Valid !!!"));
 		}
 	}
 
-	if(!IsValid(WinnerPlayerState))
-	{
-		UE_LOG(LogTemp, Error, TEXT("ADM_GameState::GameEnded() -> WinnerPlayerState is not Valid !!!"));
-		return;
-	}
+	UE_LOG(LogTemp, Error, TEXT("ADM_GameState::GameEnded() -> mostKills = %d !!!"), mostKills);
 
 	FString WinnerName = WinnerPlayerState->GetPlayerName();
 	if(WinnerName.IsEmpty())

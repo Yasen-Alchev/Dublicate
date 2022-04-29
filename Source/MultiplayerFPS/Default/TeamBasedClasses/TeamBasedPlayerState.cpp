@@ -24,26 +24,25 @@ void ATeamBasedPlayerState::FlagWasCaptured()
 {
 	++FlagsCaptured;
 	PlayerScore += 10;
-	ATeamBasedPlayerController* Controller = Cast<ATeamBasedPlayerController>(GetPawn()->GetController());
-	if (IsValid(Controller))
-	{
-		AMultiplayerFPSInGameHUD* PlayerHud = Cast<AMultiplayerFPSInGameHUD>(Controller->GetHUD());
-		if (IsValid(PlayerHud))
-		{
-			PlayerHud->UpdateLeaderBoardStats();
 
-			// TODO: REM
-			//PlayerHud->ToggleLeaderBoardVisibility();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("ATeamBasedPlayerState::FlagWasCaptured() -> PlayerHud is not Valid !!!"));
-		}
-	}
-	else
+	ATeamBasedPlayerController* Controller = Cast<ATeamBasedPlayerController>(GetPawn()->GetController());
+	if (!IsValid(Controller))
 	{
 		UE_LOG(LogTemp, Error, TEXT("ATeamBasedPlayerState::FlagWasCaptured() -> Controller is not Valid !!!"));
+		return;
 	}
+
+	AMultiplayerFPSInGameHUD* PlayerHud = Cast<AMultiplayerFPSInGameHUD>(Controller->GetHUD());
+	if (!IsValid(PlayerHud))
+	{
+		UE_LOG(LogTemp, Error, TEXT("ATeamBasedPlayerState::FlagWasCaptured() -> PlayerHud is not Valid !!!"));
+		return;
+	}
+	PlayerHud->UpdateLeaderBoardStats();
+
+	// TODO: REM
+	//PlayerHud->ToggleLeaderBoardVisibility();
+
 }
 
 

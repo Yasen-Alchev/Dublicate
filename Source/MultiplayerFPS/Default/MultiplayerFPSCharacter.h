@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/Image.h"
 #include "GameFramework/Character.h"
 #include "MultiplayerFPSCharacter.generated.h"
 
@@ -27,7 +28,7 @@ public:
 	class UCameraComponent* FirstPersonCamera;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
-		bool bDead;
+	bool bDead;
 
 	UPROPERTY()
 	TArray<class AMultiplayerFPSFirearm*> FirearmArray;
@@ -47,6 +48,9 @@ public:
 private:
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<class AMultiplayerFPSFirearm>> FirearmClassArray;
+
+	UPROPERTY()
+	UImage* WeaponImage = nullptr;
 
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -81,8 +85,14 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(Server, Reliable)
+		virtual void ServerSetPlayerName(const FString& PlayerName);
+
 	UFUNCTION()
-		virtual void InitTeam();
+		virtual void UpdateWeaponSlotsUI();
+
+	UFUNCTION()
+		virtual void Init();
 
 	UFUNCTION()
 		void OnHealthChanged(class UMultiplayerFPSHealthSystem* HealthSystemComp, float health, float damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
@@ -126,9 +136,6 @@ public:
 
 	UFUNCTION(Client, Reliable)
 		virtual void ClientDestoryPlayer();
-
-	UPROPERTY()
-		FString PlayerName;
 
 	UFUNCTION()
 		virtual void StartFiring();

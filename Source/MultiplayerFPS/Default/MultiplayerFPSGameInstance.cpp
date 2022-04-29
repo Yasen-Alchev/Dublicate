@@ -1,6 +1,7 @@
 #include "MultiplayerFPSGameInstance.h"
 #include "Core/PlayFabClientAPI.h"
 #include "MoviePlayer.h"
+#include "MultiplayerFPSPlayerState.h"
 
 UMultiplayerFPSGameInstance::UMultiplayerFPSGameInstance(const FObjectInitializer& ObjectInitializer) { }
 
@@ -39,29 +40,25 @@ void UMultiplayerFPSGameInstance::EndLoadingScreen(UWorld* InLoadedWorld) {}
 void UMultiplayerFPSGameInstance::Host(const FString& LevelName)
 {
 	UWorld* World = GetWorld();
-	if(IsValid(World))
-	{
-		UGameplayStatics::OpenLevel(World, FName(*(LevelName + "?listen")));
-		//World->ServerTravel(LevelName + "?listen -game -port=7778");
-		//World->ServerTravel(LevelName + "?listen -port=7778"); //like that we can specify port
-	}
-	else
+	if(!IsValid(World))
 	{
 		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSGameInstance::Host(const FString& LevelName) -> World is not Valid !!!"));
+		return;
 	}
+	UGameplayStatics::OpenLevel(World, FName(*(LevelName + "?listen")));
+	//World->ServerTravel(LevelName + "?listen -game -port=7778");
+	//World->ServerTravel(LevelName + "?listen -port=7778"); //like that we can specify port
 }
 
 void UMultiplayerFPSGameInstance::Join(const FString& Address)
 {
 	APlayerController* PlayerController = GetFirstLocalPlayerController();
-	if (IsValid(PlayerController))
-	{
-		PlayerController->ClientTravel(Address, TRAVEL_Absolute);
-	}
-	else
+	if (!IsValid(PlayerController))
 	{
 		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSGameInstance::Join(const FString& Address) -> PlayerController is not Valid !!!"));
+		return;
 	}
+	PlayerController->ClientTravel(Address, TRAVEL_Absolute);
 }
 
 void UMultiplayerFPSGameInstance::RegisterUser(const FString& Username, const FString& Password, const FString& Email, UMainMenuWidget* MainMenuWidget)
@@ -108,15 +105,16 @@ void UMultiplayerFPSGameInstance::RecoverPassword(const FString& Email, UMainMen
 
 void UMultiplayerFPSGameInstance::RegisterOnSuccess(const PlayFab::ClientModels::FRegisterPlayFabUserResult& Result)
 {
-	if (MainMenu != nullptr)
+	if (IsValid(MainMenu))
 	{
 		MainMenu->GoToMainMenu();
 	}
+	//AMultiplayerFPSPlayerState* PlayerStateVar = Cast<AMultiplayerFPSPlayerState>();
 }
 
 void UMultiplayerFPSGameInstance::LoginOnSuccess(const PlayFab::ClientModels::FLoginResult& Result)
 {
-	if(MainMenu != nullptr)
+	if (IsValid(MainMenu))
 	{
 		MainMenu->GoToMainMenu();
 	}
@@ -124,7 +122,7 @@ void UMultiplayerFPSGameInstance::LoginOnSuccess(const PlayFab::ClientModels::FL
 
 void UMultiplayerFPSGameInstance::OnPasswordRecoverySuccess(const PlayFab::ClientModels::FSendAccountRecoveryEmailResult& Result)
 {
-	if (MainMenu != nullptr)
+	if (IsValid(MainMenu))
 	{
 		MainMenu->GoToLoginMenu();
 	}

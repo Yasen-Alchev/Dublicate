@@ -11,34 +11,28 @@ void UBuyMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	SelectedWeaponWidget = nullptr;
+	SelectedWeaponRef = nullptr;
 
-	if (IsValid(Button_Back))
-	{
-		Button_Back->OnClicked.AddDynamic(this, &UBuyMenuWidget::BackToBuyMenu);
-	}
-	else
+	if (!IsValid(Button_Back))
 	{
 		UE_LOG(LogTemp, Error, TEXT("UBuyMenuWidget::NativeConstruct() -> Button_Back is not Valid !!!"));
+		return;
 	}
+	Button_Back->OnClicked.AddDynamic(this, &UBuyMenuWidget::BackToBuyMenu);
 
-	if (IsValid(Button_Slot1))
-	{
-		Button_Slot1->OnClicked.AddDynamic(this, &UBuyMenuWidget::ChooseSlotOne);
-	}
-	else
+	if (!IsValid(Button_Slot1))
 	{
 		UE_LOG(LogTemp, Error, TEXT("UBuyMenuWidget::NativeConstruct() -> Button_Slot1 is not Valid !!!"));
+		return;
 	}
+	Button_Slot1->OnClicked.AddDynamic(this, &UBuyMenuWidget::ChooseSlotOne);
 
-	if (IsValid(Button_Slot2))
-	{
-		Button_Slot2->OnClicked.AddDynamic(this, &UBuyMenuWidget::ChooseSlotTwo);
-	}
-	else
+	if (!IsValid(Button_Slot2))
 	{
 		UE_LOG(LogTemp, Error, TEXT("UBuyMenuWidget::NativeConstruct() -> Button_Slot2 is not Valid !!!"));
+		return;
 	}
+	Button_Slot2->OnClicked.AddDynamic(this, &UBuyMenuWidget::ChooseSlotTwo);
 }
 
 FReply UBuyMenuWidget::NativeOnKeyDown(const FGeometry& MovieSceneBlends, const FKeyEvent& InKeyEvent)
@@ -62,22 +56,20 @@ FReply UBuyMenuWidget::NativeOnKeyDown(const FGeometry& MovieSceneBlends, const 
 
 void UBuyMenuWidget::BackToBuyMenu()
 {
-	if (IsValid(BuyMenuWidgetSwitcher))
-	{
-		if (IsValid(BuyMenu))
-		{
-			SelectedWeaponWidget = nullptr;
-			BuyMenuWidgetSwitcher->SetActiveWidget(BuyMenu);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("UBuyMenuWidget::BackToBuyMenu() -> BuyMenu is not Valid !!!"));
-		}
-	}
-	else
+	if (!IsValid(BuyMenuWidgetSwitcher))
 	{
 		UE_LOG(LogTemp, Error, TEXT("UBuyMenuWidget::BackToBuyMenu() -> BuyMenuWidgetSwitcher is not Valid !!!"));
+		return;
 	}
+
+	if (!IsValid(BuyMenu))
+	{
+		UE_LOG(LogTemp, Error, TEXT("UBuyMenuWidget::BackToBuyMenu() -> BuyMenu is not Valid !!!"));
+		return;
+	}
+
+	SelectedWeaponRef = nullptr;
+	BuyMenuWidgetSwitcher->SetActiveWidget(BuyMenu);
 }
 
 void UBuyMenuWidget::ChooseSlotOne()
@@ -90,29 +82,28 @@ void UBuyMenuWidget::ChooseSlotTwo()
 	ChooseSlot(1);
 }
 
-void UBuyMenuWidget::SelectWeapon(TSubclassOf<AMultiplayerFPSFirearm> WeaponClass)
+void UBuyMenuWidget::SelectWeapon(UBuyMenuWeaponUnitWidget* SelectedWeapon)
 {
-	if (IsValid(BuyMenuWidgetSwitcher))
-	{
-		if (IsValid(ChooseSlotMenu))
-		{
-			SelectedWeaponWidget = WeaponClass;
-			BuyMenuWidgetSwitcher->SetActiveWidget(ChooseSlotMenu);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("UBuyMenuWidget::SelectWeapon() -> ChooseSlotMenu is not Valid !!!"));
-		}
-	}
-	else
+	if (!IsValid(BuyMenuWidgetSwitcher))
 	{
 		UE_LOG(LogTemp, Error, TEXT("UBuyMenuWidget::SelectWeapon() -> BuyMenuWidgetSwitcher is not Valid !!!"));
+		return;
 	}
+
+	if (!IsValid(ChooseSlotMenu))
+	{
+		UE_LOG(LogTemp, Error, TEXT("UBuyMenuWidget::SelectWeapon() -> ChooseSlotMenu is not Valid !!!"));
+		return;
+	}
+
+	SelectedWeaponRef = SelectedWeapon;
+	Image_Weapon->SetBrush(SelectedWeapon->Image_Weapon->Brush);
+	BuyMenuWidgetSwitcher->SetActiveWidget(ChooseSlotMenu);
 }
 
 void UBuyMenuWidget::ChooseSlot(uint32 slotIndex)
 {
-	if (!IsValid(SelectedWeaponWidget))
+	if (!IsValid(SelectedWeaponRef))
 	{
 		UE_LOG(LogTemp, Error, TEXT("UBuyMenuWidget::ChooseSlot(uint32 slotIndex) -> SelectedWeaponWidget is not Valid !!!"));
 		return;
@@ -124,7 +115,7 @@ void UBuyMenuWidget::ChooseSlot(uint32 slotIndex)
 		return;
 	}
 
-	Character->ServerChangeWeapon(slotIndex, SelectedWeaponWidget);
+	Character->ServerChangeWeapon(slotIndex, SelectedWeaponRef->WeaponClass);
 	BackToBuyMenu();
 	Character->ToggleBuyMenu();
 }

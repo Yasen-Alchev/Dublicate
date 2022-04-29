@@ -34,7 +34,7 @@ public:
 		virtual void ChooseSlotTwo();
 
 	UFUNCTION()
-		virtual void SelectWeapon(TSubclassOf<AMultiplayerFPSFirearm> WeaponClass);
+		virtual void SelectWeapon(UBuyMenuWeaponUnitWidget* SelectedWeapon);
 
 protected:
 
@@ -42,7 +42,7 @@ protected:
 		virtual void ChooseSlot(uint32 slotIndex);
 
 	UPROPERTY()
-		TSubclassOf<AMultiplayerFPSFirearm> SelectedWeaponWidget;
+		UBuyMenuWeaponUnitWidget* SelectedWeaponRef;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 		UButton* Button_Slot1;

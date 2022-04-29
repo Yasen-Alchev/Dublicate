@@ -19,29 +19,29 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION()
-		virtual int getPlayerKills() const { return Kills; }
+		virtual int getPlayerKills() const { return this->Kills; }
 
 	UFUNCTION()
-		virtual int getPlayerDeaths() const { return Deaths; }
+		virtual int getPlayerDeaths() const { return this->Deaths; }
 
 	UFUNCTION()
-		virtual int getPlayerScore() const { return PlayerScore; }
+		virtual int getPlayerScore() const { return this->PlayerScore; }
 
-	UFUNCTION()
-		virtual void KilledPlayer() { ++Kills; PlayerScore += 5; }
+	UFUNCTION(Server, Reliable)
+		virtual void ServerHasKilledPlayer();
 
-	UFUNCTION()
-		virtual void Dided() { ++Deaths; }
+	UFUNCTION(Server, Reliable)
+		virtual void ServerHasDied();
 
 protected:
 
 	UPROPERTY(Replicated)
-		int Kills;
+		int32 Kills;
 
 	UPROPERTY(Replicated)
-		int Deaths;
+		int32 Deaths;
 
 	UPROPERTY(Replicated)
-		int PlayerScore;
+		int32 PlayerScore;
 };
 

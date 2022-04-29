@@ -7,22 +7,21 @@ void AMainMenuHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (IsValid(MainMenuWidgetClass))
-	{
-		MainMenuWidget = CreateWidget<UMainMenuWidget>(GetWorld(), MainMenuWidgetClass);
-		if (IsValid(MainMenuWidget))
-		{
-			MainMenuWidget->AddToViewport();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMainMenuHUD::BeginPlay() -> MainMenuWidget is not Valid!!!"));
-		}
-	}
-	else
+	if (!IsValid(MainMenuWidgetClass))
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMainMenuHUD::BeginPlay() -> MainMenuWidgetClass is not Valid!!!"));
+		return;
 	}
+
+	MainMenuWidget = CreateWidget<UMainMenuWidget>(GetWorld(), MainMenuWidgetClass);
+
+	if (!IsValid(MainMenuWidget))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMainMenuHUD::BeginPlay() -> MainMenuWidget is not Valid!!!"));
+		return;
+	}
+
+	MainMenuWidget->AddToViewport();
 }
 
 void AMainMenuHUD::Tick(float DeltaSeconds)

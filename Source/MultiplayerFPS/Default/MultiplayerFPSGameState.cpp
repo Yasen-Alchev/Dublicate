@@ -110,6 +110,16 @@ void AMultiplayerFPSGameState::GameEnded()
 	}
 }
 
+void AMultiplayerFPSGameState::SetGameStarted(bool bStarted)
+{
+	bGameStarted = bStarted;
+}
+
+bool AMultiplayerFPSGameState::IsGameStarted()
+{
+	return bGameStarted;
+}
+
 void AMultiplayerFPSGameState::UpdateObjectiveStats()
 {
 	for (APlayerState* CurrentPlayerState : PlayerArray)

@@ -140,6 +140,13 @@ void ULeaderBoardWidget::UpdateLeaderBoard()
 		}
 
 		int32 PlayerID = PlayerState->GetPlayerId();
+
+		if(!PlayerToWidgetMap.Contains(PlayerID))
+		{
+			UE_LOG(LogTemp, Error, TEXT("ULeaderBoardWidget::UpdateLeaderBoard() -> PlayerToWidgetMap does not contain PlayerID !!!"));
+			return;
+		}
+
 		int32 PlayerWidgetIndex = PlayerToWidgetMap[PlayerID];
 
 		UWidget* ChildWidget = VerticalBox->GetChildAt(PlayerWidgetIndex);

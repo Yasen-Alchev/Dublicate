@@ -56,6 +56,12 @@ public:
         int MinPlayersToStart;
 
     UFUNCTION()
+        virtual bool IsGameStarted()
+	    {
+		    return this->bStarted;
+	    }
+
+    UFUNCTION()
         virtual void UpdateGlobalGameTimer(int& min, int& sec);
 
     UFUNCTION()

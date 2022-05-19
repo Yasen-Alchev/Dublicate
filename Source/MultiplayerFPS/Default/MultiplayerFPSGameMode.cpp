@@ -35,15 +35,6 @@ void AMultiplayerFPSGameMode::BeginPlay()
 {
     Super::BeginPlay();
     ChangeMenuWidget(StartingWidgetClass);
-
-   /* if (bStarted)
-    {
-        GetWorldTimerManager().ClearTimer(GameTimer);
-        GetWorldTimerManager().SetTimer(GameTimer, [this]()
-            {
-                UpdateGlobalGameTimer(Minutes, Seconds);
-            }, 1, true, 0.f);
-    }*/
 }
 
 void AMultiplayerFPSGameMode::Tick(float DeltaSeconds)
@@ -60,6 +51,7 @@ void AMultiplayerFPSGameMode::Tick(float DeltaSeconds)
         }
 
         bStarted = true;
+
         if (GetWorldTimerManager().IsTimerActive(GameTimer))
         {
             GetWorldTimerManager().ClearTimer(GameTimer);
@@ -164,12 +156,6 @@ void AMultiplayerFPSGameMode::StartingGame()
 
     GameStateVar->SetGlobalGameMessage("Game is Starting! Please Wait...");
 
-	//if (!StartingTimer.IsValid())
- //   {
- //       UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSGameMode::StartingGame() -> StartingTimer is not Valid!!!"));
- //       return;
- //   }
-
     if (GetWorldTimerManager().IsTimerActive(StartingTimer))
     {
         GetWorldTimerManager().ClearTimer(StartingTimer);
@@ -180,12 +166,7 @@ void AMultiplayerFPSGameMode::StartingGame()
 	    GameStateVar->DisablePlayersControls(false);
 	    GameStateVar->RespawnPlayers(true);
 	    GameStateVar->ClearGlobalGameMessage();
-
-	    //if(!GameTimer.IsValid())
-	    //{
-	    //    UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSGameMode::StartingGame() -> GameTimer is not Valid!!!"));
-	    //    return;
-	    //}
+        GameStateVar->SetGameStarted(true);
 
     	if (GetWorldTimerManager().IsTimerActive(GameTimer))
 	    {

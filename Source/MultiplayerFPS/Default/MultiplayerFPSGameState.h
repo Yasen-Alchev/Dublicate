@@ -16,6 +16,12 @@ public:
 		int PlayerRespawnTime;
 
 	UFUNCTION()
+		virtual void SetGameStarted(bool bStarted);
+
+	UFUNCTION()
+		virtual bool IsGameStarted();
+
+	UFUNCTION()
 		virtual void UpdateObjectiveStats();
 
 	UFUNCTION()
@@ -41,6 +47,11 @@ public:
 
 	UFUNCTION()
 		virtual void DisablePlayersControls(bool bDisable);
+
+private:
+
+	UPROPERTY()
+		bool bGameStarted;
 
 };
 

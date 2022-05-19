@@ -170,7 +170,7 @@ void ACapturePoint::UpdateObjectiveStats()
 	ACQ_GameState* GameStateVar = Cast<ACQ_GameState>(World->GetGameState());
 	if (!IsValid(GameStateVar))
 	{
-		UE_LOG(LogTemp, Error, TEXT("ACapturePoint::UpdateObjectiveStats() -> GameModeVar is not Valid!!!"));
+		UE_LOG(LogTemp, Error, TEXT("ACapturePoint::UpdateObjectiveStats() -> GameStateVar is not Valid!!!"));
 		return;
 	}
 	GameStateVar->UpdateObjectiveStats();
@@ -194,6 +194,26 @@ void ACapturePoint::MoveFlagDown()
 
 void ACapturePoint::CheckStatus()
 {
+	UWorld* World = GetWorld();
+	if (!IsValid(World))
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACapturePoint::CheckStatus() -> World is not Valid!!!"));
+		return;
+	}
+
+	ACQ_GameState* GameState = Cast<ACQ_GameState>(World->GetGameState());
+	if (!IsValid(GameState))
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACapturePoint::CheckStatus() -> GameState is not Valid!!!"));
+		return;
+	}
+
+	if(!GameState->IsGameStarted())
+	{
+		UE_LOG(LogTemp, Log, TEXT("Game was not started yet! "));
+		return;
+	}
+
 	TArray<AActor*> Players;
 	TArray<ACQ_Character*> CQ_Players;
 	CapturePointDetectionRangeSphere->GetOverlappingActors(Players, ACQ_Character::StaticClass());
@@ -251,40 +271,28 @@ void ACapturePoint::CheckStatus()
 					for(auto Player: CQ_Players)
 					{
 						ACQ_PlayerState* PlayerStateVar = Cast<ACQ_PlayerState>(Player->GetPlayerState());
-						if(IsValid(PlayerStateVar))
-						{
-							PlayerStateVar->FlagWasCaptured();
-						}
-						else
+						if(!IsValid(PlayerStateVar))
 						{
 							UE_LOG(LogTemp, Error, TEXT("ACapturePoint::CheckStatus() -> PlayerStateVar is not Valid!!!"));
+							continue;
 						}
+						PlayerStateVar->FlagWasCaptured();
 					}
 
-					UWorld* World = GetWorld();
-					if (IsValid(World))
+					ATeamBasedGameState* GameStateVar = Cast<ATeamBasedGameState>(World->GetGameState());
+					if (!IsValid(GameStateVar))
 					{
-						ATeamBasedGameState* GameStateVar = Cast<ATeamBasedGameState>(World->GetGameState());
-						if (IsValid(GameStateVar))
-						{
-							GameStateVar->RedFlagCaptured();
-						}
-						else
-						{
-							UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerState::UpdateStat() -> GameStateVar is not Valid !!!"));
-						}
+						UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerState::UpdateStat() -> GameStateVar is not Valid !!!"));
+						return;
 					}
-					else
-					{
-						UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerState::UpdateStat() -> World is not Valid !!!"));
-					}
-
+					GameStateVar->RedFlagCaptured();
 				}
 				else
 				{
 					MoveFlagUp();
 				}
 				break;
+
 			case TEAM_NONE:
 				MoveFlagUp();
 				ChangeFlagColor(TeamRedSkin);
@@ -304,39 +312,28 @@ void ACapturePoint::CheckStatus()
 					for (auto Player : CQ_Players)
 					{
 						ACQ_PlayerState* PlayerStateVar = Cast<ACQ_PlayerState>(Player->GetPlayerState());
-						if (IsValid(PlayerStateVar))
-						{
-							PlayerStateVar->FlagWasCaptured();
-						}
-						else
+						if (!IsValid(PlayerStateVar))
 						{
 							UE_LOG(LogTemp, Error, TEXT("ACapturePoint::CheckStatus() -> PlayerStateVar is not Valid!!!"));
+							continue;
 						}
+						PlayerStateVar->FlagWasCaptured();
 					}
 
-					UWorld* World = GetWorld();
-					if (IsValid(World))
+					ATeamBasedGameState* GameStateVar = Cast<ATeamBasedGameState>(World->GetGameState());
+					if (!IsValid(GameStateVar))
 					{
-						ATeamBasedGameState* GameStateVar = Cast<ATeamBasedGameState>(World->GetGameState());
-						if (IsValid(GameStateVar))
-						{
-							GameStateVar->BlueFlagCaptured();
-						}
-						else
-						{
-							UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerState::UpdateStat() -> GameStateVar is not Valid !!!"));
-						}
+						UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerState::UpdateStat() -> GameStateVar is not Valid !!!"));
+						return;
 					}
-					else
-					{
-						UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerState::UpdateStat() -> World is not Valid !!!"));
-					}
+					GameStateVar->BlueFlagCaptured();
 				}
 				else
 				{
 					MoveFlagUp();
 				}
 				break;
+
 			case TEAM_RED:
 				if(bIsFlagBottomPosition)
 				{
@@ -355,6 +352,7 @@ void ACapturePoint::CheckStatus()
 					MoveFlagDown();
 				}
 				break;
+
 			case TEAM_NONE:
 				MoveFlagUp();
 				ChangeFlagColor(TeamBlueSkin);

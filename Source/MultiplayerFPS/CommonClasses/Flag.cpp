@@ -53,6 +53,26 @@ void AFlag::OnBeginOverlap(class UPrimitiveComponent* HitComp,
 	class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UWorld* World = GetWorld();
+	if (!IsValid(World))
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACapturePoint::CheckStatus() -> World is not Valid!!!"));
+		return;
+	}
+
+	ACTF_GameState* GameState = Cast<ACTF_GameState>(World->GetGameState());
+	if (!IsValid(GameState))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AFlag::OnBeginOverlap -> GameState is not Valid!!!"));
+		return;
+	}
+
+	if (!GameState->IsGameStarted())
+	{
+		UE_LOG(LogTemp, Log, TEXT("Game was not started yet! "));
+		return;
+	}
+
 	ACTF_Character* Player = Cast<ACTF_Character>(OtherActor);
 	if (!IsValid(Player))
 	{

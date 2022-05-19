@@ -106,47 +106,43 @@ void ACapturePoint::Tick(float DeltaTime)
 
 void ACapturePoint::ChangeCapturePointColor(UMaterialInterface* Material, bool ChangeFlagColor)
 {
-	if (IsValid(Material))
-	{
-		myMaterial = UMaterialInstanceDynamic::Create(Material, this);
-		if (IsValid(myMaterial))
-		{
-			if (ChangeFlagColor)
-			{
-				FlagMeshComponent->SetMaterial(0, myMaterial);
-			}
-			PlatformMeshComponent->SetMaterial(0, myMaterial);
-			RodMeshComponent->SetMaterial(0, myMaterial);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("ACapturePoint::ChangeCapturePointColor(UMaterialInterface* Material, bool ChangeFlagColor) -> Material is not Valid!!!"));
-		}
-	}
-	else
+	if (!IsValid(Material))
 	{
 		UE_LOG(LogTemp, Error, TEXT("ACapturePoint::ChangeCapturePointColor(UMaterialInterface* Material, bool ChangeFlagColor) -> Material is not Valid!!!"));
+		return;
 	}
+	myMaterial = UMaterialInstanceDynamic::Create(Material, this);
+
+	if (!IsValid(myMaterial))
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACapturePoint::ChangeCapturePointColor(UMaterialInterface* Material, bool ChangeFlagColor) -> Material is not Valid!!!"));
+		return;
+	}
+
+	if (ChangeFlagColor)
+	{
+		FlagMeshComponent->SetMaterial(0, myMaterial);
+	}
+	PlatformMeshComponent->SetMaterial(0, myMaterial);
+	RodMeshComponent->SetMaterial(0, myMaterial);
 }
 
 void ACapturePoint::ChangeFlagColor(UMaterialInterface* Material)
 {
-	if (IsValid(Material))
-	{
-		myMaterial = UMaterialInstanceDynamic::Create(Material, this);
-		if (IsValid(myMaterial))
-		{
-			FlagMeshComponent->SetMaterial(0, myMaterial);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("ACapturePoint::ChangeFlagColor(UMaterialInterface* Material) -> myMaterial is not Valid!!!"));
-		}
-	}
-	else
+	if (!IsValid(Material))
 	{
 		UE_LOG(LogTemp, Error, TEXT("ACapturePoint::ChangeFlagColor(UMaterialInterface* Material) -> Material is not Valid!!!"));
+		return;
 	}
+
+	myMaterial = UMaterialInstanceDynamic::Create(Material, this);
+	if (!IsValid(myMaterial))
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACapturePoint::ChangeFlagColor(UMaterialInterface* Material) -> MyMaterial is not Valid!!!"));
+		return;
+	}
+	FlagMeshComponent->SetMaterial(0, myMaterial);
+
 }
 
 void ACapturePoint::ShowFlag(bool bIsVisible)
@@ -165,22 +161,19 @@ void ACapturePoint::UpdateObjectiveStats()
 {
 	UE_LOG(LogTemp, Error, TEXT("ACapturePoint::UpdateObjectiveStats() -> Capture point"));
 	UWorld* World = GetWorld();
-	if (IsValid(World))
-	{
-		ACQ_GameState* GameStateVar = Cast<ACQ_GameState>(World->GetGameState());
-		if (IsValid(GameStateVar))
-		{
-			GameStateVar->UpdateObjectiveStats();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("ACapturePoint::UpdateObjectiveStats() -> GameModeVar is not Valid!!!"));
-		}
-	}
-	else
+	if (!IsValid(World))
 	{
 		UE_LOG(LogTemp, Error, TEXT("ACapturePoint::UpdateObjectiveStats() -> World is not Valid!!!"));
+		return;
 	}
+
+	ACQ_GameState* GameStateVar = Cast<ACQ_GameState>(World->GetGameState());
+	if (!IsValid(GameStateVar))
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACapturePoint::UpdateObjectiveStats() -> GameModeVar is not Valid!!!"));
+		return;
+	}
+	GameStateVar->UpdateObjectiveStats();
 }
 
 void ACapturePoint::MoveFlagUp()
@@ -214,8 +207,8 @@ void ACapturePoint::CheckStatus()
 		if (IsValid(Player))
 		{
 			CQ_Players.Add(Player);
-			if (Player->getTeam() == TEAM_BLUE) blue++;
-			else if (Player->getTeam() == TEAM_RED) red++;
+			if (Player->GetTeam() == TEAM_BLUE) blue++;
+			else if (Player->GetTeam() == TEAM_RED) red++;
 			else UE_LOG(LogTemp, Error, TEXT("ACapturePoint::CheckStatus() -> Player has NO TEAM !!!"));
 		}
 		else
@@ -338,7 +331,6 @@ void ACapturePoint::CheckStatus()
 					{
 						UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSPlayerState::UpdateStat() -> World is not Valid !!!"));
 					}
-
 				}
 				else
 				{

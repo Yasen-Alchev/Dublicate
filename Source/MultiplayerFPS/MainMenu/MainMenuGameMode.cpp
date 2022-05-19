@@ -28,20 +28,19 @@ void AMainMenuGameMode::ChangeMenuWidget(TSubclassOf<UUserWidget> NewWidgetClass
         CurrentWidget->RemoveFromViewport();
         CurrentWidget = nullptr;
     }
-    if (IsValid(NewWidgetClass))
-    {
-        CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), NewWidgetClass);
-        if (IsValid(CurrentWidget))
-        {
-            CurrentWidget->AddToViewport();
-        }
-        else
-        {
-            UE_LOG(LogTemp, Error, TEXT("AMainMenuGameMode::ChangeMenuWidget(TSubclassOf<UUserWidget> NewWidgetClass) -> CurrentWidget is not Valid !!!"));
-        }
-    }
-    else
+
+    if (!IsValid(NewWidgetClass))
     {
         UE_LOG(LogTemp, Warning, TEXT("AMainMenuGameMode::ChangeMenuWidget(TSubclassOf<UUserWidget> NewWidgetClass) -> NewWidgetClass is not Valid !!!"));
+        return;
     }
+
+    CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), NewWidgetClass);
+    if (!IsValid(CurrentWidget))
+    {
+        UE_LOG(LogTemp, Error, TEXT("AMainMenuGameMode::ChangeMenuWidget(TSubclassOf<UUserWidget> NewWidgetClass) -> CurrentWidget is not Valid !!!"));
+        return;
+    }
+
+    CurrentWidget->AddToViewport();
 }

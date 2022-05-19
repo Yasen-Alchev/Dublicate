@@ -89,6 +89,30 @@ void ATeamBasedGameState::GameEnded()
 	}
 }
 
+void ATeamBasedGameState::UpdateLeaderBoards()
+{
+	for (APlayerState* CurrentPlayerState : PlayerArray)
+	{
+		ATeamBasedPlayerState* PlayerState = Cast<ATeamBasedPlayerState>(CurrentPlayerState);
+		if (IsValid(PlayerState))
+		{
+			ATeamBasedPlayerController* PlayerController = Cast<ATeamBasedPlayerController>(PlayerState->GetOwner());
+			if (IsValid(PlayerController))
+			{
+				PlayerController->ClientUpdateLeaderBoardStats();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("%s ATeamBasedGameState::UpdateObjectiveStats() -> PlayerController is not Valid !!!"), *PlayerState->GetName());
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("ATeamBasedGameState::UpdateObjectiveStats() -> PlayerState is not Valid !!!"));
+		}
+	}
+}
+
 void ATeamBasedGameState::UpdateObjectiveStats()
 {
 	Super::UpdateObjectiveStats();

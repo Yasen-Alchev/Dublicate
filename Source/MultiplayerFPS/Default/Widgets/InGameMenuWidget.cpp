@@ -36,41 +36,36 @@ void UInGameMenuWidget::NativeConstruct()
 void UInGameMenuWidget::ResumeButtonClicked()
 {
 	UClass* UnknownClass = GetOwningPlayerPawn()->GetClass();
+
 	if (TSubclassOf<ADM_Character>(UnknownClass))
 	{
 		ADM_Character* ADM_Player = Cast<ADM_Character>(GetOwningPlayerPawn());
-		if (IsValid(ADM_Player))
-		{
-			ADM_Player->ToggleOptionsMenu();
-		}
-		else
+		if (!IsValid(ADM_Player))
 		{
 			UE_LOG(LogTemp, Error, TEXT("UInGameMenuWidget::ResumeButtonClicked() -> ADM_Player is not Valid !!!"));
+			return;
 		}
+		ADM_Player->ToggleOptionsMenu();
 	}
 	else if (TSubclassOf<ACQ_Character>(UnknownClass))
 	{
 		ACQ_Character* ACQ_Player = Cast<ACQ_Character>(GetOwningPlayerPawn());
-		if (IsValid(ACQ_Player))
-		{
-			ACQ_Player->ToggleOptionsMenu();
-		}
-		else
+		if (!IsValid(ACQ_Player))
 		{
 			UE_LOG(LogTemp, Error, TEXT("UFPS_InGameMenuWidget::ResumeButtonClicked() -> ACQ_Player is not Valid !!!"));
+			return;
 		}
+		ACQ_Player->ToggleOptionsMenu();
 	}
 	else if (TSubclassOf<ACTF_Character>(UnknownClass))
 	{
 		ACTF_Character* ACTF_Player = Cast<ACTF_Character>(GetOwningPlayerPawn());
-		if (IsValid(ACTF_Player))
-		{
-			ACTF_Player->ToggleOptionsMenu();
-		}
-		else
+		if (!IsValid(ACTF_Player))
 		{
 			UE_LOG(LogTemp, Error, TEXT("UInGameMenuWidget::ResumeButtonClicked() -> ACTF_Player is not Valid !!!"));
+			return;
 		}
+		ACTF_Player->ToggleOptionsMenu();
 	}
 	else
 	{

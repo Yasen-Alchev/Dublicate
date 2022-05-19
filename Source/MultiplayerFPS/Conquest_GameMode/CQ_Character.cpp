@@ -9,7 +9,7 @@ ACQ_Character::ACQ_Character()
 	bReplicates = true;
 	bIsInOptionsMenu = false;
 
-	myMaterial = nullptr;
+	MyMaterial = nullptr;
 }
 
 

@@ -12,12 +12,15 @@ void UObjectiveLeaderBoardUnitWidget::NativeConstruct()
 
 void UObjectiveLeaderBoardUnitWidget::SetPlayerObjectiveScore(FString Score)
 {
-	if (IsValid(TXTBlock_PlayerObjectiveScore))
-	{
-		TXTBlock_PlayerObjectiveScore->SetText(FText::FromString(Score));
-	}
-	else
+	if (!IsValid(TXTBlock_PlayerObjectiveScore))
 	{
 		UE_LOG(LogTemp, Error, TEXT("UObjectiveLeaderBoardUnitWidget::SetPlayerObjectiveScore(FString Score) -> TXTBlock_PlayerObjectiveScore is not Valid !!!"));
+		return;
 	}
+	TXTBlock_PlayerObjectiveScore->SetText(FText::FromString(Score));
+}
+
+FString UObjectiveLeaderBoardUnitWidget::GetPlayerObjectiveScore()
+{
+	return TXTBlock_PlayerObjectiveScore->GetText().ToString();
 }

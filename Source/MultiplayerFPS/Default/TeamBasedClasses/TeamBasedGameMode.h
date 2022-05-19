@@ -22,17 +22,17 @@ protected:
 	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 
     UPROPERTY()
-        int redPlayers;
+        int RedPlayers;
 
     UPROPERTY()
-        int bluePlayers;
+        int BluePlayers;
 
 public:
 
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 
     UFUNCTION()
-        virtual TEnumAsByte<ETeams> assignTeam();
+        virtual TEnumAsByte<ETeams> AssignTeam();
 
 };
 

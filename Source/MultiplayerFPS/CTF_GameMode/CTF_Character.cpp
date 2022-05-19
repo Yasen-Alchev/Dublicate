@@ -37,52 +37,50 @@ void ACTF_Character::ServerOnPlayerDeath()
 
 void ACTF_Character::ServerDropFlag_Implementation()
 {
-	UE_LOG(LogTemp, Error, TEXT("ServerDropFlag_Implementation"));
-	if(HasAuthority())
+	if(!HasAuthority())
 	{
-		bHasFlag = false;
-		UWorld* World = GetWorld();
-		if (IsValid(World))
-		{
-			ACTF_GameMode* GameMode = Cast<ACTF_GameMode>(World->GetAuthGameMode());
-			if (IsValid(GameMode))
-			{
-				FTransform FlagTransform;
-				TSubclassOf<AFlag> BluePrintClass;
-				FActorSpawnParameters SpawnParameters;
+		UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerDropFlag_Implementation() -> Does not have Authority !!!"));
+		return;
+	}
 
-				FlagTransform = GetActorTransform();
+	bHasFlag = false;
 
-				if(Team == TEAM_BLUE)
-				{
-					BluePrintClass = GameMode->getRedFlagBP();
-				}
-				else if(Team == TEAM_RED)
-				{
-					BluePrintClass = GameMode->getBlueFlagBP();
-				}
-				else
-				{
-					UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerDropFlag_Implementation() -> Team is TEAM_NONE !!!"));
-					return;
-				}
+	UWorld* World = GetWorld();
+	if (!IsValid(World))
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerDropFlag_Implementation() -> World is not Valid !!!"));
+		return;
+	}
 
-				AFlag* Flag = World->SpawnActor<AFlag>(BluePrintClass, FlagTransform.GetLocation(), FlagTransform.GetRotation().Rotator(), SpawnParameters);
-				Flag->bIsDropped = true;
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerDropFlag_Implementation() -> GameMode is not Valid !!!"));
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerDropFlag_Implementation() -> World is not Valid !!!"));
-		}
+	ACTF_GameMode* GameMode = Cast<ACTF_GameMode>(World->GetAuthGameMode());
+	if (!IsValid(GameMode))
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerDropFlag_Implementation() -> GameMode is not Valid !!!"));
+		return;
+	}
+
+	FTransform FlagTransform;
+	TSubclassOf<AFlag> BluePrintClass;
+	FActorSpawnParameters SpawnParameters;
+
+	FlagTransform = GetActorTransform();
+
+	if (Team == TEAM_BLUE)
+	{
+		BluePrintClass = GameMode->GetRedFlagBP();
+	}
+	else if (Team == TEAM_RED)
+	{
+		BluePrintClass = GameMode->GetBlueFlagBP();
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerDropFlag_Implementation() -> Does not have Authority !!!"));
+		UE_LOG(LogTemp, Error, TEXT("ACTF_Character::ServerDropFlag_Implementation() -> Team is TEAM_NONE !!!"));
+		return;
 	}
+
+	AFlag* Flag = World->SpawnActor<AFlag>(BluePrintClass, FlagTransform.GetLocation(), FlagTransform.GetRotation().Rotator(), SpawnParameters);
+	Flag->bIsDropped = true;
+
 }
 

@@ -23,6 +23,11 @@ public:
 	UFUNCTION()
 		virtual void SetPlayerObjectiveScore(FString Score);
 
+	UFUNCTION()
+		virtual FString GetPlayerObjectiveScore();
+
+protected:
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget, BlueprintProtected))
 		class UTextBlock* TXTBlock_PlayerObjectiveScore;
 

@@ -35,6 +35,9 @@ public:
 
 	virtual void GameEnded() override;
 
+	UFUNCTION()
+		virtual  void UpdateLeaderBoards();
+
 protected:
 
 	UPROPERTY(Replicated)

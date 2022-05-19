@@ -15,14 +15,12 @@ void UBuyMenuWeaponUnitWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (IsValid(Button_SelectWeapon))
-	{
-		Button_SelectWeapon->OnClicked.AddDynamic(this, &UBuyMenuWeaponUnitWidget::SelectWeapon);
-	}
-	else
+	if (!IsValid(Button_SelectWeapon))
 	{
 		UE_LOG(LogTemp, Error, TEXT("UBuyMenuWidget::NativeConstruct() -> Button_SelectWeapon is not Valid !!!"));
+		return;
 	}
+	Button_SelectWeapon->OnClicked.AddDynamic(this, &UBuyMenuWeaponUnitWidget::SelectWeapon);
 }
 
 void UBuyMenuWeaponUnitWidget::SelectWeapon()
@@ -48,6 +46,5 @@ void UBuyMenuWeaponUnitWidget::SelectWeapon()
 		return;
 	}
 
-	PlayerHUD->SelectWeapon(WeaponClass);
-
+	PlayerHUD->SelectWeapon(this);
 }

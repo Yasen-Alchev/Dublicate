@@ -23,13 +23,19 @@ public:
 		TEnumAsByte<ETeams> Team;
 
 	UFUNCTION()
-		virtual int getCapturedFlagsCount() const { return FlagsCaptured; }
+		virtual int GetCapturedFlagsCount() const { return FlagsCaptured; }
 
 	UFUNCTION()
 		virtual void FlagWasCaptured();
 
 protected:
-	UPROPERTY(Replicated)
+
+	UPROPERTY(ReplicatedUsing = ServerUpdateLeaderBoards)
 		int FlagsCaptured;
+
+	FTimerHandle TimerHandle;
+
+	UFUNCTION(Server, Reliable)
+		virtual void ServerUpdateLeaderBoards();
 };
 

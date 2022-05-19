@@ -47,13 +47,13 @@ public:
         FTimerHandle StartingTimer;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameTimer", meta = (ClampMin = "0", ClampMax = "59", UIMin = "0", UIMax = "59"))
-        int minutes;
+        int Minutes;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameTimer", meta = (ClampMin = "0", ClampMax = "59", UIMin = "0", UIMax = "59"))
-        int seconds;
+        int Seconds;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Players")
-        int minPlayersToStart;
+        int MinPlayersToStart;
 
     UFUNCTION()
         virtual void UpdateGlobalGameTimer(int& min, int& sec);

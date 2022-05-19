@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MultiplayerFPSPlayerState.h"
 #include "GameFramework/HUD.h"
 #include "Widgets/WidgetUnits/BuyMenuWeaponUnitWidget.h"
 #include "MultiplayerFPSInGameHUD.generated.h"
@@ -38,16 +39,25 @@ public:
 		virtual void SetBuyMenuVisibility(bool Visibility);
 
 	UFUNCTION()
+		virtual void SetImageWeaponSlot(uint32 SlotIndex, UTexture2D* WeaponTexture2D);
+
+	UFUNCTION()
+		virtual void SelectWeaponSlot(uint32 SlotIndex);
+
+	UFUNCTION()
 		virtual void ToggleLeaderBoardVisibility();
 
 	UFUNCTION()
 		virtual void UpdateLeaderBoardStats();
 
 	UFUNCTION()
+		virtual void UpdateLeaderBoard();
+
+	UFUNCTION()
 		virtual void SetGlobalGameMessage(FString Message);
 
 	UFUNCTION()
-		virtual void SelectWeapon(TSubclassOf<AMultiplayerFPSFirearm> WeaponClass);
+		virtual void SelectWeapon(UBuyMenuWeaponUnitWidget* SelectedWeapon);
 
 	UFUNCTION()
 		virtual void ClearGlobalGameMessage();
@@ -75,9 +85,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets", Meta = (BlueprintProtected = "true"))
 		TSubclassOf<UUserWidget> BuyMenuWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets", Meta = (BlueprintProtected = "true"))
+		TSubclassOf<UUserWidget> WeaponSlotsWidgetClass;
+
 
 	UPROPERTY()
 		class ULeaderBoardWidget* LeaderBoardWidget;
+
+	UPROPERTY()
+		class UWeaponSlotsWidget* WeaponSlotsWidget;
 
 	UPROPERTY()
 		class UBuyMenuWidget* BuyMenuWidget;
@@ -93,6 +109,7 @@ protected:
 
 	UPROPERTY()
 		class UEndGameScreenWidget* EndGameScreenWidget;
+
 
 private:
 

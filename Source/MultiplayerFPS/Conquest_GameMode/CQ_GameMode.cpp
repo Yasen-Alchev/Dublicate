@@ -18,8 +18,8 @@ ACQ_GameMode::ACQ_GameMode()
     PlayerStateClass = ACQ_PlayerState::StaticClass();
     GameStateClass = ACQ_GameState::StaticClass();
 
-    minutes = 5;
-    seconds = 0;
+    Minutes = 5;
+    Seconds = 0;
 }
 
 void ACQ_GameMode::BeginPlay()

@@ -12,8 +12,6 @@
 #include "GameFramework/Controller.h"
 #include "Net/UnrealNetwork.h"
 
-//////////////////////////////////// PASS CONTROLLER TO FUNCTION CHANGE WEAPON (Character_C_5 that is not on the scene, where as Character_C_2 is the character we want to modify)
-
 AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 {
 	GetCapsuleComponent()->InitCapsuleSize(55.0f, 96.0f);
@@ -67,6 +65,7 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 
 	this->bIsReloading = false;
 	this->bIsZoomedIn = false;
+
 }
 
 void AMultiplayerFPSCharacter::BeginPlay()
@@ -74,24 +73,55 @@ void AMultiplayerFPSCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	UMultiplayerFPSGameInstance* GameInstanceVar = Cast<UMultiplayerFPSGameInstance>(GetGameInstance());
-	if (IsValid(GameInstanceVar))
+	if (!IsValid(GameInstanceVar))
 	{
-		this->PlayerName = GameInstanceVar->PlayerName;
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay() -> GameInstanceVar is not Valid !!!"));
+		return;
+	}
+
+	if(HasAuthority())
+	{
+		AMultiplayerFPSPlayerState* PlayerStateVar = Cast<AMultiplayerFPSPlayerState>(this->GetPlayerState());
+		if (!IsValid(PlayerStateVar))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSCharacter::BeginPlay() -> PlayerStateVar is not Valid !!!"));
+			return;
+		}
+		PlayerStateVar->SetPlayerName(GameInstanceVar->PlayerName);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay() -> GameInstanceVar is not Valid !!!"));
+		ServerSetPlayerName(GameInstanceVar->PlayerName);
 	}
 }
 
 void AMultiplayerFPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-}	
+}
 
-void AMultiplayerFPSCharacter::InitTeam()
+void AMultiplayerFPSCharacter::ServerSetPlayerName_Implementation(const FString& PlayerName)
 {
-	ServerSpawnFirearmActor();
+	AMultiplayerFPSPlayerState* PlayerStateVar = Cast<AMultiplayerFPSPlayerState>(GetPlayerState());
+	if (!IsValid(PlayerStateVar))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay() -> PlayerStateVar is not Valid !!!"));
+		return;
+	}
+
+	PlayerStateVar->SetPlayerName(PlayerName);
+}
+
+void AMultiplayerFPSCharacter::Init()
+{
+	if(HasAuthority())
+	{
+		ClientSpawnFirearmActor();
+	}
+	else
+	{
+		ServerSpawnFirearmActor();
+	}
 }
 
 void AMultiplayerFPSCharacter::OnHealthChanged(UMultiplayerFPSHealthSystem* HealthSystemComp, float health,
@@ -115,16 +145,18 @@ void AMultiplayerFPSCharacter::OnHealthChanged(UMultiplayerFPSHealthSystem* Heal
 		if (!IsValid(PlayerController))
 		{
 			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> PlayerController is not Valid !!!"));
-				return;
+			return;
 		}
-		UE_LOG(LogTemp, Error, TEXT("%s Died AMultiplayerFPSCharacter::OnHealthChanged() -> InstigatorController is not Valid !!!"), *PlayerController->GetPawn()->GetName());
+
+		//UE_LOG(LogTemp, Error, TEXT("%s ServerHasDied AMultiplayerFPSCharacter::OnHealthChanged() -> InstigatorController is not Valid !!!"), *PlayerController->GetPawn()->GetName());
+
 		AMultiplayerFPSPlayerState* PlayerStateVar = PlayerController->GetPlayerState<AMultiplayerFPSPlayerState>();
 		if (!IsValid(PlayerStateVar))
 		{
 			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> PlayerStateVar is not Valid !!!"));
 			return;
 		}
-		PlayerStateVar->KilledPlayer();
+		PlayerStateVar->ServerHasKilledPlayer();
 
 		AMultiplayerFPSCharacter* AutonomousProxyPlayer = Cast<AMultiplayerFPSCharacter>(PlayerController->GetPawn());
 		if (!IsValid(AutonomousProxyPlayer))
@@ -149,21 +181,21 @@ float AMultiplayerFPSCharacter::TakeDamage(float DamageAmount, FDamageEvent cons
 void AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation()
 {
 	AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(GetController());
-	if(IsValid(PlayerController))
-	{
-		PlayerController->RespawnPlayer();
-		AMultiplayerFPSPlayerState* PlayerStateVar = PlayerController->GetPlayerState<AMultiplayerFPSPlayerState>();
-		if (!IsValid(PlayerController))
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation() -> PlayerController is not Valid !!!"));
-			return;
-		}
-		PlayerStateVar->Dided();
-	}
-	else
+	if(!IsValid(PlayerController))
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation() -> PlayerController is not Valid !!!"));
+		return;
 	}
+
+	PlayerController->RespawnPlayer();
+
+	AMultiplayerFPSPlayerState* PlayerStateVar = PlayerController->GetPlayerState<AMultiplayerFPSPlayerState>();
+	if (!IsValid(PlayerStateVar))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation() -> PlayerStateVar is not Valid !!!"));
+		return;
+	}
+	PlayerStateVar->ServerHasDied();
 }
 
 void AMultiplayerFPSCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
@@ -215,6 +247,11 @@ void AMultiplayerFPSCharacter::MoveForward(float Value)
 		{
 			Value *= 0.6f;
 		}
+		
+		if (GetPendingMovementInputVector().GetAbs().Y > 0.001f)
+		{
+			Value *= 0.5f;
+		}
 
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
@@ -233,6 +270,11 @@ void AMultiplayerFPSCharacter::MoveRight(float Value)
 			Value *= 0.6f;
 		}
 
+		if(GetPendingMovementInputVector().GetAbs().X > 0.001f)
+		{
+			Value *= 0.5f;
+		}
+
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(Direction, Value);
 	}
@@ -248,8 +290,54 @@ void AMultiplayerFPSCharacter::SprintStop()
 	bIsSprinting = false;
 }
 
+void AMultiplayerFPSCharacter::UpdateWeaponSlotsUI()
+{
+	AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(GetController());
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::UpdateWeaponSlotsUI() -> PlayerController is not Valid !!!"));
+		return;
+	}
+
+	AMultiplayerFPSInGameHUD* InGameHUD = Cast<AMultiplayerFPSInGameHUD>(PlayerController->GetHUD());
+	if (!IsValid(InGameHUD))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::UpdateWeaponSlotsUI() -> InGameHUD is not Valid !!!"));
+		return;
+	}
+
+	for (int32 i = 0; i < FirearmArray.Num(); ++i)
+	{
+		if(!IsValid(FirearmArray[i]))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::UpdateWeaponSlotsUI -> FirearmArray[%d] is Not Valid !!!"), i);
+			return;
+		}
+		if (!IsValid(FirearmArray[i]->WeaponTexture))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSCharacter::UpdateWeaponSlotsUI -> FirearmArray[%d]->WeaponTexture Is not Set !!!"), i);
+			continue;
+		}
+		InGameHUD->SetImageWeaponSlot(i, FirearmArray[i]->WeaponTexture);
+	}
+}
+
 void AMultiplayerFPSCharacter::ClientSpawnFirearmActor_Implementation()
 {
+	AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(GetController());
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ClientSpawnFirearmActor_Implementation() -> PlayerController is not Valid !!!"));
+		return;
+	}
+
+	AMultiplayerFPSInGameHUD* InGameHUD = Cast<AMultiplayerFPSInGameHUD>(PlayerController->GetHUD());
+	if (!IsValid(InGameHUD))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ClientSpawnFirearmActor_Implementation() -> InGameHUD is not Valid !!!"));
+		return;
+	}
+
 	FActorSpawnParameters ActorSpawnParameters;
 	ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	ActorSpawnParameters.Owner = this;
@@ -283,14 +371,17 @@ void AMultiplayerFPSCharacter::ClientSpawnFirearmActor_Implementation()
 	FirearmArray[0]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 	FirearmArray[1]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
 
-	UE_LOG(LogTemp, Error, TEXT("%s FirearmArray.NUM() = %d called !!! "), *GetName(), FirearmArray.Num());
+	//UE_LOG(LogTemp, Error, TEXT("%s FirearmArray.NUM() = %d called !!! "), *GetName(), FirearmArray.Num());
 
 	CanFireFirearmArray.Init(true, FirearmArray.Num());
+
+	UpdateWeaponSlotsUI();
+	InGameHUD->SelectWeaponSlot(0);
 }
 
 void AMultiplayerFPSCharacter::ServerSpawnFirearmActor_Implementation()
 {
-	UE_LOG(LogTemp, Error, TEXT("%s ServerSpawnFirearmActor_Implementation called !!!"), *GetName());
+	//UE_LOG(LogTemp, Error, TEXT("%s ServerSpawnFirearmActor_Implementation called !!!"), *GetName());
 	if (HasAuthority())
 	{
 		ClientSpawnFirearmActor();
@@ -309,117 +400,103 @@ void AMultiplayerFPSCharacter::ServerOnRemoteProxyPlayerDeath_Implementation(AMu
 void AMultiplayerFPSCharacter::SetOptionsMenuVisibility(bool Visibility)
 {
 	UWorld* World = GetWorld();
-	if (IsValid(World))
-	{
-		AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(this->GetController());
-		if (IsValid(PlayerController))
-		{
-			AMultiplayerFPSInGameHUD* InGameHUD = Cast<AMultiplayerFPSInGameHUD>(PlayerController->GetHUD());
-			if (IsValid(InGameHUD))
-			{
-				InGameHUD->SetOptionMenuVisibility(Visibility);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::SetOptionsMenuVisibility(bool Visibility) -> InGameHUD is not Valid !!!"));
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::SetOptionsMenuVisibility(bool Visibility) -> PlayerController is not Valid !!!"));
-		}
-	}
-	else
+	if (!IsValid(World))
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::SetOptionsMenuVisibility(bool Visibility) -> World is not Valid !!!"));
+		return;
 	}
+
+	AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(this->GetController());
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::SetOptionsMenuVisibility(bool Visibility) -> PlayerController is not Valid !!!"));
+		return;
+	}
+
+	AMultiplayerFPSInGameHUD* InGameHUD = Cast<AMultiplayerFPSInGameHUD>(PlayerController->GetHUD());
+	if (!IsValid(InGameHUD))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::SetOptionsMenuVisibility(bool Visibility) -> InGameHUD is not Valid !!!"));
+		return;
+	}
+	InGameHUD->SetOptionMenuVisibility(Visibility);
+
 }
 
 void AMultiplayerFPSCharacter::SetBuyMenuVisibility(bool Visibility)
 {
-	UWorld* World = GetWorld();
-	if (IsValid(World))
+	AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(GetController());
+	if (!IsValid(PlayerController))
 	{
-		AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(GetController());
-		if (IsValid(PlayerController))
-		{
-			AMultiplayerFPSInGameHUD* InGameHUD = Cast<AMultiplayerFPSInGameHUD>(PlayerController->GetHUD());
-			if (IsValid(InGameHUD))
-			{
-				InGameHUD->SetBuyMenuVisibility(Visibility);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ToggleBuyMenu() -> InGameHUD is not Valid !!!"));
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ToggleBuyMenu() -> PlayerController is not Valid !!!"));
-		}
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ToggleBuyMenu() -> PlayerController is not Valid !!!"));
+		return;
 	}
-	else
+
+	AMultiplayerFPSInGameHUD* InGameHUD = Cast<AMultiplayerFPSInGameHUD>(PlayerController->GetHUD());
+	if (!IsValid(InGameHUD))
 	{
-		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ToggleBuyMenu() -> World is not Valid !!!"));
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ToggleBuyMenu() -> InGameHUD is not Valid !!!"));
+		return;
 	}
+	InGameHUD->SetBuyMenuVisibility(Visibility);
+
 }
 
 void AMultiplayerFPSCharacter::ToggleLeaderBoardVisibility()
 {
 	UWorld* World = GetWorld();
-	if (IsValid(World))
-	{
-		AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(this->GetController());
-		if (IsValid(PlayerController))
-		{
-			AMultiplayerFPSInGameHUD* InGameHUD = Cast<AMultiplayerFPSInGameHUD>(PlayerController->GetHUD());
-			if (IsValid(InGameHUD))
-			{
-				InGameHUD->ToggleLeaderBoardVisibility();
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ToggleLeaderBoardVisibility() -> InGameHUD is not Valid !!!"));
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ToggleLeaderBoardVisibility() -> PlayerController is not Valid !!!"));
-		}
-	}
-	else
+	if (!IsValid(World))
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ToggleLeaderBoardVisibility() -> World is not Valid !!!"));
+		return;
 	}
+
+	AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(this->GetController());
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ToggleLeaderBoardVisibility() -> PlayerController is not Valid !!!"));
+		return;
+	}
+
+	AMultiplayerFPSInGameHUD* InGameHUD = Cast<AMultiplayerFPSInGameHUD>(PlayerController->GetHUD());
+	if (!IsValid(InGameHUD))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ToggleLeaderBoardVisibility() -> InGameHUD is not Valid !!!"));
+		return;
+	}
+	InGameHUD->ToggleLeaderBoardVisibility();
+
 }
 
 void AMultiplayerFPSCharacter::ToggleOptionsMenu()
 {
 	bIsInOptionsMenu = !bIsInOptionsMenu;
 	SetOptionsMenuVisibility(bIsInOptionsMenu);
+
 	AMultiplayerFPSPlayerController* MyController = Cast<AMultiplayerFPSPlayerController>(GetController());
-	if (IsValid(MyController))
-	{
-		MyController->SetShowMouseCursor(bIsInOptionsMenu);
-		MyController->ClientIgnoreLookInput(bIsInOptionsMenu);
-		MyController->ClientIgnoreMoveInput(bIsInOptionsMenu);
-		bIsInOptionsMenu ? MyController->SetInputMode(FInputModeUIOnly()) : MyController->SetInputMode(FInputModeGameOnly());
-	}
-	else
+	if (!IsValid(MyController))
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ToggleOptionsMenu() -> MyController is not Valid !!!"));
+		return;
 	}
+
+	MyController->SetShowMouseCursor(bIsInOptionsMenu);
+	MyController->ClientIgnoreLookInput(bIsInOptionsMenu);
+	MyController->ClientIgnoreMoveInput(bIsInOptionsMenu);
+	bIsInOptionsMenu ? MyController->SetInputMode(FInputModeUIOnly()) : MyController->SetInputMode(FInputModeGameOnly());
 }
 
 void AMultiplayerFPSCharacter::ToggleBuyMenu()
 {
 	bIsInBuyMenu = !bIsInBuyMenu;
 	SetBuyMenuVisibility(bIsInBuyMenu);
+
 	AMultiplayerFPSPlayerController* MyController = Cast<AMultiplayerFPSPlayerController>(GetController());
 	if (!IsValid(MyController))
 	{
 		UE_LOG(LogTemp, Error, TEXT("AAMultiplayerFPSCharacter::ToggleBuyMenu() -> MyController is not Valid !!!"));
 	}
+
 	MyController->SetShowMouseCursor(bIsInBuyMenu);
 	MyController->ClientIgnoreLookInput(bIsInBuyMenu);
 	MyController->ClientIgnoreMoveInput(bIsInBuyMenu);
@@ -440,10 +517,23 @@ void AMultiplayerFPSCharacter::ServerChangeWeapon_Implementation(int32 slotIndex
 
 void AMultiplayerFPSCharacter::ClientChangeWeapon_Implementation(int32 slotIndex, TSubclassOf<AMultiplayerFPSFirearm> WeaponClass)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FString::Printf(TEXT("ClientChangeWeapon_Implementation Called !!!")));
 	if (!IsValid(WeaponClass))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSCharacter::ClientChangeWeapon -> WeaponClass is not Valid !!!"));
+		UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSCharacter::ClientChangeWeapon() -> WeaponClass is not Valid !!!"));
+		return;
+	}
+
+	AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(this->GetController());
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ClientChangeWeapon() -> PlayerController is not Valid !!!"));
+		return;
+	}
+
+	AMultiplayerFPSInGameHUD* InGameHUD = Cast<AMultiplayerFPSInGameHUD>(PlayerController->GetHUD());
+	if (!IsValid(InGameHUD))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ClientChangeWeapon() -> InGameHUD is not Valid !!!"));
 		return;
 	}
 
@@ -456,9 +546,10 @@ void AMultiplayerFPSCharacter::ClientChangeWeapon_Implementation(int32 slotIndex
 	UWorld* World = GetWorld();
 	if (!IsValid(World))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSCharacter::ClientChangeWeapon -> World is not Valid !!!"));
+		UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSCharacter::ClientChangeWeapon() -> World is not Valid !!!"));
 		return;
 	}
+
 	if (FirearmArray.Num() > slotIndex)
 	{
 		FirearmArray[slotIndex]->GunMesh->DestroyComponent();
@@ -468,40 +559,40 @@ void AMultiplayerFPSCharacter::ClientChangeWeapon_Implementation(int32 slotIndex
 		AActor* FirearmActor = World->SpawnActor(WeaponClass, &WeaponLocationVector, &WeaponRotationRotator, ActorSpawnParameters);
 		if (!IsValid(FirearmActor))
 		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ClientChangeWeapon !IsValid(FirearmActor)"));
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ClientChangeWeapon() !IsValid(FirearmActor)"));
 			return;
 		}
 
 		AMultiplayerFPSFirearm* Firearm = Cast<AMultiplayerFPSFirearm>(FirearmActor);
 		if (!IsValid(Firearm))
 		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ClientChangeWeapon !IsValid(Firearm)"));
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ClientChangeWeapon() !IsValid(Firearm)"));
 			return;
 		}
+
 		FirearmArray[slotIndex] = Firearm;
-		if (slotIndex == 0)
+		if (slotIndex == WeaponInHand)
 		{
 			FirearmArray[slotIndex]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 		}
-		else if (slotIndex == 1)
+		else
 		{
 			FirearmArray[slotIndex]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
 		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ClientChangeWeapon -> FirearmArray[slotIndex] Unknown slotIndex == %d > 2 !!!"), slotIndex);
-		}
+
+		InGameHUD->SetImageWeaponSlot(slotIndex, FirearmArray[slotIndex]->WeaponTexture);
+
 		CanFireFirearmArray.Init(true, FirearmArray.Num());
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSCharacter::ClientChangeWeapon -> FirearmArray is Out Of Bound !!!"), *GetName());
+		UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSCharacter::ClientChangeWeapon() -> FirearmArray is Out Of Bound !!!"), *GetName());
 	}
 }
 
 void AMultiplayerFPSCharacter::DestoryPlayer()
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s DestoryPlayer -> FirearmArray.Num() = %d!!!"), *GetName(), FirearmArray.Num());
+	//UE_LOG(LogTemp, Warning, TEXT("%s DestoryPlayer -> FirearmArray.Num() = %d!!!"), *GetName(), FirearmArray.Num());
 	for(auto FireArmActor : FirearmArray)
 	{
 		FireArmActor->DestroyConstructedComponents();
@@ -518,8 +609,8 @@ void AMultiplayerFPSCharacter::ClientDestoryPlayer_Implementation()
 
 void AMultiplayerFPSCharacter::StartFiring()
 {
-	UE_LOG(LogTemp, Warning, TEXT("FirearmArray.Num() = %d  >  WeaponInHand = %d"), FirearmArray.Num(), WeaponInHand);
-	UE_LOG(LogTemp, Warning, TEXT("CanFireFirearmArray.Num() = %d  >  WeaponInHand = %d"), CanFireFirearmArray.Num(), WeaponInHand);
+	//UE_LOG(LogTemp, Warning, TEXT("FirearmArray.Num() = %d  >  WeaponInHand = %d"), FirearmArray.Num(), WeaponInHand);
+	//UE_LOG(LogTemp, Warning, TEXT("CanFireFirearmArray.Num() = %d  >  WeaponInHand = %d"), CanFireFirearmArray.Num(), WeaponInHand);
 	if (this->FirearmArray.Num() > this->WeaponInHand && this->CanFireFirearmArray.Num() > this->WeaponInHand)
 	{
 		if (this->CanFireFirearmArray[this->WeaponInHand])
@@ -554,6 +645,20 @@ void AMultiplayerFPSCharacter::StopFiring()
 
 void AMultiplayerFPSCharacter::SwitchWeapon()
 {
+	AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(GetController());
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::SwitchWeapon() -> PlayerController is not Valid !!!"));
+		return;
+	}
+
+	AMultiplayerFPSInGameHUD* InGameHUD = Cast<AMultiplayerFPSInGameHUD>(PlayerController->GetHUD());
+	if (!IsValid(InGameHUD))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::SwitchWeapon() -> InGameHUD is not Valid !!!"));
+		return;
+	}
+
 	if (this->WeaponInHand == 0)
 	{
 		this->WeaponInHand = 1;
@@ -568,6 +673,8 @@ void AMultiplayerFPSCharacter::SwitchWeapon()
 		FirearmArray[0]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 		FirearmArray[1]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
 	}
+
+	InGameHUD->SelectWeaponSlot(WeaponInHand);
 }
 
 void AMultiplayerFPSCharacter::SwitchFireMode()

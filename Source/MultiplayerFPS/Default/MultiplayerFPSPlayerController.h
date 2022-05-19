@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MultiplayerFPSPlayerState.h"
 #include "GameFramework/PlayerController.h"
 #include "MultiplayerFPSPlayerController.generated.h"
 
@@ -29,6 +30,9 @@ public:
 
 	UFUNCTION(Client, Reliable)
 		virtual void ClientUpdateObjectiveStats(const TArray<FString>& ObjectiveStats);
+
+	UFUNCTION(Client, Reliable)
+		virtual void ClientUpdateLeaderBoardStats();
 
 	UFUNCTION(Client, Reliable)
 		virtual void ClientSetGlobalGameMessage(const FString& Message);

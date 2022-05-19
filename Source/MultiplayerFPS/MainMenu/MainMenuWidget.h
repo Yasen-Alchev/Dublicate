@@ -17,7 +17,7 @@ public:
 	virtual void NativeConstruct() override;
 
 	UFUNCTION()
-		void HostGame();
+		void StartServer();
 
 	UFUNCTION()
 		void ConnectToServer();
@@ -36,6 +36,9 @@ public:
 
 	UFUNCTION()
 		void RecoverPassword();
+
+	UFUNCTION()
+		void GoToHostMenu();
 
 	UFUNCTION()
 		void GoToJoinMenu();
@@ -65,7 +68,10 @@ public:
 		UTextBlock* TXTBlock_GameModeText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-		UEditableTextBox* EditableTextBox_ServerIP;
+		UEditableTextBox* EditableTextBox_JoinMenuServerIP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+		UEditableTextBox* EditableTextBox_JoinMenuServerPort;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 		UEditableTextBox* EditableTextBox_LoginUsername;
@@ -107,6 +113,9 @@ public:
 		UButton* Button_ConnectToServer;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+		UButton* Button_StartServer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 		UButton* Button_Login;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
@@ -128,6 +137,9 @@ public:
 		UButton* Button_BackToMainMenu;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+		UButton* Button_HostBackToMainMenu;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 		UButton* Button_PasswordRecoveryBackToLogin;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
@@ -137,6 +149,9 @@ public:
 		UWidgetSwitcher* MenuSwitcher;
 
 	//Menus Widgets
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+		UWidget* HostMenu;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 		UWidget* JoinMenu;
@@ -155,8 +170,8 @@ public:
 
 private:
 	UPROPERTY()
-	int gameModePos;
+	int GameModePos;
 
 	UPROPERTY()
-	int  numberOfGameModes;
+	int  NumberOfGameModes;
 };

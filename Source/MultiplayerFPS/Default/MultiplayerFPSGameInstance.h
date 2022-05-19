@@ -36,16 +36,16 @@ public:
 		void Host(const FString& LevelName);
 
 	UFUNCTION()
-		void Join(const FString& Address);
+		void Join(const FString& Address, const FString& Port);
 
 	UFUNCTION()
-		void	 RegisterUser(const FString& Username, const FString& Password, const FString& Email, UMainMenuWidget* MainMenuWidget);
+		void	RegisterUser(const FString& Username, const FString& Password, const FString& Email, UMainMenuWidget* MainMenuWidget);
 
 	UFUNCTION()
 		void LoginUser(const FString& Username, const FString& Password, UMainMenuWidget* MainMenuWidget);
 
 	UFUNCTION()
-		void	 RecoverPassword(const FString& Email, UMainMenuWidget* MainMenuWidget);
+		void RecoverPassword(const FString& Email, UMainMenuWidget* MainMenuWidget);
 
 	void RegisterOnSuccess(const PlayFab::ClientModels::FRegisterPlayFabUserResult& Result);
 
@@ -63,7 +63,7 @@ private:
 	UPROPERTY()
 		FString TitleId = "D4E09";
 
-	PlayFabClientPtr clientAPI;
+	PlayFabClientPtr ClientAPI;
 
 	UPROPERTY()
 		UMainMenuWidget* MainMenu;

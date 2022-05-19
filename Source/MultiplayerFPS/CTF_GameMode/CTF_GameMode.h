@@ -31,22 +31,22 @@ public:
 	TSubclassOf<AFlag> BlueFlagBP;
 
     UFUNCTION()
-		void setRedFlagTransform(FTransform FlagTransform) { RedFlagTransform = FlagTransform; }
+		void SetRedFlagTransform(FTransform FlagTransform) { RedFlagTransform = FlagTransform; }
 
 	UFUNCTION()
-		void setBlueFlagTransform(FTransform FlagTransform) { BlueFlagTransform = FlagTransform; }
+		void SetBlueFlagTransform(FTransform FlagTransform) { BlueFlagTransform = FlagTransform; }
 
     UFUNCTION()
-		FTransform getRedFlagTransform() const { return RedFlagTransform; }
+		FTransform GetRedFlagTransform() const { return RedFlagTransform; }
 
 	UFUNCTION()
-		FTransform getBlueFlagTransform() const { return BlueFlagTransform; }
+		FTransform GetBlueFlagTransform() const { return BlueFlagTransform; }
 
     UFUNCTION()
-		TSubclassOf<AFlag> getRedFlagBP() const { return this->RedFlagBP; }
+		TSubclassOf<AFlag> GetRedFlagBP() const { return this->RedFlagBP; }
 
     UFUNCTION()
-		TSubclassOf<AFlag> getBlueFlagBP() const { return this->BlueFlagBP; }
+		TSubclassOf<AFlag> GetBlueFlagBP() const { return this->BlueFlagBP; }
 
     /* Flag's Properties END*/
 

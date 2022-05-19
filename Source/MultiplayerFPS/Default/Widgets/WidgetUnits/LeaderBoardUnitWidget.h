@@ -21,6 +21,33 @@ public:
 
 	virtual void NativeConstruct() override;
 
+	UFUNCTION()
+		virtual void SetPlayerName(FString Name);
+
+	UFUNCTION()
+		virtual void SetPlayerKills(FString Kills);
+
+	UFUNCTION()
+		virtual void SetPlayerDeaths(FString Deaths);
+
+	UFUNCTION()
+		virtual void SetPlayerScore(FString Score);
+
+
+	UFUNCTION()
+		virtual FString GetPlayerName();
+
+	UFUNCTION()
+		virtual FString GetPlayerKills();
+
+	UFUNCTION()
+		virtual FString GetPlayerDeaths();
+
+	UFUNCTION()
+		virtual FString GetPlayerScore();
+
+protected:
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget, BlueprintProtected))
 		class UTextBlock* TXTBlock_PlayerName;
 
@@ -33,16 +60,5 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget, BlueprintProtected))
 		class UTextBlock* TXTBlock_PlayerScore;
 
-	UFUNCTION()
-		virtual void SetPlayerName(FString Name);
-
-	UFUNCTION()
-		virtual void SetPlayerKills(FString Kills);
-
-	UFUNCTION()
-		virtual void SetPlayerDeaths(FString Deaths);
-
-	UFUNCTION()
-		virtual void SetPlayerScore(FString Score);
 
 };

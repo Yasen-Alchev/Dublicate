@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/Image.h"
 #include "GameFramework/Actor.h"
 
 #include "MultiplayerFPSFirearm.generated.h"
@@ -29,6 +30,9 @@ public:
 	AMultiplayerFPSFirearm();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* WeaponTexture;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* GunMesh;

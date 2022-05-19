@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/VerticalBox.h"
+#include "MultiplayerFPS/Default/MultiplayerFPSPlayerState.h"
 #include "LeaderBoardWidget.generated.h"
 
 /**
@@ -24,6 +25,9 @@ public:
 	UFUNCTION()
 		virtual  void GenerateLeaderBoard();
 
+	UFUNCTION()
+		virtual void UpdateLeaderBoard();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget, BlueprintProtected))
 		class UVerticalBox* VerticalBox;
 
@@ -31,5 +35,9 @@ public:
 		TSubclassOf<class ULeaderBoardUnitWidget> LeaderBoardUnitRef;
 
 private:
+
+	UPROPERTY()
+	TMap<int32, int32> PlayerToWidgetMap;
+
 	void InitLeaderBoardColumns();
 };

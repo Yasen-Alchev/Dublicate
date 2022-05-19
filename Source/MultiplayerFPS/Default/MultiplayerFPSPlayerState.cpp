@@ -6,7 +6,7 @@
 AMultiplayerFPSPlayerState::AMultiplayerFPSPlayerState()
 {
 	bReplicates = true;
-
+	
 	Kills = 0;
 	Deaths = 0;
 	PlayerScore = 0;
@@ -21,4 +21,14 @@ void AMultiplayerFPSPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProp
 	DOREPLIFETIME(AMultiplayerFPSPlayerState, PlayerScore);
 }
 
+void AMultiplayerFPSPlayerState::ServerHasDied_Implementation()
+{
+	++this->Deaths;
+}
 
+
+void AMultiplayerFPSPlayerState::ServerHasKilledPlayer_Implementation()
+{
+	++this->Kills;
+	PlayerScore += 5;
+}

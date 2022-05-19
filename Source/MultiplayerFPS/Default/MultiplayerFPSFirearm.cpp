@@ -188,7 +188,10 @@ void AMultiplayerFPSFirearm::BurstFire()
 			{
 				this->Fire();
 			}
-			this->ServerFire();
+			else
+			{
+				this->ServerFire();
+			}
 		}), this->BurstFiringInterval, true, 0.0f);
 	}
 }
@@ -264,40 +267,36 @@ void AMultiplayerFPSFirearm::Fire()
 		return;
 	}
 
-	if (IsValid(HitResult.GetActor()))
-	{
-		AActor* HitActor = HitResult.GetActor();
-		if (!IsValid(HitActor))
-		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitActor)"));
-			return;
-		}
-
-		AMultiplayerFPSCharacter* HitPlayer = Cast<AMultiplayerFPSCharacter>(HitActor);
-
-		if (IsValid(HitPlayer))
-		{
-			FDamageEvent DamageEvent;
-
-			AMultiplayerFPSPlayerController* MultiplayerFPSPlayerController = Cast<AMultiplayerFPSPlayerController>(MultiplayerFPSPlayer->GetController());
-
-			if(!IsValid(MultiplayerFPSPlayerController))
-			{
-				UE_LOG(LogTemp, Error, TEXT("MultiplayerFPSPlayerController::Fire !IsValid(HitPlayer)"));
-				return;
-			}
-
-			HitPlayer->TakeDamage(this->Damage, DamageEvent, MultiplayerFPSPlayerController, MultiplayerFPSPlayer);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSFirearm::Fire -> Hit Team Player"));
-		}
-	}
-	else
+	if (!IsValid(HitResult.GetActor()))
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitResult.GetActor())"));
+		return;
 	}
+
+	AActor* HitActor = HitResult.GetActor();
+	if (!IsValid(HitActor))
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitActor)"));
+		return;
+	}
+
+	AMultiplayerFPSCharacter* HitPlayer = Cast<AMultiplayerFPSCharacter>(HitActor);
+	if (!IsValid(HitPlayer))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSFirearm::Fire -> Hit Team Player"));
+		return;
+	}
+
+	FDamageEvent DamageEvent;
+	AMultiplayerFPSPlayerController* MultiplayerFPSPlayerController = Cast<AMultiplayerFPSPlayerController>(MultiplayerFPSPlayer->GetController());
+
+	if (!IsValid(MultiplayerFPSPlayerController))
+	{
+		UE_LOG(LogTemp, Error, TEXT("MultiplayerFPSPlayerController::Fire !IsValid(HitPlayer)"));
+		return;
+	}
+
+	HitPlayer->TakeDamage(this->Damage, DamageEvent, MultiplayerFPSPlayerController, MultiplayerFPSPlayer);
 
 	this->CurrentMagazineCapacity = FMath::Clamp(this->CurrentMagazineCapacity - 1, 0, this->MaxMagazineCapacity);
 
@@ -313,7 +312,7 @@ void AMultiplayerFPSFirearm::Fire()
 
 void AMultiplayerFPSFirearm::ServerFire_Implementation()
 {
-	UE_LOG(LogTemp, Error, TEXT("ServerFire Called !!!"));
+	//UE_LOG(LogTemp, Error, TEXT("ServerFire Called !!!"));
 	Fire();
 }
 

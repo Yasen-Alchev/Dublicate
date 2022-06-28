@@ -49,9 +49,6 @@ public:
 
 protected:
 
-	UFUNCTION(Server, Reliable)
-		virtual void ServerRespawnPlayer();
-
 	UPROPERTY()
 		FTimerHandle AntiBlurHandle;
 

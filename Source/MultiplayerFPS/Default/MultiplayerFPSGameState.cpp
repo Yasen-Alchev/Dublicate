@@ -1,17 +1,54 @@
 #include "MultiplayerFPSGameState.h"
 
+#include "MultiplayerFPSTeamBasedCharacter.h"
 #include "MultiplayerFPSPlayerController.h"
 #include "MultiplayerFPSPlayerState.h"
+#include "MultiplayerFPS/CTF_GameMode/CTF_GameState.h"
+#include "MultiplayerFPS/CommonClasses/Teams.h"
 #include "Net/UnrealNetwork.h"
 
 AMultiplayerFPSGameState::AMultiplayerFPSGameState()
 {
 	bReplicates = true;
 	PrimaryActorTick.bCanEverTick = true;
+
+	MaxFlagsToCapture = 2;
 	PlayerRespawnTime = 5;
 }
 
-void AMultiplayerFPSGameState::ResetStats() { /*No stats to reset from the base class yet*/ }
+void AMultiplayerFPSGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AMultiplayerFPSGameState, BlueTeamCapturedFlags);
+	DOREPLIFETIME(AMultiplayerFPSGameState, RedTeamCapturedFlags);
+}
+
+void AMultiplayerFPSGameState::ResetStats()
+{
+	RedTeamCapturedFlags = 0;
+	BlueTeamCapturedFlags = 0;
+}
+
+void AMultiplayerFPSGameState::RedFlagCaptured()
+{
+	++RedTeamCapturedFlags;
+	UpdateObjectiveStats();
+	if (RedTeamCapturedFlags == MaxFlagsToCapture)
+	{
+		GameEnded();
+	}
+}
+
+void AMultiplayerFPSGameState::BlueFlagCaptured()
+{
+	++BlueTeamCapturedFlags;
+	UpdateObjectiveStats();
+	if (BlueTeamCapturedFlags == MaxFlagsToCapture)
+	{
+		GameEnded();
+	}
+}
 
 void AMultiplayerFPSGameState::UpdateGameTime(int minutes, int seconds)
 {
@@ -47,8 +84,21 @@ void AMultiplayerFPSGameState::GameEnded()
 			AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(PlayerState->GetOwner());
 			if (IsValid(PlayerController))
 			{
+				TEnumAsByte<ETeams> WinnerTeam;
+				if (BlueTeamCapturedFlags > RedTeamCapturedFlags)
+				{
+					WinnerTeam = TEAM_BLUE;
+				}
+				else if (BlueTeamCapturedFlags < RedTeamCapturedFlags)
+				{
+					WinnerTeam = TEAM_RED;
+				}
+				else
+				{
+					WinnerTeam = TEAM_NONE;
+				}
 				PlayerController->SetInputMode(FInputModeUIOnly());
-				PlayerController->ClientEndGame("The Player with the most Points Wins !!!");
+				PlayerController->ClientEndGame(WinnerTeam);
 			}
 			else
 			{
@@ -72,9 +122,7 @@ void AMultiplayerFPSGameState::UpdateObjectiveStats()
 			AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(PlayerState->GetOwner());
 			if (IsValid(PlayerController))
 			{
-				TArray<FString> ObjectiveStats;
-				ObjectiveStats.Emplace("Game Has No Leader");
-				PlayerController->ClientUpdateObjectiveStats(ObjectiveStats);
+				PlayerController->ClientUpdateObjectiveStats(RedTeamCapturedFlags, BlueTeamCapturedFlags);
 			}
 			else
 			{

@@ -3,11 +3,11 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "MultiplayerFPS/CommonClasses/Flag.h"
-#include "MultiplayerFPS/Default/TeamBasedClasses/TeamBasedGameMode.h"
+#include "MultiplayerFPS/Default/MultiplayerFPSGameMode.h"
 #include "CTF_GameMode.generated.h"
 
 UCLASS()
-class ACTF_GameMode : public ATeamBasedGameMode
+class ACTF_GameMode : public AMultiplayerFPSGameMode
 {
 	GENERATED_BODY()
 

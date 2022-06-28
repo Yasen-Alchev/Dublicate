@@ -21,16 +21,10 @@ public:
 		virtual void NativeConstruct() override;
 
 	UFUNCTION()
-		virtual void UpdateStats(FString RedScore, FString BlueScore);
+		virtual void UpdateStats(int RedScore, int BlueScore);
 
 	UFUNCTION()
 		virtual void ResetStats();
-
-	UFUNCTION()
-		virtual void SetGameLeader(FString LeaderName);
-
-	UFUNCTION()
-		virtual void ResetGameLeader();
 
 protected:
 
@@ -39,8 +33,5 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget, BlueprintProtected))
 		class UTextBlock* TXTBlock_BlueScoreStat;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget, BlueprintProtected))
-		class UTextBlock* TXTBlock_GameLeader;
 
 };

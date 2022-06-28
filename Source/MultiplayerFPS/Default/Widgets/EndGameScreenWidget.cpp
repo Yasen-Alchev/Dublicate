@@ -38,7 +38,7 @@ void UEndGameScreenWidget::ReturnToMainMenu()
 	UWorld* World = GetWorld();
 	if (IsValid(World))
 	{
-		World->GetFirstPlayerController()->ClientTravel("/Game/ThirdPersonCPP/Maps/MainMenuLevel", TRAVEL_Absolute);
+		World->GetFirstPlayerController()->ClientTravel("/Game/ThirdPersonCPP/Maps/MainMenuLevel.MainMenuLevel", TRAVEL_Absolute);
 	}
 	else
 	{
@@ -46,22 +46,24 @@ void UEndGameScreenWidget::ReturnToMainMenu()
 	}
 }
 
-void UEndGameScreenWidget::SetWinnerTeam(const FString& Winner)
+void UEndGameScreenWidget::SetWinnerTeam(ETeams WinnerTeam)
 {
 	if(IsValid(TXTBlock_EndGameWinnerText))
 	{
-		TXTBlock_EndGameWinnerText->SetText(FText::FromString(Winner));
-		if(Winner.Contains("blue"))
+		switch (WinnerTeam)
 		{
-			TXTBlock_EndGameWinnerText->SetColorAndOpacity(FLinearColor(FColor::Blue));
-		}
-		else if(Winner.Contains("red"))
-		{
-			TXTBlock_EndGameWinnerText->SetColorAndOpacity(FLinearColor(FColor::Red));
-		}
-		else
-		{
-			TXTBlock_EndGameWinnerText->SetColorAndOpacity(FLinearColor(FColor::Orange));
+			case TEAM_BLUE:
+				TXTBlock_EndGameWinnerText->SetText(FText::FromString("BLUE TEAM WINS!"));
+				TXTBlock_EndGameWinnerText->SetColorAndOpacity(FLinearColor(FColor::Blue));
+				break;
+			case TEAM_RED:
+				TXTBlock_EndGameWinnerText->SetText(FText::FromString("RED TEAM WINS!"));
+				TXTBlock_EndGameWinnerText->SetColorAndOpacity(FLinearColor(FColor::Red));
+				break;
+			case TEAM_NONE:
+				TXTBlock_EndGameWinnerText->SetText(FText::FromString("DRAW"));
+				TXTBlock_EndGameWinnerText->SetColorAndOpacity(FLinearColor(FColor::Orange));
+				break;
 		}
 	}
 	else

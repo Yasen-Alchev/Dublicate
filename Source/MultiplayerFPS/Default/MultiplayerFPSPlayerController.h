@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MultiplayerFPS/CommonClasses/Teams.h"
 #include "GameFramework/PlayerController.h"
 #include "MultiplayerFPSPlayerController.generated.h"
 
@@ -19,6 +20,7 @@ public:
 		bool bShouldRespawn;
 
 	UFUNCTION(Client, Reliable)
+		virtual void ClientEndGame(ETeams WinnerTeam);
 		virtual void ClientEndGame(const FString& Winner);
 
 	UFUNCTION(Client, Reliable)
@@ -33,11 +35,17 @@ public:
 	UFUNCTION()
 		virtual void RespawnPlayer(bool instant = false);
 
+	UFUNCTION(Server, Reliable)
+		virtual void ServerRespawnPlayer();
+
 	UFUNCTION(Client, Reliable)
 		virtual void DisableControls(bool disable);
 
 	UFUNCTION()
 		virtual void KillPlayer();
+
+	UPROPERTY()
+	TEnumAsByte<ETeams> Team;
 
 protected:
 

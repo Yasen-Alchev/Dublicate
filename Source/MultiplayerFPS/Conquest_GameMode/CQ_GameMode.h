@@ -1,11 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MultiplayerFPS/Default/TeamBasedClasses/TeamBasedGameMode.h"
+#include "MultiplayerFPS/Default/MultiplayerFPSGameMode.h"
 #include "CQ_GameMode.generated.h"
 
 UCLASS()
-class MULTIPLAYERFPS_API ACQ_GameMode : public ATeamBasedGameMode
+class MULTIPLAYERFPS_API ACQ_GameMode : public AMultiplayerFPSGameMode
 {
 	GENERATED_BODY()
 public:

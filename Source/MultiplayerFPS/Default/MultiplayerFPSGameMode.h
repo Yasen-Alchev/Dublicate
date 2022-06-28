@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MultiplayerFPS/CommonClasses/Teams.h"
 #include "GameFramework/GameMode.h"
 #include "MultiplayerFPSGameMode.generated.h"
 
@@ -38,6 +39,12 @@ protected:
     UPROPERTY()
         bool bStarted;
 
+    UPROPERTY()
+        int redPlayers;
+
+    UPROPERTY()
+        int bluePlayers;
+
 public:
 
     UPROPERTY()
@@ -63,8 +70,8 @@ public:
 
     UFUNCTION()
         virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
-		
+
+    UFUNCTION()
+        virtual TEnumAsByte<ETeams> assignTeam();
 };
-
-
 

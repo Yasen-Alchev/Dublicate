@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MultiplayerFPS/CommonClasses/Teams.h"
 #include "GameFramework/Character.h"
 #include "MultiplayerFPSCharacter.generated.h"
 
@@ -15,12 +16,15 @@ public:
 	AMultiplayerFPSCharacter();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
 	class USkeletalMeshComponent* FirstPersonMesh;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
 	class USkeletalMeshComponent* FullBodyMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	float BaseTurnRate;
 
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	class UCameraComponent* FirstPersonCamera;
@@ -50,9 +54,13 @@ public:
 	bool bIsZoomedIn;
 
 	UPROPERTY()
-	int16 WeaponInHand;
+	int32 WeaponInHand;
 
-private:
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* FirstPersonCameraComponent;
+
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<class AMultiplayerFPSFirearm>> FirearmClassArray;
 
@@ -63,41 +71,29 @@ protected:
 
 	virtual void MoveRight(float Value);
 
+	virtual void TurnAtRate(float Rate);
+
+	virtual void LookUpAtRate(float Rate);
+
 	UFUNCTION(BlueprintCallable)
 	virtual void SprintStart();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void SprintStop();
 
-	UFUNCTION(Server, Reliable)
-	virtual void ServerSpawnFirearmActor();
-
-	UFUNCTION(Client, Reliable)
-	virtual void ClientSpawnFirearmActor();
-
 	UPROPERTY(Replicated)
 	bool bIsSprinting;
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
+	bool bDead;
 
 	UPROPERTY()
 	bool bIsInOptionsMenu;
 
 public:
+	
+
 	virtual void BeginPlay() override;
-
-	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION()
-	void OnHealthChanged(class UMultiplayerFPSHealthSystem* HealthSystemComp, float Health, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
-
-	UPROPERTY()
-	FOnHealSignature OnHealEvent;
-
-	UFUNCTION()
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
-		class AController* EventInstigator, AActor* DamageCauser) override;
-
-	UFUNCTION(Server, Reliable)
-	virtual void ServerOnPlayerDeath();
 
 	UFUNCTION(Server, Reliable)
 	virtual void ServerOnRemoteProxyPlayerDeath(AMultiplayerFPSCharacter* ProxyCharacter);
@@ -154,6 +150,65 @@ public:
 	void ShowFPMeshes();
 
 	UFUNCTION()
+
+	UCameraComponent* GetFirstPersonCameraComponent()
+	{
+		return FirstPersonCameraComponent;
+	}
+
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
+	TEnumAsByte<ETeams> Team;
+
+	UFUNCTION()
+	virtual void SetOptionsMenuVisibility(bool Visibility);
+
+	UFUNCTION()
+	virtual void ToggleLeaderBoardVisibility();
+
+	UFUNCTION()
+	virtual TEnumAsByte<ETeams> getTeam() { return Team; }
+
+	UFUNCTION()
+	virtual void ToggleOptionsMenu();
+
+	UFUNCTION()
+	virtual void InitTeam();
+
+	UPROPERTY()
+	FString PlayerName;
+
+	UFUNCTION(Server, Reliable)
+	virtual void StartFiring();
+
+	UFUNCTION(Server, Reliable)
+	virtual void StopFiring();
+
+	UFUNCTION()
+	virtual void SwitchWeapon();
+
+	UFUNCTION()
+	virtual void SwitchFireMode();
+
+	UFUNCTION()
+	virtual void Reload();
+
+	UFUNCTION()
+	virtual void Zoom();
+
+	UFUNCTION()
+	virtual void ZoomOut();
+
+	UFUNCTION()
+	void SetFOV(float FOV);
+
+	UFUNCTION()
+	void HideFPMeshes();
+
+	UFUNCTION()
+	void ShowFPMeshes();
+
+	UFUNCTION()
+
 	void SetIsReloading();
 };
 

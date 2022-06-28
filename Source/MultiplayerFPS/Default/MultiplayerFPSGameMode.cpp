@@ -1,6 +1,7 @@
 #include "MultiplayerFPSGameMode.h"
 
 #include "EngineUtils.h"
+#include "MultiplayerFPSTeamBasedCharacter.h"
 #include "MultiplayerFPSGameState.h"
 #include "MultiplayerFPSInGameHUD.h"
 #include "MultiplayerFPSPlayerController.h"
@@ -24,6 +25,8 @@ AMultiplayerFPSGameMode::AMultiplayerFPSGameMode()
     PrimaryActorTick.bCanEverTick = true;
     PrimaryActorTick.bAllowTickOnDedicatedServer = true;
 
+    redPlayers = 0;
+    bluePlayers = 0;
     minutes = 5;
     seconds = 0;
     minPlayersToStart = 2;
@@ -35,14 +38,14 @@ void AMultiplayerFPSGameMode::BeginPlay()
     Super::BeginPlay();
     ChangeMenuWidget(StartingWidgetClass);
 
-   /* if (bStarted)
+    if (bStarted)
     {
         GetWorldTimerManager().ClearTimer(GameTimer);
         GetWorldTimerManager().SetTimer(GameTimer, [this]()
             {
                 UpdateGlobalGameTimer(minutes, seconds);
             }, 1, true, 0.f);
-    }*/
+    }
 }
 
 void AMultiplayerFPSGameMode::Tick(float DeltaSeconds)
@@ -104,10 +107,7 @@ void AMultiplayerFPSGameMode::UpdateGlobalGameTimer(int& min, int& sec)
             {
                 min = 0;
                 sec = 0;
-                if(GetWorldTimerManager().IsTimerActive(GameTimer))
-                {
-					GetWorldTimerManager().ClearTimer(GameTimer);
-                }
+                GetWorldTimerManager().ClearTimer(GameTimer);
                 GameStateVar->GameEnded();
             }
         }
@@ -135,6 +135,26 @@ void AMultiplayerFPSGameMode::UpdateObjectiveStats()
 void AMultiplayerFPSGameMode::HandleStartingNewPlayer_Implementation(APlayerController* MovieSceneBlends)
 {
     Super::HandleStartingNewPlayer_Implementation(MovieSceneBlends);
+
+    AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(MovieSceneBlends);
+    if (IsValid(PlayerController))
+    {
+        PlayerController->Team = assignTeam();
+
+        AMultiplayerFPSPlayerState* PlayerStateVar = MovieSceneBlends->GetPlayerState<AMultiplayerFPSPlayerState>();
+        if (IsValid(PlayerStateVar))
+        {
+            PlayerStateVar->team = PlayerController->Team;
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSGameMode::HandleStartingNewPlayer_Implementation(APlayerController* MovieSceneBlends) -> PlayerStateVar is not Valid !!!"), *MovieSceneBlends->GetName());
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSGameMode::HandleStartingNewPlayer_Implementation(APlayerController* MovieSceneBlends) -> PlayerController is not Valid !!!"), *MovieSceneBlends->GetName());
+    }
 }
 
 void AMultiplayerFPSGameMode::PostLogin(APlayerController* MovieSceneBlends)
@@ -147,10 +167,7 @@ void AMultiplayerFPSGameMode::StartingGame()
     AMultiplayerFPSGameState* GameStateVar = GetGameState<AMultiplayerFPSGameState>();
     if (IsValid(GameStateVar))
     {
-        if (GetWorldTimerManager().IsTimerActive(StartingTimer))
-        {
-            GetWorldTimerManager().ClearTimer(StartingTimer);
-        }
+        GetWorldTimerManager().ClearTimer(GameTimer);
         GetWorldTimerManager().SetTimer(StartingTimer, [this, GameStateVar]()
             {
                 GameStateVar->DisablePlayersControls(false);
@@ -161,14 +178,10 @@ void AMultiplayerFPSGameMode::StartingGame()
 				}
                 GetWorldTimerManager().SetTimer(GameTimer, [this]()
                     {
-                    if(GetWorldTimerManager().IsTimerActive(StartingTimer))
-                    {
-                        GetWorldTimerManager().ClearTimer(StartingTimer);
-                    }
                         UpdateGlobalGameTimer(minutes, seconds);
                     }, 1, true, 0.f);
 
-            }, 1, false);
+            }, 4, false);
     }
     else
     {
@@ -185,14 +198,18 @@ AActor* AMultiplayerFPSGameMode::ChoosePlayerStart_Implementation(AController* M
         AMultiplayerFPSPlayerState* PlayerStateVariable = MovieSceneBlends->GetPlayerState<AMultiplayerFPSPlayerState>();
         if (IsValid(PlayerStateVariable))
         {
-            TArray<APlayerStart*> Starts;
-            for (TActorIterator<APlayerStart> StartItr(GetWorld()); StartItr; ++StartItr)
+            TArray<APlayerStartPoint*> Starts;
+            for (TActorIterator<APlayerStartPoint> StartItr(GetWorld()); StartItr; ++StartItr)
             {
+                if (StartItr->Team == PlayerStateVariable->team)
+                {
                     Starts.Add(*StartItr);
+                }
             }
             if (Starts.Num() > 0)
             {
-                return Starts[FMath::RandRange(0, Starts.Num() - 1)];
+                APlayerStartPoint* TheStart = Starts[FMath::RandRange(0, Starts.Num() - 1)];
+                return TheStart;
             }
             else
             {
@@ -210,5 +227,20 @@ AActor* AMultiplayerFPSGameMode::ChoosePlayerStart_Implementation(AController* M
     }
     return nullptr;
 }
+
+TEnumAsByte<ETeams> AMultiplayerFPSGameMode::assignTeam()
+{
+    if (bluePlayers > redPlayers)
+    {
+        ++redPlayers;
+        return TEAM_RED;
+    }
+    else
+    {
+        ++bluePlayers;
+        return TEAM_BLUE;
+    }
+}
+
 
 

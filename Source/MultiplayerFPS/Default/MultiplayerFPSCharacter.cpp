@@ -2,45 +2,71 @@
 #include "MultiplayerFPSGameInstance.h"
 #include "MultiplayerFPSPlayerController.h"
 #include "MultiplayerFPSInGameHUD.h"
+#include "MultiplayerFPSHealthSystem.h"
 #include "MultiplayerFPSFirearm.h"
+#include "MultiplayerFPSGameMode.h"
+#include "MultiplayerFPSGameState.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "MultiplayerFPSHealthSystem.h"
 
 AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 {
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->InitCapsuleSize(55.0f, 96.0f);
 
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 
-	GetMesh()->SetOwnerNoSee(true);
+	this->FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	this->FirstPersonCamera->SetupAttachment(GetCapsuleComponent());
+	this->FirstPersonCamera->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
+	this->FirstPersonCamera->bUsePawnControlRotation = true;
 
-	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
-	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
-	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
-	FirstPersonCameraComponent->bUsePawnControlRotation = true;
+	this->FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
+	this->FirstPersonMesh->SetOnlyOwnerSee(true);
+	this->FirstPersonMesh->SetupAttachment(this->FirstPersonCamera);
+	this->FirstPersonMesh->bCastDynamicShadow = false;
+	this->FirstPersonMesh->CastShadow = false;
+	this->FirstPersonMesh->SetRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
+	this->FirstPersonMesh->SetRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
 
-	GetMesh()->SetOwnerNoSee(true);
+	this->FullBodyMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FullBodyMesh"));
+	this->FullBodyMesh->SetOwnerNoSee(true);	
+	this->FullBodyMesh->SetupAttachment(this->FirstPersonCamera);
+	this->FullBodyMesh->bCastDynamicShadow = true;
+	this->FullBodyMesh->CastShadow = true;
 
-	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh"));
-	FirstPersonMesh->SetOnlyOwnerSee(true);
-	FirstPersonMesh->SetupAttachment(FirstPersonCameraComponent);
-	FirstPersonMesh->bCastDynamicShadow = false;
-	FirstPersonMesh->CastShadow = false;
-	FirstPersonMesh->SetRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
-	FirstPersonMesh->SetRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
+	this->HealthSystem = CreateDefaultSubobject<UMultiplayerFPSHealthSystem>(TEXT("HealthSystem"));
+	HealthSystem->OnHealthChangedEvent.AddDynamic(this, &AMultiplayerFPSCharacter::OnHealthChanged);
+
+	this->OnHealEvent.AddDynamic(this, &AMultiplayerFPSCharacter::Heal);
+
+	this->BodyHitboxBox = CreateDefaultSubobject<UBoxComponent>(TEXT("BodyHitboxBox"));
+	this->BodyHitboxBox->SetBoxExtent(FVector(28.0f, 40.0f, 73.0f));
+	this->BodyHitboxBox->SetRelativeLocation(FVector(0.0f, 0.0f, -18.0f));
+	this->BodyHitboxBox->SetupAttachment(RootComponent);
+	this->BodyHitboxBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	HealthSystem->SetIsReplicated(true);
+	HealthSystem->SetNetAddressable();
+
+	this->HeadHitboxBox = CreateDefaultSubobject<UBoxComponent>(TEXT("HeadHitboxBox"));	
+	this->HeadHitboxBox->SetBoxExtent(FVector(16.0f, 16.0f, 16.0f));
+	this->HeadHitboxBox->SetRelativeLocation(FVector(5.0f, 4.0f, 70.0f));
+	this->HeadHitboxBox->SetupAttachment(RootComponent);	
+	this->HeadHitboxBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
@@ -52,6 +78,8 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 
 	HealthSystem = CreateDefaultSubobject<UMultiplayerFPSHealthSystem>(TEXT("HealthSystem"));
 	HealthSystem->SetIsReplicated(true);
+
+	bNetUseOwnerRelevancy = true;
 
 	this->WeaponInHand = 0;
 
@@ -110,9 +138,75 @@ void AMultiplayerFPSCharacter::BeginPlay()
 	CanFireFirearmArray.Init(true, FirearmArray.Num());
 }
 
-void AMultiplayerFPSCharacter::Tick(float DeltaTime)
+	FActorSpawnParameters ActorSpawnParameters;
+	ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	ActorSpawnParameters.Owner = this;
+	const FVector WeaponLocationVector = FVector(0.0f, 0.0f, 0.0f);
+	const FRotator WeaponRotationRotator = FRotator(0.0f, 0.0f, 0.0f);
+
+void AMultiplayerFPSCharacter::OnHealthChanged(UMultiplayerFPSHealthSystem* HealthSystemComp, float Health,
+	float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-	Super::Tick(DeltaTime);
+	if ((Health <= 0) && (!bDead))
+	{
+		AActor* FirearmActor = GetWorld()->SpawnActor(FirearmClassArray[i], &WeaponLocationVector, &WeaponRotationRotator, ActorSpawnParameters);
+		if (!IsValid(FirearmActor))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> World is not Valid !!!"));
+			return;
+		}
+
+		AMultiplayerFPSFirearm* Firearm = Cast<AMultiplayerFPSFirearm>(FirearmActor);
+		if (!IsValid(Firearm))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> GEngine is not Valid !!!"));
+			return;
+		}
+
+		FirearmArray.Add(Firearm);
+		if (!IsValid(FirearmArray[i]))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> PlayerControlle2 is not Valid !!!"));
+				return;
+		}
+
+		AMultiplayerFPSCharacter* AutonomousProxyPlayer = Cast<AMultiplayerFPSCharacter>(PlayerController->GetPawn());
+		if (!IsValid(AutonomousProxyPlayer))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> AutonomousProxyPlayer is not Valid !!!"));
+			return;
+		}
+		AutonomousProxyPlayer->ServerOnRemoteProxyPlayerDeath(this);
+	}
+}
+
+float AMultiplayerFPSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& MovieSceneBlends, 
+	AController* EventInstigator, AActor* DamageCauser)
+{
+	if(!HasAuthority())
+	{
+		this->HealthSystem->TakeDamage(this, DamageAmount,  nullptr, EventInstigator, DamageCauser);
+	}
+	return Super::TakeDamage(DamageAmount, MovieSceneBlends, EventInstigator, DamageCauser);
+}
+
+void AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation()
+{
+	AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(GetController());
+	if(IsValid(PlayerController))
+	{
+		PlayerController->RespawnPlayer();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerOnPlayerDeath_Implementation() -> PlayerController is not Valid !!!"));
+	}
+
+}
+
+void AMultiplayerFPSCharacter::Heal(float Value)
+{
+	this->HealthSystem->Heal(Value);
 }
 
 void AMultiplayerFPSCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
@@ -206,6 +300,61 @@ void AMultiplayerFPSCharacter::SprintStart()
 void AMultiplayerFPSCharacter::SprintStop()
 {
 	bIsSprinting = false;
+}
+
+void AMultiplayerFPSCharacter::ClientSpawnFirearmActor_Implementation()
+{
+	FActorSpawnParameters ActorSpawnParameters;
+	ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	ActorSpawnParameters.Owner = this;
+	const FVector WeaponLocationVector = FVector(0.0f, 0.0f, 0.0f);
+	const FRotator WeaponRotationRotator = FRotator(0.0f, 0.0f, 0.0f);	
+
+	for (int32 i = 0; i < FirearmClassArray.Num(); ++i)
+	{
+		AActor* FirearmActor = GetWorld()->SpawnActor(FirearmClassArray[i], &WeaponLocationVector, &WeaponRotationRotator, ActorSpawnParameters);
+		if (!IsValid(FirearmActor))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay !IsValid(FirearmActor)"));
+			return;
+		}
+
+		AMultiplayerFPSFirearm* Firearm = Cast<AMultiplayerFPSFirearm>(FirearmActor);
+		if (!IsValid(Firearm))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay !IsValid(Firearm)"));
+			return;
+		}
+
+		FirearmArray.Add(Firearm);
+		if (!IsValid(FirearmArray[i]))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay !IsValid(FirearmArray[i])"));
+			return;
+		}
+	}
+
+	FirearmArray[0]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	FirearmArray[1]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
+
+	CanFireFirearmArray.Init(true, FirearmArray.Num());
+}
+
+void AMultiplayerFPSCharacter::ServerSpawnFirearmActor_Implementation()
+{
+	if (HasAuthority())
+	{
+		ClientSpawnFirearmActor();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::ServerSpawnFirearmActor_Implementation() -> HasAuthority() is not Valid !!!"));
+	}
+}
+
+void AMultiplayerFPSCharacter::ServerOnRemoteProxyPlayerDeath_Implementation(AMultiplayerFPSCharacter* ProxyCharacter)
+{
+	ProxyCharacter->ServerOnPlayerDeath();
 }
 
 void AMultiplayerFPSCharacter::SetOptionsMenuVisibility(bool Visibility)

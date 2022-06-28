@@ -35,6 +35,8 @@ AMultiplayerFPSFirearm::AMultiplayerFPSFirearm()
 
 	this->BurstFiringInterval = 0.15f;
 
+	bNetUseOwnerRelevancy = true;
+
 	this->ReloadTime = 1.0f;
 
 	bReplicates = true;
@@ -46,6 +48,8 @@ void AMultiplayerFPSFirearm::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AMultiplayerFPSFirearm, CurrentMagazineCapacity);
+	DOREPLIFETIME(AMultiplayerFPSFirearm, bIsFiring);
+	DOREPLIFETIME(AMultiplayerFPSFirearm, BurstsFired);
 }
 
 void AMultiplayerFPSFirearm::BeginPlay()
@@ -79,14 +83,28 @@ void AMultiplayerFPSFirearm::StartFiring()
 		{
 			GetWorldTimerManager().ClearTimer(this->HeldFiringIntervalTimer);
 			GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
-				this->Fire();
-				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+				if (HasAuthority())
+				{
+					this->Fire();
+				}
+				else
+				{
+					this->ServerFire();
+				}
+			}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 		}
 		else
 		{
 			GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
-				this->Fire();
-				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+				if (HasAuthority())
+				{
+					this->Fire();
+				}
+				else
+				{
+					this->ServerFire();
+				}
+			}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 		}
 	}
 	else if (CurrentFireMode == EFireMode::Burst)
@@ -98,13 +116,13 @@ void AMultiplayerFPSFirearm::StartFiring()
 				GetWorldTimerManager().ClearTimer(this->HeldFiringIntervalTimer);
 				GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
 					this->BurstFire();
-					}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 			}
 			else
 			{
 				GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
 					this->BurstFire();
-					}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 			}
 		}
 		else
@@ -120,19 +138,40 @@ void AMultiplayerFPSFirearm::StartFiring()
 			{
 				GetWorldTimerManager().ClearTimer(this->HeldFiringIntervalTimer);
 				GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
-					this->Fire();
-					}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+					if (HasAuthority())
+					{
+						this->Fire();
+					}
+					else
+					{
+						this->ServerFire();
+					}
+				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 			}
 			else
 			{
 				GetWorldTimerManager().SetTimer(this->HeldFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
-					this->Fire();
-					}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
+					if (HasAuthority())
+					{
+						this->Fire();
+					}
+					else
+					{
+						this->ServerFire();
+					}
+				}), this->HeldFiringIntervalsArray[CurrentFireModeIndex], true, 0.0f);
 			}
 		}
 		else
 		{
-			this->Fire();
+			if (HasAuthority())
+			{
+				this->Fire();
+			}
+			else
+			{
+				this->ServerFire();
+			}
 		}
 	}
 }
@@ -145,9 +184,17 @@ void AMultiplayerFPSFirearm::BurstFire()
 	}
 	else
 	{
-		GetWorldTimerManager().SetTimer(this->BurstFiringIntervalTimer, FTimerDelegate::CreateLambda([&] {
-			this->Fire();
-			}), this->BurstFiringInterval, true, 0.0f);
+		GetWorldTimerManager().SetTimer(this->BurstFiringIntervalTimer, FTimerDelegate::CreateLambda([&]
+		{
+			if (HasAuthority())
+			{
+				this->Fire();
+			}
+			else
+			{
+				this->ServerFire();
+			}
+		}), this->BurstFiringInterval, true, 0.0f);
 	}
 }
 
@@ -167,7 +214,28 @@ void AMultiplayerFPSFirearm::Fire_Implementation()
 		return;
 	}
 
-	
+	this->CurrentMagazineCapacity = FMath::Clamp(this->CurrentMagazineCapacity - 1, 0, this->MaxMagazineCapacity);
+
+	if (CurrentFireMode == EFireMode::Burst)
+	{
+		this->BurstsFired++;
+
+		if (this->BurstsFired == this->BurstCount)
+		{
+			GetWorldTimerManager().ClearTimer(this->BurstFiringIntervalTimer);
+			this->BurstsFired = 0;
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Current Magazine Capacity: %d"), this->CurrentMagazineCapacity);
+
+	if (this->CurrentMagazineCapacity == 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Insufficient Ammo!"));
+		GetWorldTimerManager().ClearTimer(this->BurstFiringIntervalTimer);
+		return;
+	}
+
 	if (!IsValid(this->FireAnimation))
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(this->FireAnimation)"));	
@@ -219,7 +287,7 @@ void AMultiplayerFPSFirearm::Fire_Implementation()
 
 	if (!bHitResult)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Not A Blocking Hit!"));
+		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire -> Not A Blocking Hit!"));
 		return;
 	}
 
@@ -242,10 +310,31 @@ void AMultiplayerFPSFirearm::Fire_Implementation()
 			FDamageEvent DamageEvent;
 
 			AMultiplayerFPSPlayerController* MultiplayerFPSPlayerController = Cast<AMultiplayerFPSPlayerController>(MultiplayerFPSPlayer->GetController());
+			if (!IsValid(MultiplayerFPSPlayerController))
+			{
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(MultiplayerFPSPlayerController)"));
+			}
 
-			UE_LOG(LogTemp, Warning, TEXT("Enemy Hit"));
+			UPrimitiveComponent* HitComponent = HitResult.GetComponent();
+			if (!IsValid(HitComponent))
+			{
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitComponent)"));
+			}
 
-			HitPlayer->TakeDamage(this->Damage, DamageEvent, MultiplayerFPSPlayerController, MultiplayerFPSPlayer);
+			if (HitComponent->ComponentHasTag("HeadHitbox"))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Head Hit"));
+				HitPlayer->TakeDamage((this->Damage * 1.5f), DamageEvent, MultiplayerFPSPlayerController, MultiplayerFPSPlayer);
+			}
+			else if (HitComponent->ComponentHasTag("BodyHitbox"))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Body Hit"));
+				HitPlayer->TakeDamage(this->Damage, DamageEvent, MultiplayerFPSPlayerController, MultiplayerFPSPlayer);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire No Valid Component Tag Found"));
+			}
 		}
 		else
 		{
@@ -256,6 +345,7 @@ void AMultiplayerFPSFirearm::Fire_Implementation()
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire !IsValid(HitResult.GetActor())"));
 	}
+}
 
 	this->CurrentMagazineCapacity = FMath::Clamp(this->CurrentMagazineCapacity - 1, 0, this->MaxMagazineCapacity);
 

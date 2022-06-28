@@ -15,12 +15,11 @@ UMultiplayerFPSHealthSystem::UMultiplayerFPSHealthSystem()
 	this->CurrentShield = this->MaxShield;
 
 	this->ShieldRechargeRate = 0.0f;
-	this->ShieldRechargeCooldownAfterDamage = ShieldRechargeCooldownAfterDamage;
-
-
-	this->bShouldRechargeShield = false;
+	this->ShieldRechargeCooldownAfterDamage = 0.0f;
 
 	this->ShieldRateCounter = 0;
+
+	SetIsReplicatedByDefault(true);
 }
 
 void UMultiplayerFPSHealthSystem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -54,12 +53,9 @@ void UMultiplayerFPSHealthSystem::TickComponent(float DeltaTime, ELevelTick Tick
 
 }
 
-void UMultiplayerFPSHealthSystem::TakeDamage_Implementation(AActor* DamagedActor, float Damage,
-	const class UDamageType* DamageType, class AController* InstigatedBy,
-	AActor* DamageCauser)
+void UMultiplayerFPSHealthSystem::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+	AController* InstigatedBy, AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Error, TEXT("TakeDamage Called!!!"));
-
 	AActor* OwnerActor = GetOwner();
 	if (!IsValid(OwnerActor))
 	{
@@ -80,16 +76,16 @@ void UMultiplayerFPSHealthSystem::TakeDamage_Implementation(AActor* DamagedActor
 		OwnerActor->GetWorldTimerManager().SetTimer(this->ShieldRechargeStartTimer, ShieldRechargeDelegate, this->ShieldRechargeCooldownAfterDamage, false);
 	}
 
+	if (OwnerActor->GetWorldTimerManager().IsTimerActive(this->ShieldRechargeTimer))
+	{
+		OwnerActor->GetWorldTimerManager().ClearTimer(this->ShieldRechargeTimer);
+	}
+
 	if (this->CurrentShield == 0.0f)
 	{
 		this->CurrentHealth = FMath::Clamp(this->CurrentHealth - Damage, 0.0f, this->MaxHealth);
 
 		UE_LOG(LogTemp, Warning, TEXT("Health Damage Taken - %.2f"), Damage);
-
-		if (this->CurrentHealth == 0.0f)
-		{
-			this->Death();
-		}
 	}
 	else
 	{
@@ -97,6 +93,8 @@ void UMultiplayerFPSHealthSystem::TakeDamage_Implementation(AActor* DamagedActor
 
 		UE_LOG(LogTemp, Warning, TEXT("Shield Damage Taken - %.2f"), Damage);
 	}
+
+	OnHealthChangedEvent.Broadcast(this, CurrentHealth, Damage, DamageType, InstigatedBy, DamageCauser);
 }
 
 void UMultiplayerFPSHealthSystem::StartShieldRecharge()
@@ -116,7 +114,7 @@ void UMultiplayerFPSHealthSystem::StartShieldRecharge()
 	OwnerActor->GetWorldTimerManager().SetTimer(this->ShieldRechargeTimer, ShieldRechargeDelegate, this->ShieldRechargeInterval, true, 0.0f);
 }
 
-void UMultiplayerFPSHealthSystem::RechargeShield_Implementation()
+void UMultiplayerFPSHealthSystem::RechargeShield()
 {
 	AActor* OwnerActor = GetOwner();
 	if (!IsValid(OwnerActor))
@@ -136,15 +134,15 @@ void UMultiplayerFPSHealthSystem::RechargeShield_Implementation()
 	this->CurrentShield = FMath::Clamp(this->CurrentShield + this->ShieldRechargeRate, 0.0f, this->MaxShield);
 	UE_LOG(LogTemp, Warning, TEXT("Shield is at: %.2f"), this->CurrentShield);
 
-	if (this->CurrentShield == this->MaxHealth)
+	if (this->CurrentShield == this->MaxShield)
 	{
 		GetOwner()->GetWorldTimerManager().ClearTimer(this->ShieldRechargeTimer);
 		
 		return;
 	}
 }
-
-void UMultiplayerFPSHealthSystem::Heal_Implementation(float Value)
+	
+void UMultiplayerFPSHealthSystem::Heal(float Value)	
 {
 	if (Value == 100)
 	{
@@ -159,32 +157,4 @@ void UMultiplayerFPSHealthSystem::Heal_Implementation(float Value)
 		UE_LOG(LogTemp, Warning, TEXT("Player Healed for: %.2f"), Value);
 		UE_LOG(LogTemp, Warning, TEXT("Current Player Health: %.2f"), this->CurrentHealth);
 	}
-}
-
-void UMultiplayerFPSHealthSystem::Death_Implementation()
-{
-	AActor* OwnerActor = GetOwner();
-	if (!IsValid(OwnerActor))
-	{
-		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::Death !IsValid(OwnerActor)"));
-		return;
-	}
-
-	AMultiplayerFPSCharacter* MultiplayerFPSPlayer = Cast<AMultiplayerFPSCharacter>(OwnerActor);
-	if (!IsValid(MultiplayerFPSPlayer))
-	{
-		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::Death !IsValid(MultiplayerFPSPlayer)"));
-		return;
-	}
-
-	MultiplayerFPSPlayer->Destroy(true);
-
-	AMultiplayerFPSPlayerController* MultiplayerFPSPlayerController = Cast<AMultiplayerFPSPlayerController>(MultiplayerFPSPlayer->GetController());
-	if (!IsValid(MultiplayerFPSPlayerController))
-	{
-		UE_LOG(LogTemp, Error, TEXT("UMultiplayerFPSHealthSystem::Death !IsValid(MultiplayerFPSPlayerController)"));
-		return;
-	}
-
-	MultiplayerFPSPlayerController->UnPossess();
 }

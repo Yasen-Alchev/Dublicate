@@ -73,6 +73,8 @@ public:
 	float ZoomFOV;
 
 private:
+
+	UPROPERTY(Replicated)
 	int32 BurstsFired;
 
 	UPROPERTY()
@@ -81,7 +83,7 @@ private:
 	UPROPERTY(Replicated)
 	int32 CurrentMagazineCapacity;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	bool bIsFiring;
 
 	UPROPERTY()
@@ -95,6 +97,9 @@ private:
 
 	UFUNCTION(Server, Reliable)
 	void Fire();
+
+	UFUNCTION(Server, Reliable)
+	void ServerFire();
 
 	UFUNCTION()
 	void BurstFire();

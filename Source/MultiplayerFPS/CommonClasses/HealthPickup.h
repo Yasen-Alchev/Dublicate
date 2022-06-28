@@ -5,8 +5,6 @@
 
 #include "HealthPickup.generated.h"
 
-class UBoxComponent;
-
 UCLASS()
 class MULTIPLAYERFPS_API AHealthPickup : public AActor
 {
@@ -19,7 +17,7 @@ public:
 	UStaticMeshComponent* HealthPickupMesh;
 
 	UPROPERTY(EditAnywhere, Category = "Mesh")
-	UBoxComponent* BoxCollision;
+	class UBoxComponent* BoxCollision;
 
 protected:
 	virtual void BeginPlay() override;
@@ -32,5 +30,9 @@ public:
 		class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	void DestroyHealthPickup();
+	UFUNCTION(Server, Reliable)
+	void ServerDestroyHealthPickup();
+
+	UFUNCTION(Client, Reliable)
+	void ClientDestroyHealthPickup();
 };

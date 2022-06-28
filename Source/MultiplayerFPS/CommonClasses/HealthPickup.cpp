@@ -10,14 +10,13 @@ AHealthPickup::AHealthPickup()
 	PrimaryActorTick.bCanEverTick = true;
 
 	HealthPickupMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SM_HealthPickup"));
-	HealthPickupMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	RootComponent = HealthPickupMesh;
 
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision"));
 	BoxCollision->SetBoxExtent(FVector(75.0f, 60.0f, 60.0f));
 	BoxCollision->SetupAttachment(RootComponent);
-	BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
 void AHealthPickup::BeginPlay()
@@ -33,7 +32,7 @@ void AHealthPickup::Tick(float DeltaTime)
 
 }
 
-void AHealthPickup::OnBeginOverlap(class UPrimitiveComponent* HitComponent,
+void AHealthPickup::OnBeginOverlap(class UPrimitiveComponent* HitComponent, 
 	class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -51,16 +50,28 @@ void AHealthPickup::OnBeginOverlap(class UPrimitiveComponent* HitComponent,
 			return;
 		}
 
-		MultiplayerFPSPlayer->HealthSystem->Heal(100);
-		MultiplayerFPSPlayer->HealthSystem->StartShieldRecharge();
+		MultiplayerFPSPlayer->OnHealEvent.Broadcast(100.0f);
 
 		UE_LOG(LogTemp, Warning, TEXT("Player Health Restored!"));
 
-		this->DestroyHealthPickup();
+		if (MultiplayerFPSPlayer->HasAuthority())
+		{
+			this->ServerDestroyHealthPickup();
+		}
+		this->ClientDestroyHealthPickup();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHealthPickup::OnBeginOverlap OtherActor->ActorHasTag(\"Player\")"));
 	}
 }
 
-void AHealthPickup::DestroyHealthPickup()
+void AHealthPickup::ServerDestroyHealthPickup_Implementation()
+{
+	this->ClientDestroyHealthPickup();
+}
+
+void AHealthPickup::ClientDestroyHealthPickup_Implementation()
 {
 	this->Destroy();
 }

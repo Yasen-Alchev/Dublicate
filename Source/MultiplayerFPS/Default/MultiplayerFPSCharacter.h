@@ -84,11 +84,15 @@ protected:
 	UPROPERTY(Replicated)
 	bool bIsSprinting;
 
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
+	bool bDead;
+
 	UPROPERTY()
 	bool bIsInOptionsMenu;
 
 public:
 	
+
 	virtual void BeginPlay() override;
 
 	UFUNCTION(Server, Reliable)
@@ -114,6 +118,12 @@ public:
 
 	UPROPERTY()
 	FString PlayerName;
+
+	UFUNCTION()
+	virtual void StartFiring();
+
+	UFUNCTION()
+	virtual void StopFiring();
 
 	UFUNCTION()
 	virtual void SwitchWeapon();
@@ -150,15 +160,55 @@ public:
 	TEnumAsByte<ETeams> Team;
 
 	UFUNCTION()
+	virtual void SetOptionsMenuVisibility(bool Visibility);
+
+	UFUNCTION()
+	virtual void ToggleLeaderBoardVisibility();
+
+	UFUNCTION()
 	virtual TEnumAsByte<ETeams> getTeam() { return Team; }
 
 	UFUNCTION()
+	virtual void ToggleOptionsMenu();
+
+	UFUNCTION()
 	virtual void InitTeam();
+
+	UPROPERTY()
+	FString PlayerName;
 
 	UFUNCTION(Server, Reliable)
 	virtual void StartFiring();
 
 	UFUNCTION(Server, Reliable)
 	virtual void StopFiring();
+
+	UFUNCTION()
+	virtual void SwitchWeapon();
+
+	UFUNCTION()
+	virtual void SwitchFireMode();
+
+	UFUNCTION()
+	virtual void Reload();
+
+	UFUNCTION()
+	virtual void Zoom();
+
+	UFUNCTION()
+	virtual void ZoomOut();
+
+	UFUNCTION()
+	void SetFOV(float FOV);
+
+	UFUNCTION()
+	void HideFPMeshes();
+
+	UFUNCTION()
+	void ShowFPMeshes();
+
+	UFUNCTION()
+
+	void SetIsReloading();
 };
 

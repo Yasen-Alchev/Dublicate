@@ -44,6 +44,10 @@ public:
 	UPROPERTY()
 	UMaterialInterface* FirstPersonMaterial;
 
+public:
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
+	TEnumAsByte<ETeams> Team;
+
 	UFUNCTION()
 	virtual TEnumAsByte<ETeams> getTeam() { return Team; }
 

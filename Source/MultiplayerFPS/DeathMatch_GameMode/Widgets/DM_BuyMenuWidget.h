@@ -1,11 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MultiplayerFPS/Default/Widgets/BuyMenuWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "DM_BuyMenuWidget.generated.h"
 
 UCLASS()
-class MULTIPLAYERFPS_API UDM_BuyMenuWidget : public UBuyMenuWidget
+class MULTIPLAYERFPS_API UDM_BuyMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	

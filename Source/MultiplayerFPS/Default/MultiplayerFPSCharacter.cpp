@@ -13,12 +13,15 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
-#include "../CommonClasses/HealthPickup.h"
-
+#include "MultiplayerFPSHealthSystem.h"
 
 AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 {
 	GetCapsuleComponent()->InitCapsuleSize(55.0f, 96.0f);
+
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationRoll = false;
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
@@ -71,12 +74,17 @@ AMultiplayerFPSCharacter::AMultiplayerFPSCharacter()
 	bIsInOptionsMenu = false;
 	bIsSprinting = false;
 	bDead = false;
+	Team = TEAM_NONE;
+
+	HealthSystem = CreateDefaultSubobject<UMultiplayerFPSHealthSystem>(TEXT("HealthSystem"));
+	HealthSystem->SetIsReplicated(true);
 
 	bNetUseOwnerRelevancy = true;
 
 	this->WeaponInHand = 0;
 
 	this->bIsReloading = false;
+
 	this->bIsZoomedIn = false;
 }
 
@@ -93,34 +101,70 @@ void AMultiplayerFPSCharacter::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::BeginPlay() -> GameInstanceVar is not Valid !!!"));
 	}
-	
-	ServerSpawnFirearmActor();
+
+	FActorSpawnParameters ActorSpawnParameters;
+	ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	ActorSpawnParameters.Owner = this;
+	const FVector WeaponLocationVector = FVector(0.0f, 0.0f, 0.0f);
+	const FRotator WeaponRotationRotator = FRotator(0.0f, 0.0f, 0.0f);
+
+	for (int32 i = 0; i < FirearmClassArray.Num(); ++i)
+	{
+		AActor* FirearmActor = GetWorld()->SpawnActor(FirearmClassArray[i], &WeaponLocationVector, &WeaponRotationRotator, ActorSpawnParameters);
+		if (!IsValid(FirearmActor))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AFPSPlayerCharacter::BeginPlay !IsValid(FirearmActor)"));
+			return;
+		}
+
+		AMultiplayerFPSFirearm* Firearm = Cast<AMultiplayerFPSFirearm>(FirearmActor);
+		if (!IsValid(Firearm))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AFPSPlayerCharacter::BeginPlay !IsValid(Firearm)"));
+			return;
+		}
+
+		FirearmArray.Add(Firearm);
+		if (!IsValid(FirearmArray[i]))
+		{
+			UE_LOG(LogTemp, Error, TEXT("AFPSPlayerCharacter::BeginPlay !IsValid(FirearmArray[i])"));
+			return;
+		}
+	}
+
+	FirearmArray[0]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	FirearmArray[1]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
+
+	CanFireFirearmArray.Init(true, FirearmArray.Num());
 }
 
-void AMultiplayerFPSCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
+	FActorSpawnParameters ActorSpawnParameters;
+	ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	ActorSpawnParameters.Owner = this;
+	const FVector WeaponLocationVector = FVector(0.0f, 0.0f, 0.0f);
+	const FRotator WeaponRotationRotator = FRotator(0.0f, 0.0f, 0.0f);
 
 void AMultiplayerFPSCharacter::OnHealthChanged(UMultiplayerFPSHealthSystem* HealthSystemComp, float Health,
 	float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	if ((Health <= 0) && (!bDead))
 	{
-		UWorld* World = GetWorld();
-		if (!IsValid(World))
+		AActor* FirearmActor = GetWorld()->SpawnActor(FirearmClassArray[i], &WeaponLocationVector, &WeaponRotationRotator, ActorSpawnParameters);
+		if (!IsValid(FirearmActor))
 		{
 			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> World is not Valid !!!"));
 			return;
 		}
-		if(!IsValid(GEngine))
+
+		AMultiplayerFPSFirearm* Firearm = Cast<AMultiplayerFPSFirearm>(FirearmActor);
+		if (!IsValid(Firearm))
 		{
 			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> GEngine is not Valid !!!"));
 			return;
 		}
 
-		AMultiplayerFPSPlayerController* const PlayerController = Cast<AMultiplayerFPSPlayerController>(GEngine->GetFirstLocalPlayerController(World));
-		if (!IsValid(PlayerController))
+		FirearmArray.Add(Firearm);
+		if (!IsValid(FirearmArray[i]))
 		{
 			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSCharacter::OnHealthChanged() -> PlayerControlle2 is not Valid !!!"));
 				return;
@@ -170,6 +214,7 @@ void AMultiplayerFPSCharacter::GetLifetimeReplicatedProps(TArray <FLifetimePrope
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AMultiplayerFPSCharacter, bIsSprinting);
+	DOREPLIFETIME(AMultiplayerFPSCharacter, Team);
 	DOREPLIFETIME(AMultiplayerFPSCharacter, bDead);
 }
 
@@ -178,13 +223,14 @@ void AMultiplayerFPSCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	
 	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);	
+
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AMultiplayerFPSCharacter::SprintStart);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &AMultiplayerFPSCharacter::SprintStop);
 	PlayerInputComponent->BindAction("ShowStats", IE_Pressed, this, &AMultiplayerFPSCharacter::ToggleLeaderBoardVisibility);
-	//PlayerInputComponent->BindAction("ShowStats", IE_Released, this, &AMultiplayerFPSCharacter::ToggleLeaderBoardVisibility);
+	PlayerInputComponent->BindAction("ShowStats", IE_Released, this, &AMultiplayerFPSCharacter::ToggleLeaderBoardVisibility);
 	PlayerInputComponent->BindAction("ShowOptions", IE_Pressed, this, &AMultiplayerFPSCharacter::ToggleOptionsMenu);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMultiplayerFPSCharacter::MoveForward);
@@ -200,6 +246,16 @@ void AMultiplayerFPSCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMultiplayerFPSCharacter::Reload);
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &AMultiplayerFPSCharacter::Zoom);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &AMultiplayerFPSCharacter::ZoomOut);
+}
+
+void AMultiplayerFPSCharacter::TurnAtRate(float Rate)
+{
+	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+}
+
+void AMultiplayerFPSCharacter::LookUpAtRate(float Rate)
+{
+	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
 void AMultiplayerFPSCharacter::MoveForward(float Value)
@@ -377,24 +433,20 @@ void AMultiplayerFPSCharacter::ToggleOptionsMenu()
 	}
 }
 
-void AMultiplayerFPSCharacter::DestoryPlayer()
+void AMultiplayerFPSCharacter::InitTeam()
 {
-	TArray<AActor*> AttachedActors;
-	GetAttachedActors(AttachedActors, true);
-
-	for(auto Attached: AttachedActors)
+	AMultiplayerFPSPlayerController* PlayerController = Cast<AMultiplayerFPSPlayerController>(this->GetController());
+	if (IsValid(PlayerController))
 	{
-		Attached->Destroy(true);
+		this->Team = PlayerController->Team;
 	}
-	Destroy(true);
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s AMultiplayerFPSCharacter::InitTeam(AActor * Player)->PlayerController is not Valid !!!"), *PlayerName);
+	}
 }
 
-void AMultiplayerFPSCharacter::ClientDestoryPlayer_Implementation()
-{
-	DestoryPlayer();
-}
-
-void AMultiplayerFPSCharacter::StartFiring()
+void AMultiplayerFPSCharacter::StartFiring_Implementation()
 {
 	if (this->CanFireFirearmArray[this->WeaponInHand])
 	{
@@ -402,16 +454,16 @@ void AMultiplayerFPSCharacter::StartFiring()
 	}
 }
 
-void AMultiplayerFPSCharacter::StopFiring()
+void AMultiplayerFPSCharacter::StopFiring_Implementation()
 {
-	this->FirearmArray[this->WeaponInHand]->StopFiring();
+	this->FirearmArray[(this->WeaponInHand)]->StopFiring();
 }
 
 void AMultiplayerFPSCharacter::SwitchWeapon()
 {
 	if (this->WeaponInHand == 0)
 	{
-		this->WeaponInHand = 1;
+	this->WeaponInHand = 1;
 
 		FirearmArray[0]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("BackAttach"));
 		FirearmArray[1]->GunMesh->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
@@ -429,7 +481,7 @@ void AMultiplayerFPSCharacter::SwitchFireMode()
 {
 	if (!this->bIsReloading)
 	{
-		this->FirearmArray[this->WeaponInHand]->SwitchFireMode();
+		this->FirearmArray[(this->WeaponInHand)]->SwitchFireMode();
 	}
 }
 
@@ -437,10 +489,10 @@ void AMultiplayerFPSCharacter::Reload()
 {
 	if (!bIsReloading && FirearmArray[this->WeaponInHand]->ShouldReloadFirearm())
 	{
-		this->FirearmArray[this->WeaponInHand]->Reload();
+		this->FirearmArray[(this->WeaponInHand)]->Reload();
 		if (bIsZoomedIn)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Reloading -> Zoomed Out!"));
+			UE_LOG(LogTemp, Warning, TEXT("Reloading -> Zoomed Out!"))
 			AMultiplayerFPSCharacter::ZoomOut();
 		}
 	}
@@ -466,7 +518,7 @@ void AMultiplayerFPSCharacter::ZoomOut()
 
 void AMultiplayerFPSCharacter::SetFOV(float FOV)
 {
-	FirstPersonCamera->SetFieldOfView(FOV);
+	FirstPersonCameraComponent->SetFieldOfView(FOV);
 }
 
 void AMultiplayerFPSCharacter::HideFPMeshes()

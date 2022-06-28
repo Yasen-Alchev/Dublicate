@@ -4,6 +4,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "../Default/MultiplayerFPSCharacter.h"
+#include "../Default/MultiplayerFPSTeamBasedCharacter.h"
 #include "../Default/MultiplayerFPSPlayerController.h"
 #include "Net/UnrealNetwork.h"
 
@@ -197,7 +198,7 @@ void AMultiplayerFPSFirearm::BurstFire()
 	}
 }
 
-void AMultiplayerFPSFirearm::Fire()
+void AMultiplayerFPSFirearm::Fire_Implementation()
 {
 	AActor* PlayerActor = GetOwner();
 	if (!IsValid(PlayerActor))
@@ -250,9 +251,9 @@ void AMultiplayerFPSFirearm::Fire()
 
 	AnimInstance->Montage_Play(FireAnimation, 1.f);
 
-	FVector StartLocation = MultiplayerFPSPlayer->FirstPersonCamera->GetComponentLocation();
+	FVector StartLocation = MultiplayerFPSPlayer->GetFirstPersonCameraComponent()->GetComponentLocation();
 
-	FRotator EndRotation = MultiplayerFPSPlayer->FirstPersonCamera->GetComponentRotation();
+	FRotator EndRotation = MultiplayerFPSPlayer->GetFirstPersonCameraComponent()->GetComponentRotation();
 	FVector EndLocation = StartLocation + (EndRotation.Vector() * 20000.0f);
 
 	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Bullet Trace")), true, MultiplayerFPSPlayer);
@@ -270,7 +271,18 @@ void AMultiplayerFPSFirearm::Fire()
 	bool bHitResult = World->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Hitscan, TraceParams, FCollisionResponseParams::DefaultResponseParam);
 	if (this->bShowDebugTrace)
 	{
-		DrawDebugLine(World, StartLocation, EndLocation, FColor::Red, false, 20.0f, ECC_WorldStatic, 0.35f);
+		DrawDebugLine(World, StartLocation, EndLocation, FColor::Red,	 false, 20.0f, ECC_WorldStatic, 0.35f);
+	}
+
+	if (CurrentFireMode == EFireMode::Burst)
+	{
+		this->BurstsFired++;
+
+		if (this->BurstsFired == this->BurstCount)
+		{
+			GetWorldTimerManager().ClearTimer(this->BurstFiringIntervalTimer);
+			this->BurstsFired = 0;
+		}
 	}
 
 	if (!bHitResult)
@@ -326,7 +338,7 @@ void AMultiplayerFPSFirearm::Fire()
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("AMultiplayerFPSFirearm::Fire IsValid(HitPlayer)"));
+			UE_LOG(LogTemp, Warning, TEXT("Hit Team Player"));
 		}
 	}
 	else
@@ -335,9 +347,16 @@ void AMultiplayerFPSFirearm::Fire()
 	}
 }
 
-void AMultiplayerFPSFirearm::ServerFire_Implementation()
-{
-	Fire();
+	this->CurrentMagazineCapacity = FMath::Clamp(this->CurrentMagazineCapacity - 1, 0, this->MaxMagazineCapacity);
+
+	UE_LOG(LogTemp, Warning, TEXT("Current Magazine Capacity: %d"), this->CurrentMagazineCapacity);
+
+	if (this->CurrentMagazineCapacity == 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Insufficient Ammo!"));
+		GetWorldTimerManager().ClearTimer(this->BurstFiringIntervalTimer);
+		return;
+	}
 }
 
 void AMultiplayerFPSFirearm::StopFiring()
@@ -356,7 +375,7 @@ void AMultiplayerFPSFirearm::SwitchFireMode()
 
 	if (FireModesArraySize == 1)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSFirearm::SwitchFireMode() -> No Other Firing Mode Available!"));
+		UE_LOG(LogTemp, Warning, TEXT("No Other Firing Mode Available!"));
 	}
 	else
 	{
@@ -376,7 +395,7 @@ void AMultiplayerFPSFirearm::SwitchFireMode()
 			CurrentFireMode = FireModesArray[CurrentFireModeIndex + 1];
 		}
 
-		UE_LOG(LogTemp, Warning, TEXT("AMultiplayerFPSFirearm::SwitchFireMode() -> Switched Fire Mode"));
+		UE_LOG(LogTemp, Warning, TEXT("Switched Fire Mode"));
 	}
 }
 

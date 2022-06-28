@@ -72,3 +72,9 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+Documentation/*/*.log
+Documentation/*/*.aux
+Documentation/*/*.out
+Documentation/*/_minted-doc
+Documentation/*/*.toc

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MultiplayerFPS/CommonClasses/Teams.h"
 #include "GameFramework/PlayerState.h"
 #include "MultiplayerFPSPlayerState.generated.h"
 
@@ -18,6 +19,12 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Team")
+		TEnumAsByte<ETeams> team;
+
+	UFUNCTION()
+		virtual int getCapturedFlagsCount() const { return FlagsCaptured; }
+
 	UFUNCTION()
 		virtual int getPlayerKills() const { return Kills; }
 
@@ -27,7 +34,12 @@ public:
 	UFUNCTION()
 		virtual int getPlayerScore() const { return PlayerScore; }
 
+	UFUNCTION()
+		virtual void FlagWasCaptured();
+
 protected:
+	UPROPERTY(Replicated)
+		int FlagsCaptured;
 
 	UPROPERTY(Replicated)
 		int Kills;

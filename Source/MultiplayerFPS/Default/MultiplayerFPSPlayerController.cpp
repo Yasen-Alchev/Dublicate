@@ -1,5 +1,6 @@
 #include "MultiplayerFPSPlayerController.h"
 
+#include "MultiplayerFPSTeamBasedCharacter.h"
 #include "MultiplayerFPSGameMode.h"
 #include "MultiplayerFPSGameState.h"
 #include "MultiplayerFPSInGameHUD.h"
@@ -18,7 +19,22 @@ void AMultiplayerFPSPlayerController::BeginPlay()
 	ServerRestartPlayerOnStart();
 }
 
-void AMultiplayerFPSPlayerController::ClientEndGame_Implementation(const FString& Winner)
+void AMultiplayerFPSPlayerController::OnPossess(APawn* MovieSceneBlends)
+{
+	Super::OnPossess(MovieSceneBlends);
+
+	AMultiplayerFPSTeamBasedCharacter* MyPawn = Cast<AMultiplayerFPSTeamBasedCharacter>(MovieSceneBlends);
+	if (IsValid(MyPawn))
+	{
+		MyPawn->InitTeam();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s AMultiplayerFPSPlayerController::OnPossess(APawn* MovieSceneBlends) -> MyPawn is not Valid !!!"), *this->GetName());
+	}
+}
+
+void AMultiplayerFPSPlayerController::ClientEndGame_Implementation(ETeams WinnerTeam)
 {
 	UWorld* World = GetWorld();
 	if (IsValid(World))
@@ -36,7 +52,7 @@ void AMultiplayerFPSPlayerController::ClientEndGame_Implementation(const FString
 		if (IsValid(InGameHud))
 		{
 			SetShowMouseCursor(true);
-			InGameHud->GameEnded(Winner);
+			InGameHud->GameEnded(WinnerTeam);
 		}
 		else
 		{
@@ -62,12 +78,12 @@ void AMultiplayerFPSPlayerController::ClientUpdateGameTime_Implementation(int mi
 	}
 }
 
-void AMultiplayerFPSPlayerController::ClientUpdateObjectiveStats_Implementation(const TArray<FString>& ObjectiveStats)
+void AMultiplayerFPSPlayerController::ClientUpdateObjectiveStats_Implementation(int32 RedScore, int32 BlueScore)
 {
 	AMultiplayerFPSInGameHUD* InGameHud = Cast<AMultiplayerFPSInGameHUD>(GetHUD());
 	if (IsValid(InGameHud))
 	{
-		InGameHud->UpdateObjectiveStats(ObjectiveStats);
+		InGameHud->UpdateObjectiveStats(RedScore, BlueScore);
 	}
 	else
 	{
@@ -82,7 +98,7 @@ void AMultiplayerFPSPlayerController::ServerRestartPlayerOnStart_Implementation(
 		UWorld* World = GetWorld();
 		if (IsValid(World))
 		{
-			AMultiplayerFPSGameMode* GameMode = Cast<AMultiplayerFPSGameMode>(World->GetAuthGameMode());
+			AMultiplayerFPSGameMode* GameMode = Cast<AMultiplayerFPSGameMode>(GetWorld()->GetAuthGameMode());
 			if (IsValid(GameMode))
 			{
 				GameMode->RestartPlayerAtPlayerStart(this, GameMode->ChoosePlayerStart(this));
@@ -136,9 +152,11 @@ void AMultiplayerFPSPlayerController::RespawnPlayer(bool instant)
 
 void AMultiplayerFPSPlayerController::ServerRespawnPlayer_Implementation()
 {
+
 	if (!bShouldRespawn) return;
 
 	GetWorldTimerManager().ClearTimer(RespawnHandle);
+
 	if (HasAuthority())
 	{
 		UWorld* World = GetWorld();
@@ -162,7 +180,7 @@ void AMultiplayerFPSPlayerController::ServerRespawnPlayer_Implementation()
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("%s AMultiplayerFPSPlayerController::ServerRPCRespawnPlayer_Implementation() -> NewPawn is not Valid !!!"), *this->GetName());
+					UE_LOG(LogTemp, Warning, TEXT("%s AMultiplayerFPSPlayerController::ServerRPCRespawnPlayer_Implementation() -> NewPlayerPawn is not Valid !!!"), *this->GetName());
 				}
 			}
 			else
@@ -189,7 +207,7 @@ void AMultiplayerFPSPlayerController::DisableControls_Implementation(bool disabl
 
 void AMultiplayerFPSPlayerController::KillPlayer()
 {
-	AMultiplayerFPSCharacter* PlayerPawn = Cast<AMultiplayerFPSCharacter>(GetPawn());
+	AMultiplayerFPSTeamBasedCharacter* PlayerPawn = Cast<AMultiplayerFPSTeamBasedCharacter>(GetPawn());
 	if (IsValid(PlayerPawn))
 	{
 		if (HasAuthority())

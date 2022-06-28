@@ -1,14 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MultiplayerFPS/Default/TeamBasedClasses/TeamBasedGameState.h"
+#include "MultiplayerFPS/Default/MultiplayerFPSGameState.h"
 #include "CTF_GameState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MULTIPLAYERFPS_API ACTF_GameState : public ATeamBasedGameState
+class MULTIPLAYERFPS_API ACTF_GameState : public AMultiplayerFPSGameState
 {
 	GENERATED_BODY()
 
